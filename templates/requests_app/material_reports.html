@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Material Reports" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{% trans "Material Reports" %}</h1>
+        <p class="muted">{% trans "Approved material requests for stock management." %}</p>
+    </div>
+</div>
+
+<form method="get" style="margin-bottom: 20px;">
+    <div class="form-grid">
+        <div>
+            <label>{% trans "Search" %}</label>
+            <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Request number, requester, material...' %}">
+        </div>
+
+        <div>
+            <label>{% trans "Date From" %}</label>
+            <input type="date" name="date_from" value="{{ date_from }}">
+        </div>
+
+        <div>
+            <label>{% trans "Date To" %}</label>
+            <input type="date" name="date_to" value="{{ date_to }}">
+        </div>
+
+        <div>
+            <label>{% trans "Department" %}</label>
+            <select name="department">
+                <option value="">{% trans "All Departments" %}</option>
+
+                {% for dept_id, dept_name in departments %}
+                    {% with dept_id_string=dept_id|stringformat:"s" %}
+                        <option value="{{ dept_id }}" {% if selected_department == dept_id_string %}selected{% endif %}>
+                            {{ dept_name }}
+                        </option>
+                    {% endwith %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div style="margin-top:12px;">
+        <button type="submit" class="btn">{% trans "Filter" %}</button>
+
+        <a href="{% url 'export_material_report_csv' %}?q={{ q }}&date_from={{ date_from }}&date_to={{ date_to }}&department={{ selected_department }}" class="btn btn-secondary">
+            {% trans "Export CSV" %}
+        </a>
+
+        <a href="{% url 'material_reports' %}" class="btn btn-secondary">
+            {% trans "Clear" %}
+        </a>
+    </div>
+</form>
+
+<form method="post" action="{% url 'bulk_print_material_documents' %}">
+    {% csrf_token %}
+
+    <div style="margin-bottom: 15px;">
+        <button type="submit" class="btn">{% trans "Print Selected" %}</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>{% trans "Request Number" %}</th>
+                    <th>{% trans "Requester" %}</th>
+                    <th>{% trans "Department" %}</th>
+                    <th>{% trans "Date Needed" %}</th>
+                    <th>{% trans "Approved Date" %}</th>
+                    <th>{% trans "Materials" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>
+                        <input type="checkbox" name="selected_requests" value="{{ req.id }}" class="request-checkbox">
+                    </td>
+
+                    <td>{{ req.request_number }}</td>
+                    <td>{{ req.submitted_by.full_name|default:req.submitted_by.username }}</td>
+                    <td>{{ req.department }}</td>
+                    <td>{{ req.date_needed }}</td>
+
+                    <td>
+                        {% if req.finalized_at %}
+                            {{ req.finalized_at|date:"Y-m-d H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% for item in req.material_items.all %}
+                            {{ item.material.name }} — {{ item.quantity }} {{ item.material.unit }}
+
+                            {% if item.material.stock_quantity <= 5 %}
+                                <span class="status-badge status-REJECTED">{% trans "LOW STOCK" %}</span>
+                            {% elif item.material.stock_quantity <= 10 %}
+                                <span class="status-badge status-RETURNED">{% trans "RUNNING LOW" %}</span>
+                            {% endif %}
+
+                            <br>
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+
+                    <td>
+                        <div class="actions-inline">
+                            <a href="{% url 'request_detail' req.id %}" class="btn btn-secondary">{% trans "View" %}</a>
+                            <a href="{% url 'approved_document' req.id %}" class="btn" target="_blank">{% trans "Print" %}</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">{% trans "No approved material requests found." %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAll = document.getElementById("select-all");
+    const checkboxes = document.querySelectorAll(".request-checkbox");
+
+    if (selectAll) {
+        selectAll.addEventListener("change", function () {
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

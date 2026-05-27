@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Request Detail" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{% trans "Request Detail" %}</h1>
+        <p class="muted">{% trans "Full request information and approval history." %}</p>
+    </div>
+
+    <div class="actions-inline">
+        {% if request_obj.status == "APPROVED" %}
+
+            {% if request_obj.metadata_json.permission_group %}
+                <a href="{% url 'permission_document' request_obj.id %}" class="btn" target="_blank">
+                    {% trans "Permission Document" %}
+                </a>
+            {% elif request_obj.material_items.exists %}
+                <a href="{% url 'approved_document' request_obj.id %}" class="btn" target="_blank">
+                    {% trans "Approved Document" %}
+                </a>
+            {% endif %}
+
+        {% endif %}
+    </div>
+</div>
+
+{% if request_obj.status == "RETURNED" and request.user == request_obj.submitted_by %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'edit_request' request_obj.id %}" class="btn">
+        {% trans "Edit and Resubmit" %}
+    </a>
+</div>
+{% endif %}
+
+<div class="detail-grid">
+
+    <div class="detail-item">
+        <strong>{% trans "Request Number" %}</strong>
+        {{ request_obj.request_number }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Status" %}</strong>
+        <span class="status-badge status-{{ request_obj.status }}">{{ request_obj.status }}</span>
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Type" %}</strong>
+        {{ request_obj.request_type }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Department" %}</strong>
+        {{ request_obj.department }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Submitted By" %}</strong>
+        {{ request_obj.submitted_by }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Submitted At" %}</strong>
+        {{ request_obj.submitted_at|date:"Y-m-d H:i" }}
+    </div>
+
+    {% if request_obj.amount %}
+    <div class="detail-item">
+        <strong>{% trans "Amount" %}</strong>
+        {{ request_obj.amount }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.date_needed %}
+    <div class="detail-item">
+        <strong>{% trans "Date Needed" %}</strong>
+        {{ request_obj.date_needed }}
+    </div>
+    {% endif %}
+
+    <div class="detail-item" style="grid-column: 1 / -1;">
+        <strong>{% trans "Description" %}</strong>
+        {{ request_obj.description }}
+    </div>
+
+</div>
+
+{% if request_obj.metadata_json.permission_group %}
+
+<h3 style="margin-top: 30px;">
+    {% trans "Permission Details" %}
+</h3>
+
+<div class="detail-grid">
+
+    <div class="detail-item">
+        <strong>{% trans "Permission Group" %}</strong>
+        {{ request_obj.metadata_json.permission_group }}
+    </div>
+
+    {% if request_obj.metadata_json.permission_subgroup %}
+    <div class="detail-item">
+        <strong>{% trans "Permission Type" %}</strong>
+        {{ request_obj.metadata_json.permission_subgroup }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.destination %}
+    <div class="detail-item">
+        <strong>{% trans "Destination" %}</strong>
+        {{ request_obj.metadata_json.destination }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.departure_time %}
+    <div class="detail-item">
+        <strong>{% trans "Departure Time" %}</strong>
+        {{ request_obj.metadata_json.departure_time }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.return_time %}
+    <div class="detail-item">
+        <strong>{% trans "Return Time" %}</strong>
+        {{ request_obj.metadata_json.return_time }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.arrival_time %}
+    <div class="detail-item">
+        <strong>{% trans "Arrival Time" %}</strong>
+        {{ request_obj.metadata_json.arrival_time }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.driver_name %}
+    <div class="detail-item">
+        <strong>{% trans "Driver Name" %}</strong>
+        {{ request_obj.metadata_json.driver_name }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.site %}
+    <div class="detail-item">
+        <strong>{% trans "Site" %}</strong>
+        {{ request_obj.metadata_json.site }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.valid_from %}
+    <div class="detail-item">
+        <strong>{% trans "Valid From" %}</strong>
+        {{ request_obj.metadata_json.valid_from }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.valid_to %}
+    <div class="detail-item">
+        <strong>{% trans "Valid To" %}</strong>
+        {{ request_obj.metadata_json.valid_to }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.microcom_agents %}
+    <div class="detail-item">
+        <strong>{% trans "Microcom Agents" %}</strong>
+        {{ request_obj.metadata_json.microcom_agents }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.tt %}
+    <div class="detail-item">
+        <strong>{% trans "TT" %}</strong>
+        {{ request_obj.metadata_json.tt }}
+    </div>
+    {% endif %}
+
+    {% if request_obj.metadata_json.external_persons %}
+    <div class="detail-item">
+        <strong>{% trans "External Persons" %}</strong>
+        {{ request_obj.metadata_json.external_persons }}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+{% if not request_obj.metadata_json.permission_group %}
+
+<h3 style="margin-top: 30px;">
+    {% trans "Materials" %}
+</h3>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>{% trans "Material" %}</th>
+                <th>{% trans "Category" %}</th>
+                <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Available Stock" %}</th>
+                <th>{% trans "Note" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in request_obj.material_items.all %}
+
+            <tr>
+
+                <td>
+                    {{ item.material.name }} ({{ item.material.code }})
+                </td>
+
+                <td>
+                    {{ item.material.category.name }}
+                </td>
+
+                <td>
+                    {{ item.quantity }} {{ item.material.unit }}
+                </td>
+
+                <td>
+                    {{ item.material.stock_quantity }} {{ item.material.unit }}
+                </td>
+
+                <td>
+                    {{ item.note|default:"-" }}
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="5">
+                    {% trans "No materials added." %}
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endif %}
+
+<h3 style="margin-top: 30px;">
+    {% trans "Attachments" %}
+</h3>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>{% trans "File Name" %}</th>
+                <th>{% trans "Uploaded By" %}</th>
+                <th>{% trans "Uploaded At" %}</th>
+                <th>{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for attachment in request_obj.attachments.all %}
+
+            <tr>
+
+                <td>
+                    {{ attachment.original_name }}
+                </td>
+
+                <td>
+                    {{ attachment.uploaded_by }}
+                </td>
+
+                <td>
+                    {{ attachment.created_at|date:"Y-m-d H:i" }}
+                </td>
+
+                <td>
+
+                    <div class="actions-inline">
+
+                        <a href="{{ attachment.file.url }}" class="btn btn-secondary" target="_blank">
+                            {% trans "View" %}
+                        </a>
+
+                        <a href="{{ attachment.file.url }}" class="btn" download>
+                            {% trans "Download" %}
+                        </a>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="4">
+                    {% trans "No attachments uploaded." %}
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<h3 style="margin-top: 30px;">
+    {% trans "Approval Timeline" %}
+</h3>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>{% trans "Step" %}</th>
+                <th>{% trans "Approver" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Comment" %}</th>
+                <th>{% trans "Acted At" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for approval in request_obj.approvals.all %}
+
+            <tr>
+
+                <td>
+                    {{ approval.step_order }}
+                </td>
+
+                <td>
+                    {{ approval.approver_user }}
+                </td>
+
+                <td>
+                    <span class="status-badge status-{{ approval.status }}">
+                        {{ approval.status }}
+                    </span>
+                </td>
+
+                <td>
+                    {{ approval.comment|default:"-" }}
+                </td>
+
+                <td>
+
+                    {% if approval.acted_at %}
+
+                        {{ approval.acted_at|date:"Y-m-d H:i" }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="5">
+                    {% trans "No approval steps found." %}
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<h3 style="margin-top: 30px;">
+    {% trans "Audit Log" %}
+</h3>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>{% trans "Action" %}</th>
+                <th>{% trans "Performed By" %}</th>
+                <th>{% trans "Comment" %}</th>
+                <th>{% trans "Date" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for log in request_obj.audit_logs.all %}
+
+            <tr>
+
+                <td>
+                    {{ log.action }}
+                </td>
+
+                <td>
+                    {{ log.performed_by|default:"System" }}
+                </td>
+
+                <td>
+                    {{ log.comment|default:"-" }}
+                </td>
+
+                <td>
+                    {{ log.created_at|date:"Y-m-d H:i" }}
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="4">
+                    {% trans "No logs available." %}
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

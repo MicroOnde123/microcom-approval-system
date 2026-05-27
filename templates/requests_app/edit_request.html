@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Returned Request" %}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <h1>{% trans "Edit Returned Request" %}</h1>
+
+        <p class="muted">
+            {% trans "Correct the request and resubmit it for approval." %}
+        </p>
+
+    </div>
+
+</div>
+
+<div style="margin-bottom: 20px;">
+
+    <p>
+        <strong>{% trans "Request Number:" %}</strong>
+        {{ request_obj.request_number }}
+    </p>
+
+    <p>
+        <strong>{% trans "Status:" %}</strong>
+        {{ request_obj.status }}
+    </p>
+
+</div>
+
+{% if form.errors %}
+<div class="message error">
+    {{ form.errors }}
+</div>
+{% endif %}
+
+{% if formset.errors %}
+<div class="message error">
+    {{ formset.errors }}
+</div>
+{% endif %}
+
+{% if formset.non_form_errors %}
+<div class="message error">
+    {{ formset.non_form_errors }}
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    <div class="form-section">
+
+        <label for="{{ form.request_type.id_for_label }}">
+            {% trans "Request Type" %}
+        </label>
+
+        {{ form.request_type }}
+
+    </div>
+
+    <div class="form-section" id="section-permission" style="display:none;">
+
+        <div class="permission-box">
+
+            <h3>{% trans "General Permission" %}</h3>
+
+            <div class="form-grid">
+
+                <div>
+
+                    <label>
+                        {{ form.permission_group.label }}
+                    </label>
+
+                    {{ form.permission_group }}
+
+                </div>
+
+                <div id="permission-subgroup-wrapper">
+
+                    <label>
+                        {{ form.permission_subgroup.label }}
+                    </label>
+
+                    {{ form.permission_subgroup }}
+
+                </div>
+
+            </div>
+
+            <div id="leave-permission-fields" style="display:none; margin-top:16px;">
+
+                <div class="form-grid">
+
+                    <div>
+
+                        <label>
+                            {{ form.destination.label }}
+                        </label>
+
+                        {{ form.destination }}
+
+                    </div>
+
+                    <div>
+
+                        <label>
+                            {{ form.departure_time.label }}
+                        </label>
+
+                        {{ form.departure_time }}
+
+                    </div>
+
+                    <div id="return-time-wrapper">
+
+                        <label>
+                            {{ form.return_time.label }}
+                        </label>
+
+                        {{ form.return_time }}
+
+                    </div>
+
+                    <div id="arrival-time-wrapper">
+
+                        <label>
+                            {{ form.arrival_time.label }}
+                        </label>
+
+                        {{ form.arrival_time }}
+
+                    </div>
+
+                    <div id="driver-wrapper">
+
+                        <label>
+                            {{ form.driver_name.label }}
+                        </label>
+
+                        {{ form.driver_name }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="site-authorization-fields" style="display:none; margin-top:16px;">
+
+                <div class="form-grid">
+
+                    <div>
+
+                        <label>
+                            {{ form.site.label }}
+                        </label>
+
+                        {{ form.site }}
+
+                    </div>
+
+                    <div>
+
+                        <label>
+                            {{ form.valid_from.label }}
+                        </label>
+
+                        {{ form.valid_from }}
+
+                    </div>
+
+                    <div>
+
+                        <label>
+                            {{ form.valid_to.label }}
+                        </label>
+
+                        {{ form.valid_to }}
+
+                    </div>
+
+                    <div>
+
+                        <label>
+                            {{ form.microcom_agents.label }}
+                        </label>
+
+                        {{ form.microcom_agents }}
+
+                    </div>
+
+                    <div>
+
+                        <label>
+                            {{ form.tt.label }}
+                        </label>
+
+                        {{ form.tt }}
+
+                    </div>
+
+                    <div>
+
+                        <label>
+                            {{ form.external_persons.label }}
+                        </label>
+
+                        {{ form.external_persons }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="permission-reason-wrapper" style="display:none; margin-top:16px;">
+
+                <label>
+                    {{ form.exit_reason.label }}
+                </label>
+
+                {{ form.exit_reason }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="form-section" id="section-materials">
+
+        <h3>{% trans "Materials" %}</h3>
+
+        {{ formset.management_form }}
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>{% trans "Material" %}</th>
+                        <th>{% trans "Quantity" %}</th>
+                        <th>{% trans "Remove" %}</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for subform in formset %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ subform.material }}
+
+                            {% if subform.material.errors %}
+                            <div class="field-error">
+                                {{ subform.material.errors }}
+                            </div>
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ subform.quantity }}
+
+                            {% if subform.quantity.errors %}
+                            <div class="field-error">
+                                {{ subform.quantity.errors }}
+                            </div>
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ subform.DELETE }}
+                        </td>
+
+                        {% for hidden in subform.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                    </tr>
+
+                    {% if subform.non_field_errors %}
+
+                    <tr>
+
+                        <td colspan="3">
+
+                            <div class="message error">
+                                {{ subform.non_field_errors }}
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endif %}
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="form-section" id="description-section">
+
+        <label for="{{ form.description.id_for_label }}">
+            {% trans "Description / Reason" %}
+        </label>
+
+        {{ form.description }}
+
+    </div>
+
+    <div class="form-grid">
+
+        <div class="form-section" id="section-amount">
+
+            <label for="{{ form.amount.id_for_label }}">
+                {% trans "Amount" %}
+            </label>
+
+            {{ form.amount }}
+
+        </div>
+
+        <div class="form-section" id="section-date">
+
+            <label for="{{ form.date_needed.id_for_label }}">
+                {% trans "Date Needed" %}
+            </label>
+
+            {{ form.date_needed }}
+
+        </div>
+
+    </div>
+
+    <div style="margin-top: 15px;">
+
+        <label>
+            <strong>{% trans "Add More Attachments" %}</strong>
+        </label>
+
+        <br>
+
+        <input type="file" name="attachments" multiple>
+
+    </div>
+
+    <div style="margin-top: 20px;">
+
+        <button type="submit" class="btn">
+            {% trans "Save and Resubmit" %}
+        </button>
+
+    </div>
+
+</form>
+
+<style>
+    .permission-box {
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .form-section {
+        margin-bottom: 22px;
+    }
+
+    .form-section label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .field-error {
+        color: #b91c1c;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @media (max-width: 800px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const typeSelect = document.getElementById("id_request_type");
+
+    const permissionSection = document.getElementById("section-permission");
+    const materialsSection = document.getElementById("section-materials");
+    const amountSection = document.getElementById("section-amount");
+    const descriptionSection = document.getElementById("description-section");
+
+    const permissionGroup = document.getElementById("id_permission_group");
+    const permissionSubgroup = document.getElementById("id_permission_subgroup");
+    const permissionSubgroupWrapper = document.getElementById("permission-subgroup-wrapper");
+
+    const leavePermissionFields = document.getElementById("leave-permission-fields");
+    const siteAuthorizationFields = document.getElementById("site-authorization-fields");
+    const permissionReasonWrapper = document.getElementById("permission-reason-wrapper");
+
+    const returnTimeWrapper = document.getElementById("return-time-wrapper");
+    const arrivalTimeWrapper = document.getElementById("arrival-time-wrapper");
+    const driverWrapper = document.getElementById("driver-wrapper");
+
+    function updatePermissionFields() {
+
+        if (!permissionGroup) return;
+
+        const group = permissionGroup.value;
+        const subgroup = permissionSubgroup.value;
+
+        permissionSubgroupWrapper.style.display = "none";
+        leavePermissionFields.style.display = "none";
+        siteAuthorizationFields.style.display = "none";
+        permissionReasonWrapper.style.display = "none";
+        returnTimeWrapper.style.display = "none";
+        arrivalTimeWrapper.style.display = "none";
+        driverWrapper.style.display = "none";
+
+        if (group === "LEAVE_PERMISSION") {
+
+            permissionSubgroupWrapper.style.display = "block";
+            leavePermissionFields.style.display = "block";
+            permissionReasonWrapper.style.display = "block";
+
+            if (subgroup === "BY_FOOT") {
+                returnTimeWrapper.style.display = "block";
+            }
+
+            if (subgroup === "BY_CAR") {
+                arrivalTimeWrapper.style.display = "block";
+                driverWrapper.style.display = "block";
+            }
+        }
+
+        if (group === "SITE_AUTHORIZATION") {
+            siteAuthorizationFields.style.display = "block";
+            permissionReasonWrapper.style.display = "block";
+        }
+    }
+
+    function updateFormByRequestType() {
+
+        const selectedText = typeSelect.options[typeSelect.selectedIndex].text.toLowerCase();
+
+        permissionSection.style.display = "none";
+        materialsSection.style.display = "none";
+        amountSection.style.display = "none";
+        descriptionSection.style.display = "block";
+
+        if (selectedText.includes("material")) {
+            materialsSection.style.display = "block";
+        }
+
+        if (selectedText.includes("payment")) {
+            amountSection.style.display = "block";
+        }
+
+        if (selectedText.includes("general") || selectedText.includes("permission")) {
+            permissionSection.style.display = "block";
+            descriptionSection.style.display = "none";
+        }
+
+        updatePermissionFields();
+    }
+
+    if (permissionGroup) {
+        permissionGroup.addEventListener("change", updatePermissionFields);
+    }
+
+    if (permissionSubgroup) {
+        permissionSubgroup.addEventListener("change", updatePermissionFields);
+    }
+
+    typeSelect.addEventListener("change", updateFormByRequestType);
+
+    updateFormByRequestType();
+
+});
+</script>
+
+{% endblock %}

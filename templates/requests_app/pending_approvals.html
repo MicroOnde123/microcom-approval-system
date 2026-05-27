@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Pending Approvals" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{% trans "Pending Approvals" %}</h1>
+
+        <p class="muted">
+            {% trans "Requests currently waiting for your decision." %}
+        </p>
+    </div>
+</div>
+
+<form method="get" class="filter-form" style="margin-bottom: 20px;">
+
+    <div class="form-grid">
+
+        <div>
+            <label>{% trans "Search" %}</label>
+
+            <input
+                type="text"
+                name="q"
+                value="{{ q }}"
+                placeholder="{% trans 'Search by request number or requester...' %}"
+            >
+        </div>
+
+        <div>
+            <label>{% trans "Date From" %}</label>
+
+            <input
+                type="date"
+                name="date_from"
+                value="{{ date_from }}"
+            >
+        </div>
+
+        <div>
+            <label>{% trans "Date To" %}</label>
+
+            <input
+                type="date"
+                name="date_to"
+                value="{{ date_to }}"
+            >
+        </div>
+
+        <div>
+            <label>{% trans "Request Type" %}</label>
+
+            <select name="request_type">
+
+                <option value="">
+                    {% trans "All Types" %}
+                </option>
+
+                {% for type_id, type_name in request_types %}
+
+                    {% with type_id_string=type_id|stringformat:"s" %}
+
+                        <option
+                            value="{{ type_id }}"
+                            {% if selected_request_type == type_id_string %}selected{% endif %}
+                        >
+                            {{ type_name }}
+                        </option>
+
+                    {% endwith %}
+
+                {% endfor %}
+
+            </select>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 12px;">
+
+        <button type="submit" class="btn">
+            {% trans "Filter" %}
+        </button>
+
+        <a href="{% url 'pending_approvals' %}" class="btn btn-secondary">
+            {% trans "Clear" %}
+        </a>
+
+    </div>
+
+</form>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>{% trans "Request Number" %}</th>
+                <th>{% trans "Description" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Submitted By" %}</th>
+                <th>{% trans "Date Needed" %}</th>
+                <th>{% trans "Step" %}</th>
+                <th>{% trans "Action" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for approval in approvals %}
+
+            <tr>
+
+                <td>
+                    {{ approval.request.request_number }}
+                </td>
+
+                <td>
+                    {{ approval.request.description|truncatechars:60 }}
+                </td>
+
+                <td>
+                    {{ approval.request.request_type }}
+                </td>
+
+                <td>
+                    {{ approval.request.submitted_by }}
+                </td>
+
+                <td>
+
+                    {{ approval.request.date_needed }}
+
+                    <div style="margin-top:6px;">
+
+                        {% if approval.request.date_needed %}
+
+                            {% if approval.request.date_needed < today %}
+
+                                <span class="status-badge status-REJECTED">
+                                    {% trans "Overdue" %}
+                                </span>
+
+                            {% elif approval.request.date_needed == today %}
+
+                                <span class="status-badge status-RETURNED">
+                                    {% trans "Due Today" %}
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge status-APPROVED">
+                                    {% trans "Upcoming" %}
+                                </span>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    </div>
+
+                </td>
+
+                <td>
+                    {% trans "Step" %} {{ approval.step_order }}
+                </td>
+
+                <td>
+
+                    <div class="actions-inline">
+
+                        <a href="{% url 'approval_detail' approval.id %}" class="btn">
+                            {% trans "Review" %}
+                        </a>
+
+                        <a
+                            href="{% url 'request_detail' approval.request.id %}"
+                            class="btn btn-secondary"
+                        >
+                            {% trans "View" %}
+                        </a>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="7">
+                    {% trans "No pending approvals." %}
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+{% endblock %}

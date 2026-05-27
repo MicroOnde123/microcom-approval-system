@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Approval History" %}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <h1>{% trans "Approval History" %}</h1>
+
+        <p class="muted">
+            {% trans "Requests you have already reviewed, approved, rejected, or returned." %}
+        </p>
+
+    </div>
+
+</div>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>{% trans "Request Number" %}</th>
+                <th>{% trans "Description" %}</th>
+                <th>{% trans "Request Type" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Your Action" %}</th>
+                <th>{% trans "Acted At" %}</th>
+                <th>{% trans "Actions" %}</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for approval in approvals %}
+
+            <tr>
+
+                <td>
+                    {{ approval.request.request_number }}
+                </td>
+
+                <td>
+                    {{ approval.request.description|truncatechars:60 }}
+                </td>
+
+                <td>
+                    {{ approval.request.request_type }}
+                </td>
+
+                <td>
+
+                    <span class="status-badge status-{{ approval.request.status }}">
+                        {{ approval.request.status }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="status-badge status-{{ approval.status }}">
+                        {{ approval.status }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    {% if approval.acted_at %}
+
+                        {{ approval.acted_at|date:"Y-m-d H:i" }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    <div class="actions-inline">
+
+                        <a href="{% url 'request_detail' approval.request.id %}" class="btn btn-secondary">
+                            {% trans "View" %}
+                        </a>
+
+                        {% if approval.request.status == "APPROVED" %}
+
+                            {% if approval.request.metadata_json.permission_group %}
+
+                                <a href="{% url 'permission_document' approval.request.id %}" class="btn" target="_blank">
+                                    {% trans "Permission Document" %}
+                                </a>
+
+                            {% elif approval.request.material_items.exists %}
+
+                                <a href="{% url 'approved_document' approval.request.id %}" class="btn" target="_blank">
+                                    {% trans "Approved Document" %}
+                                </a>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="7">
+                    {% trans "No approval history available." %}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

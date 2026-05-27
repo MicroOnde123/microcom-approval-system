@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Review" %}{% endblock %}
+
+{% block content %}
+
+<h2>{% trans "Review Request" %}</h2>
+
+<p>
+    <strong>{{ r.description|truncatechars:60 }}</strong>
+</p>
+
+<p>
+    {{ request_obj.description }}
+</p>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn">
+        {% trans "Submit" %}
+    </button>
+
+</form>
+
+{% endblock %}

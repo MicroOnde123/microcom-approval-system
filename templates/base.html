@@ -1,0 +1,403 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% trans "Microcom Approval System" %}{% endblock %}</title>
+
+    <style>
+        :root {
+            --primary: #123d6b;
+            --primary-dark: #0d2d4f;
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+            --warning-bg: #fef3c7;
+            --warning-text: #92400e;
+            --danger-bg: #fee2e2;
+            --danger-text: #991b1b;
+            --info-bg: #dbeafe;
+            --info-text: #1d4ed8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-left,
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .nav-left a,
+        .nav-right a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-left a:hover,
+        .nav-right a:hover {
+            text-decoration: underline;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: white;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .language-switcher {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+        }
+
+        .language-switcher select {
+            width: auto;
+            min-width: 90px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: white;
+            color: var(--primary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            padding: 24px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            background: #f8fafc;
+            color: #374151;
+            font-size: 14px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-PENDING,
+        .status-IN_REVIEW,
+        .status-RETURNED {
+            background: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .status-APPROVED {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .status-REJECTED {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+        }
+
+        .status-DRAFT {
+            background: var(--info-bg);
+            color: var(--info-text);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(240px, 1fr));
+            gap: 14px 24px;
+            margin-bottom: 24px;
+        }
+
+        .detail-item {
+            padding: 12px 14px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .detail-item strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #111827;
+        }
+
+        form p {
+            margin-bottom: 16px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .messages {
+            margin-bottom: 18px;
+        }
+
+        .message {
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #eef3f8;
+        }
+
+        .message.success {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .message.error {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+        }
+
+        .message.warning {
+            background: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .actions-inline {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-badge {
+            background: #dc2626;
+            color: white;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 12px;
+            margin-left: 4px;
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        @media (max-width: 700px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                padding: 14px 18px;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .nav-left,
+            .nav-right {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="nav-left">
+            <div class="brand">{% trans "Microcom Approval System" %}</div>
+
+            <a href="{% url 'dashboard' %}">{% trans "Dashboard" %}</a>
+
+            <a href="{% url 'create_request' %}">{% trans "Create Request" %}</a>
+
+            <a href="{% url 'my_requests' %}">
+                {% trans "My Requests" %}
+                {% if returned_requests_count > 0 %}
+                <span class="nav-badge">
+                    {{ returned_requests_count }}
+                </span>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'pending_approvals' %}">
+                {% trans "Approvals" %}
+                {% if pending_approval_count > 0 %}
+                <span class="nav-badge">
+                    {{ pending_approval_count }}
+                </span>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'approval_history' %}">{% trans "Approval History" %}</a>
+
+            {% if can_manage_stock %}
+            <a href="{% url 'material_reports' %}">
+                {% trans "Material Reports" %}
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="nav-right">
+            <form action="{% url 'set_language' %}" method="post" class="language-switcher">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.path }}">
+
+                <select name="language" onchange="this.form.submit()">
+                    <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
+                    <option value="fr" {% if request.LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
+                </select>
+            </form>
+
+            <span>{{ request.user.full_name|default:request.user.username }}</span>
+
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">{% trans "Logout" %}</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="page">
+        <div class="card">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+
+</html>

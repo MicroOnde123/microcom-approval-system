@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{% trans "Dashboard" %}</h1>
+        <p class="muted">
+            {% blocktrans with user_name=request.user.full_name|default:request.user.username %}
+                Welcome, {{ user_name }}.
+            {% endblocktrans %}
+        </p>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="detail-item">
+        <strong>{% trans "Create Request" %}</strong>
+        {% trans "Start a new material, payment, or general permission request." %}
+
+        <div style="margin-top:12px;">
+            <a href="{% url 'create_request' %}" class="btn">
+                {% trans "New Request" %}
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "My Requests" %}</strong>
+        {% trans "Track the status and approval progress of your submissions." %}
+
+        <div style="margin-top:12px;">
+            <a href="{% url 'my_requests' %}" class="btn btn-secondary">
+                {% trans "View My Requests" %}
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Pending Approvals" %}</strong>
+        {% trans "Review requests currently assigned to you for action." %}
+
+        <div style="margin-top:12px;">
+            <a href="{% url 'pending_approvals' %}" class="btn btn-secondary">
+                {% trans "Open Approvals" %}
+            </a>
+        </div>
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "System Status" %}</strong>
+        {% trans "The approval workflow engine and login system are active." %}
+    </div>
+</div>
+{% endblock %}

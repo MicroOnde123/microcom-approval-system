@@ -1,0 +1,910 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-26 16:21+0200\n"
+"PO-Revision-Date: 2026-05-23 13:45+0200\n"
+"Last-Translator: Benaia Banda\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\config\settings.py:147
+msgid "English"
+msgstr "Anglais"
+
+#: .\config\settings.py:148
+msgid "French"
+msgstr "Français"
+
+#: .\requests_app\views.py:583
+#: .\templates\requests_app\approval_history.html:30
+#: .\templates\requests_app\material_reports.html:72
+#: .\templates\requests_app\pending_approvals.html:101
+#: .\templates\requests_app\request_detail.html:41
+msgid "Request Number"
+msgstr "Numéro de demande"
+
+#: .\requests_app\views.py:584
+#: .\templates\requests_app\material_reports.html:73
+msgid "Requester"
+msgstr "Demandeur"
+
+#: .\requests_app\views.py:585
+#: .\templates\requests_app\approved_document.html:206
+#: .\templates\requests_app\bulk_print_material_documents.html:158
+#: .\templates\requests_app\material_reports.html:32
+#: .\templates\requests_app\material_reports.html:74
+#: .\templates\requests_app\permission_document.html:188
+#: .\templates\requests_app\request_detail.html:56
+msgid "Department"
+msgstr "Département"
+
+#: .\requests_app\views.py:586
+#: .\templates\requests_app\approved_document.html:222
+#: .\templates\requests_app\bulk_print_material_documents.html:164
+#: .\templates\requests_app\create_request.html:262
+#: .\templates\requests_app\edit_request.html:351
+#: .\templates\requests_app\material_reports.html:75
+#: .\templates\requests_app\pending_approvals.html:105
+#: .\templates\requests_app\permission_document.html:194
+#: .\templates\requests_app\request_detail.html:79
+msgid "Date Needed"
+msgstr "Date requise"
+
+#: .\requests_app\views.py:587
+#: .\templates\requests_app\material_reports.html:76
+msgid "Approved Date"
+msgstr "Date d’approbation"
+
+#: .\requests_app\views.py:588
+#: .\templates\requests_app\approved_document.html:243
+#: .\templates\requests_app\bulk_print_material_documents.html:175
+#: .\templates\requests_app\create_request.html:189
+#: .\templates\requests_app\edit_request.html:252
+#: .\templates\requests_app\request_detail.html:204
+msgid "Material"
+msgstr "Matériel"
+
+#: .\requests_app\views.py:589
+#: .\templates\requests_app\approved_document.html:244
+#: .\templates\requests_app\bulk_print_material_documents.html:176
+msgid "Material Code"
+msgstr "Code matériel"
+
+#: .\requests_app\views.py:590 .\templates\requests_app\request_detail.html:205
+msgid "Category"
+msgstr "Catégorie"
+
+#: .\requests_app\views.py:591
+#: .\templates\requests_app\approved_document.html:242
+#: .\templates\requests_app\bulk_print_material_documents.html:174
+#: .\templates\requests_app\create_request.html:190
+#: .\templates\requests_app\edit_request.html:253
+#: .\templates\requests_app\request_detail.html:206
+msgid "Quantity"
+msgstr "Quantité"
+
+#: .\requests_app\views.py:592
+msgid "Unit"
+msgstr "Unité"
+
+#: .\requests_app\views.py:593
+#: .\templates\requests_app\approved_document.html:246
+#: .\templates\requests_app\bulk_print_material_documents.html:178
+#: .\templates\requests_app\request_detail.html:207
+msgid "Available Stock"
+msgstr "Stock disponible"
+
+#: .\requests_app\views.py:594
+#: .\templates\requests_app\approval_history.html:31
+#: .\templates\requests_app\bulk_print_material_documents.html:177
+#: .\templates\requests_app\pending_approvals.html:102
+#: .\templates\requests_app\request_detail.html:85
+msgid "Description"
+msgstr "Description"
+
+#: .\requests_app\views.py:595
+
+msgid "Approvers"
+msgstr "Approbateurs"
+
+#: .\templates\base.html:9 .\templates\base.html:335
+msgid "Microcom Approval System"
+msgstr "Système d’approbation Microcom"
+
+#: .\templates\base.html:337 .\templates\core\dashboard.html:4
+#: .\templates\core\dashboard.html:9
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+#: .\templates\base.html:339 .\templates\core\dashboard.html:20
+#: .\templates\requests_app\create_request.html:4
+#: .\templates\requests_app\create_request.html:9
+#: .\templates\requests_app\my_requests.html:14
+msgid "Create Request"
+msgstr "Créer une demande"
+
+#: .\templates\base.html:342 .\templates\core\dashboard.html:31
+#: .\templates\requests_app\my_requests.html:4
+#: .\templates\requests_app\my_requests.html:9
+msgid "My Requests"
+msgstr "Mes demandes"
+
+#: .\templates\base.html:351
+msgid "Approvals"
+msgstr "Approbations"
+
+#: .\templates\base.html:359 .\templates\requests_app\approval_history.html:4
+#: .\templates\requests_app\approval_history.html:12
+#: .\templates\requests_app\approved_document.html:309
+#: .\templates\requests_app\bulk_print_material_documents.html:207
+#: .\templates\requests_app\permission_document.html:279
+msgid "Approval History"
+msgstr "Historique des approbations"
+
+#: .\templates\base.html:363 .\templates\requests_app\material_reports.html:4
+#: .\templates\requests_app\material_reports.html:9
+msgid "Material Reports"
+msgstr "Rapports matériels"
+
+#: .\templates\base.html:383
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: .\templates\core\dashboard.html:11
+#, python-format
+msgid ""
+"\n"
+"                Welcome, %(user_name)s.\n"
+"            "
+msgstr ""
+"\n"
+"                Bienvenue, %(user_name)s.\n"
+"            "
+
+#: .\templates\core\dashboard.html:21
+msgid "Start a new material, payment, or general permission request."
+msgstr ""
+"Commencez une nouvelle demande de matériel, de paiement ou d’autorisation "
+"générale."
+
+#: .\templates\core\dashboard.html:25
+msgid "New Request"
+msgstr "Nouvelle demande"
+
+#: .\templates\core\dashboard.html:32
+msgid "Track the status and approval progress of your submissions."
+msgstr "Suivez le statut et l’évolution des approbations de vos demandes."
+
+#: .\templates\core\dashboard.html:36
+msgid "View My Requests"
+msgstr "Voir mes demandes"
+
+#: .\templates\core\dashboard.html:42
+#: .\templates\requests_app\pending_approvals.html:4
+#: .\templates\requests_app\pending_approvals.html:9
+msgid "Pending Approvals"
+msgstr "Approbations en attente"
+
+#: .\templates\core\dashboard.html:43
+msgid "Review requests currently assigned to you for action."
+msgstr "Examinez les demandes actuellement assignées à votre traitement."
+
+#: .\templates\core\dashboard.html:47
+msgid "Open Approvals"
+msgstr "Ouvrir les approbations"
+
+#: .\templates\core\dashboard.html:53
+msgid "System Status"
+msgstr "État du système"
+
+#: .\templates\core\dashboard.html:54
+msgid "The approval workflow engine and login system are active."
+msgstr ""
+"Le moteur de workflow d’approbation et le système de connexion sont actifs."
+
+#: .\templates\requests_app\approval_detail.html:4
+#: .\templates\requests_app\pending_approvals.html:176
+msgid "Review"
+msgstr "Examiner"
+
+#: .\templates\requests_app\approval_detail.html:8
+msgid "Review Request"
+msgstr "Examiner la demande"
+
+#: .\templates\requests_app\approval_detail.html:25
+msgid "Submit"
+msgstr "Soumettre"
+
+#: .\templates\requests_app\approval_history.html:15
+msgid "Requests you have already reviewed, approved, rejected, or returned."
+msgstr ""
+"Demandes que vous avez déjà examinées, approuvées, rejetées ou retournées."
+
+#: .\templates\requests_app\approval_history.html:32
+#: .\templates\requests_app\create_request.html:24
+#: .\templates\requests_app\edit_request.html:61
+#: .\templates\requests_app\pending_approvals.html:53
+msgid "Request Type"
+msgstr "Type de demande"
+
+#: .\templates\requests_app\approval_history.html:33
+#: .\templates\requests_app\approved_document.html:320
+#: .\templates\requests_app\bulk_print_material_documents.html:214
+#: .\templates\requests_app\my_requests.html:26
+#: .\templates\requests_app\permission_document.html:286
+#: .\templates\requests_app\request_detail.html:46
+#: .\templates\requests_app\request_detail.html:339
+msgid "Status"
+msgstr "Statut"
+
+#: .\templates\requests_app\approval_history.html:34
+msgid "Your Action"
+msgstr "Votre action"
+
+#: .\templates\requests_app\approval_history.html:35
+#: .\templates\requests_app\request_detail.html:341
+msgid "Acted At"
+msgstr "Traité le"
+
+#: .\templates\requests_app\approval_history.html:36
+#: .\templates\requests_app\request_detail.html:271
+msgid "Actions"
+msgstr "Actions"
+
+#: .\templates\requests_app\approval_history.html:95
+#: .\templates\requests_app\material_reports.html:120
+#: .\templates\requests_app\pending_approvals.html:183
+#: .\templates\requests_app\request_detail.html:298
+msgid "View"
+msgstr "Voir"
+
+#: .\templates\requests_app\approval_history.html:103
+#: .\templates\requests_app\permission_document.html:7
+#: .\templates\requests_app\request_detail.html:18
+msgid "Permission Document"
+msgstr "Document d’autorisation"
+
+#: .\templates\requests_app\approval_history.html:109
+#: .\templates\requests_app\approved_document.html:6
+#: .\templates\requests_app\request_detail.html:22
+msgid "Approved Document"
+msgstr "Document approuvé"
+
+#: .\templates\requests_app\approval_history.html:127
+msgid "No approval history available."
+msgstr "Aucun historique d’approbation disponible."
+
+#: .\templates\requests_app\approved_document.html:145
+#: .\templates\requests_app\bulk_print_material_documents.html:125
+msgid "Print / Save as PDF"
+msgstr "Imprimer / Enregistrer en PDF"
+
+#: .\templates\requests_app\approved_document.html:149
+#: .\templates\requests_app\bulk_print_material_documents.html:126
+msgid "Back"
+msgstr "Retour"
+
+#: .\templates\requests_app\approved_document.html:159
+#: .\templates\requests_app\bulk_print_material_documents.html:135
+msgid "Technical Service"
+msgstr "Service Technique"
+
+#: .\templates\requests_app\approved_document.html:164
+#: .\templates\requests_app\bulk_print_material_documents.html:139
+#: .\templates\requests_app\permission_document.html:153
+msgid "Request No:"
+msgstr "N° Demande :"
+
+#: .\templates\requests_app\approved_document.html:168
+#: .\templates\requests_app\bulk_print_material_documents.html:140
+#: .\templates\requests_app\edit_request.html:30
+#: .\templates\requests_app\permission_document.html:154
+msgid "Status:"
+msgstr "Statut"
+
+#: .\templates\requests_app\approved_document.html:172
+#: .\templates\requests_app\bulk_print_material_documents.html:141
+#: .\templates\requests_app\permission_document.html:155
+msgid "Date:"
+msgstr "Date :"
+
+#: .\templates\requests_app\approved_document.html:185
+#: .\templates\requests_app\bulk_print_material_documents.html:150
+msgid "Purchase Order"
+msgstr "Bon de Commande"
+
+#: .\templates\requests_app\approved_document.html:189
+msgid "Approved material request document"
+msgstr "Document de demande de matériel approuvée"
+
+#: .\templates\requests_app\approved_document.html:193
+#: .\templates\requests_app\bulk_print_material_documents.html:152
+#: .\templates\requests_app\permission_document.html:182
+msgid "Requester Information"
+msgstr "Informations du demandeur"
+
+#: .\templates\requests_app\approved_document.html:200
+#: .\templates\requests_app\bulk_print_material_documents.html:156
+#: .\templates\requests_app\permission_document.html:186
+msgid "Requested By"
+msgstr "Demandé par"
+
+#: .\templates\requests_app\approved_document.html:216
+#: .\templates\requests_app\bulk_print_material_documents.html:162
+#: .\templates\requests_app\permission_document.html:192
+#: .\templates\requests_app\request_detail.html:66
+msgid "Submitted At"
+msgstr "Soumis le"
+
+#: .\templates\requests_app\approved_document.html:233
+#: .\templates\requests_app\bulk_print_material_documents.html:169
+msgid "Requested Materials"
+msgstr "Matériels demandés"
+
+#: .\templates\requests_app\approved_document.html:245
+#: .\templates\requests_app\permission_document.html:216
+#: .\templates\requests_app\request_detail.html:113
+msgid "Destination"
+msgstr "Destination"
+
+#: .\templates\requests_app\approved_document.html:247
+#: .\templates\requests_app\bulk_print_material_documents.html:179
+msgid "Observation"
+msgstr "Observation"
+
+#: .\templates\requests_app\approved_document.html:289
+#: .\templates\requests_app\bulk_print_material_documents.html:195
+#: .\templates\requests_app\create_request.html:496
+msgid "No materials found."
+msgstr "Aucun matériel trouvé."
+
+#: .\templates\requests_app\approved_document.html:301
+#: .\templates\requests_app\bulk_print_material_documents.html:201
+msgid "General Observation"
+msgstr "Observation générale"
+
+#: .\templates\requests_app\approved_document.html:318
+#: .\templates\requests_app\bulk_print_material_documents.html:212
+#: .\templates\requests_app\pending_approvals.html:106
+#: .\templates\requests_app\pending_approvals.html:168
+#: .\templates\requests_app\permission_document.html:284
+#: .\templates\requests_app\request_detail.html:337
+msgid "Step"
+msgstr "Étape"
+
+#: .\templates\requests_app\approved_document.html:319
+#: .\templates\requests_app\bulk_print_material_documents.html:213
+#: .\templates\requests_app\permission_document.html:285
+#: .\templates\requests_app\request_detail.html:338
+msgid "Approver"
+msgstr "Approbateur"
+
+#: .\templates\requests_app\approved_document.html:321
+#: .\templates\requests_app\bulk_print_material_documents.html:215
+#: .\templates\requests_app\permission_document.html:287
+#: .\templates\requests_app\request_detail.html:340
+#: .\templates\requests_app\request_detail.html:413
+msgid "Comment"
+msgstr "Commentaire"
+
+#: .\templates\requests_app\approved_document.html:322
+#: .\templates\requests_app\bulk_print_material_documents.html:216
+#: .\templates\requests_app\permission_document.html:288
+msgid "Approved At"
+msgstr "Approuvé le"
+
+#: .\templates\requests_app\approved_document.html:361
+#: .\templates\requests_app\bulk_print_material_documents.html:233
+#: .\templates\requests_app\permission_document.html:303
+msgid "No approvals found."
+msgstr "Aucune approbation trouvée."
+
+#: .\templates\requests_app\approved_document.html:377
+#: .\templates\requests_app\permission_document.html:313
+msgid "Please print, sign and archive it for record keeping."
+msgstr "Veuillez imprimer, signer et archiver ce document pour conservation."
+
+#: .\templates\requests_app\bulk_print_material_documents.html:5
+msgid "Bulk Material Print"
+msgstr "Impression groupée des matériels"
+
+#: .\templates\requests_app\bulk_print_material_documents.html:241
+msgid "No selected documents found."
+msgstr "Aucun document sélectionné trouvé."
+
+#: .\templates\requests_app\create_request.html:10
+msgid "Submit a new internal request for approval."
+msgstr "Soumettez une nouvelle demande interne pour approbation."
+
+#: .\templates\requests_app\create_request.html:33
+#: .\templates\requests_app\edit_request.html:72
+#: .\templates\requests_app\permission_document.html:178
+msgid "General Permission"
+msgstr "Autorisation générale"
+
+#: .\templates\requests_app\create_request.html:34
+msgid "Select the permission group and complete the required fields."
+msgstr "Sélectionnez le groupe d’autorisation et remplissez les champs requis."
+
+#: .\templates\requests_app\create_request.html:163
+msgid "Filter By Category"
+msgstr "Filtrer par catégorie"
+
+#: .\templates\requests_app\create_request.html:165
+msgid "All Categories"
+msgstr "Toutes les catégories"
+
+#: .\templates\requests_app\create_request.html:174
+#: .\templates\requests_app\edit_request.html:240
+#: .\templates\requests_app\material_reports.html:77
+#: .\templates\requests_app\request_detail.html:195
+msgid "Materials"
+msgstr "Matériels"
+
+#: .\templates\requests_app\create_request.html:175
+msgid "Search by name, code, or category, then enter the quantity needed."
+msgstr ""
+"Recherchez par nom, code ou catégorie, puis entrez la quantité nécessaire."
+
+#: .\templates\requests_app\create_request.html:178
+msgid "Add Material"
+msgstr "Ajouter un matériel"
+
+#: .\templates\requests_app\create_request.html:191
+#: .\templates\requests_app\create_request.html:225
+#: .\templates\requests_app\create_request.html:301
+#: .\templates\requests_app\edit_request.html:254
+msgid "Remove"
+msgstr "Retirer"
+
+#: .\templates\requests_app\create_request.html:201
+#: .\templates\requests_app\create_request.html:286
+msgid "Search material by name, code, or category..."
+msgstr "Rechercher un matériel par nom, code ou catégorie..."
+
+#: .\templates\requests_app\create_request.html:244
+#: .\templates\requests_app\edit_request.html:329
+msgid "Description / Reason"
+msgstr "Description / Motif"
+
+#: .\templates\requests_app\create_request.html:246
+msgid "Explain why this request is needed."
+msgstr "Expliquez pourquoi cette demande est nécessaire."
+
+#: .\templates\requests_app\create_request.html:254
+#: .\templates\requests_app\edit_request.html:341
+#: .\templates\requests_app\request_detail.html:72
+msgid "Amount"
+msgstr "Montant"
+
+#: .\templates\requests_app\create_request.html:271
+#: .\templates\requests_app\request_detail.html:259
+msgid "Attachments"
+msgstr "Pièces jointes"
+
+#: .\templates\requests_app\create_request.html:276
+msgid "Submit Request"
+msgstr "Soumettre la demande"
+
+#: .\templates\requests_app\edit_request.html:4
+#: .\templates\requests_app\edit_request.html:12
+msgid "Edit Returned Request"
+msgstr "Modifier la demande retournée"
+
+#: .\templates\requests_app\edit_request.html:15
+msgid "Correct the request and resubmit it for approval."
+msgstr "Corrigez la demande et soumettez-la à nouveau pour approbation."
+
+#: .\templates\requests_app\edit_request.html:25
+msgid "Request Number:"
+msgstr "Numéro de demande :"
+
+#: .\templates\requests_app\edit_request.html:363
+msgid "Add More Attachments"
+msgstr "Ajouter d’autres pièces jointes"
+
+#: .\templates\requests_app\edit_request.html:375
+msgid "Save and Resubmit"
+msgstr "Enregistrer et soumettre à nouveau"
+
+#: .\templates\requests_app\material_reports.html:10
+msgid "Approved material requests for stock management."
+msgstr "Demandes de matériel approuvées pour la gestion du stock."
+
+#: .\templates\requests_app\material_reports.html:17
+#: .\templates\requests_app\pending_approvals.html:22
+msgid "Search"
+msgstr "Recherche"
+
+#: .\templates\requests_app\material_reports.html:18
+msgid "Request number, requester, material..."
+msgstr "Numéro de demande, demandeur, matériel..."
+
+#: .\templates\requests_app\material_reports.html:22
+#: .\templates\requests_app\pending_approvals.html:33
+msgid "Date From"
+msgstr "Date de début"
+
+#: .\templates\requests_app\material_reports.html:27
+#: .\templates\requests_app\pending_approvals.html:43
+msgid "Date To"
+msgstr "Date de fin"
+
+#: .\templates\requests_app\material_reports.html:34
+msgid "All Departments"
+msgstr "Tous les départements"
+
+#: .\templates\requests_app\material_reports.html:48
+#: .\templates\requests_app\pending_approvals.html:84
+msgid "Filter"
+msgstr "Filtrer"
+
+#: .\templates\requests_app\material_reports.html:51
+msgid "Export CSV"
+msgstr "Exporter CSV"
+
+#: .\templates\requests_app\material_reports.html:55
+#: .\templates\requests_app\pending_approvals.html:88
+msgid "Clear"
+msgstr "Effacer"
+
+#: .\templates\requests_app\material_reports.html:64
+msgid "Print Selected"
+msgstr "Imprimer la sélection"
+
+#: .\templates\requests_app\material_reports.html:78
+#: .\templates\requests_app\pending_approvals.html:107
+#: .\templates\requests_app\request_detail.html:411
+msgid "Action"
+msgstr "Action"
+
+#: .\templates\requests_app\material_reports.html:107
+msgid "LOW STOCK"
+msgstr "STOCK FAIBLE"
+
+#: .\templates\requests_app\material_reports.html:109
+msgid "RUNNING LOW"
+msgstr "STOCK EN BAISSE"
+
+#: .\templates\requests_app\material_reports.html:121
+msgid "Print"
+msgstr "Imprimer"
+
+#: .\templates\requests_app\material_reports.html:127
+msgid "No approved material requests found."
+msgstr "Aucune demande de matériel approuvée trouvée."
+
+#: .\templates\requests_app\my_requests.html:10
+msgid "Track the status of all requests you have submitted."
+msgstr "Suivez le statut de toutes les demandes que vous avez soumises."
+
+#: .\templates\requests_app\my_requests.html:23
+msgid "Number"
+msgstr "Numéro"
+
+#: .\templates\requests_app\my_requests.html:24
+msgid "Title"
+msgstr "Titre"
+
+#: .\templates\requests_app\my_requests.html:25
+#: .\templates\requests_app\pending_approvals.html:103
+#: .\templates\requests_app\request_detail.html:51
+msgid "Type"
+msgstr "Type"
+
+#: .\templates\requests_app\my_requests.html:27
+msgid "Submitted"
+msgstr "Soumis"
+
+#: .\templates\requests_app\my_requests.html:67
+msgid "No requests yet."
+msgstr "Aucune demande pour le moment."
+
+#: .\templates\requests_app\pending_approvals.html:12
+msgid "Requests currently waiting for your decision."
+msgstr "Demandes actuellement en attente de votre décision."
+
+#: .\templates\requests_app\pending_approvals.html:28
+msgid "Search by request number or requester..."
+msgstr "Rechercher par numéro de demande ou demandeur..."
+
+#: .\templates\requests_app\pending_approvals.html:58
+msgid "All Types"
+msgstr "Tous les types"
+
+#: .\templates\requests_app\pending_approvals.html:104
+#: .\templates\requests_app\request_detail.html:61
+msgid "Submitted By"
+msgstr "Soumis par"
+
+#: .\templates\requests_app\pending_approvals.html:144
+msgid "Overdue"
+msgstr "En retard"
+
+#: .\templates\requests_app\pending_approvals.html:150
+msgid "Due Today"
+msgstr "À traiter aujourd’hui"
+
+#: .\templates\requests_app\pending_approvals.html:156
+msgid "Upcoming"
+msgstr "À venir"
+
+#: .\templates\requests_app\pending_approvals.html:196
+msgid "No pending approvals."
+msgstr "Aucune approbation en attente."
+
+#: .\templates\requests_app\permission_document.html:141
+msgid "Print / Save PDF"
+msgstr "Imprimer / Enregistrer en PDF"
+
+#: .\templates\requests_app\permission_document.html:149
+msgid "Internal Approval System"
+msgstr "Système d’approbation interne"
+
+#: .\templates\requests_app\permission_document.html:165
+msgid "Leave Permission"
+msgstr "Autorisation de sortie"
+
+#: .\templates\requests_app\permission_document.html:168
+msgid "Exit authorization by foot"
+msgstr "Autorisation de sortie à pied"
+
+#: .\templates\requests_app\permission_document.html:170
+msgid "Exit authorization by vehicle"
+msgstr "Autorisation de sortie en véhicule"
+
+#: .\templates\requests_app\permission_document.html:172
+msgid "Approved internal permission"
+msgstr "Autorisation interne approuvée"
+
+#: .\templates\requests_app\permission_document.html:175
+msgid "Site Authorization"
+msgstr "Autorisation d’accès au site"
+
+#: .\templates\requests_app\permission_document.html:176
+msgid "Approved site access authorization"
+msgstr "Autorisation d’accès au site approuvée"
+
+#: .\templates\requests_app\permission_document.html:179
+msgid "Approved internal permission request"
+msgstr "Demande d’autorisation interne approuvée"
+
+#: .\templates\requests_app\permission_document.html:200
+msgid "Leave Permission Details"
+msgstr "Détails de l’autorisation de sortie"
+
+#: .\templates\requests_app\permission_document.html:204
+#: .\templates\requests_app\request_detail.html:106
+msgid "Permission Type"
+msgstr "Type d’autorisation"
+
+#: .\templates\requests_app\permission_document.html:207
+msgid "By Foot"
+msgstr "À pied"
+
+#: .\templates\requests_app\permission_document.html:209
+msgid "By Car"
+msgstr "En voiture"
+
+#: .\templates\requests_app\permission_document.html:220
+#: .\templates\requests_app\request_detail.html:120
+msgid "Departure Time"
+msgstr "Heure de départ"
+
+#: .\templates\requests_app\permission_document.html:224
+#: .\templates\requests_app\request_detail.html:127
+msgid "Return Time"
+msgstr "Heure de retour"
+
+#: .\templates\requests_app\permission_document.html:227
+#: .\templates\requests_app\request_detail.html:134
+msgid "Arrival Time"
+msgstr "Heure d’arrivée"
+
+#: .\templates\requests_app\permission_document.html:230
+msgid "Return / Arrival"
+msgstr "Retour / Arrivée"
+
+#: .\templates\requests_app\permission_document.html:237
+#: .\templates\requests_app\request_detail.html:141
+msgid "Driver Name"
+msgstr "Nom du chauffeur"
+
+#: .\templates\requests_app\permission_document.html:245
+msgid "Site Authorization Details"
+msgstr "Détails de l’autorisation d’accès au site"
+
+#: .\templates\requests_app\permission_document.html:249
+#: .\templates\requests_app\request_detail.html:148
+msgid "Site"
+msgstr "Site"
+
+#: .\templates\requests_app\permission_document.html:253
+#: .\templates\requests_app\request_detail.html:155
+msgid "Valid From"
+msgstr "Valide à partir du"
+
+#: .\templates\requests_app\permission_document.html:255
+#: .\templates\requests_app\request_detail.html:162
+msgid "Valid To"
+msgstr "Valide jusqu’au"
+
+#: .\templates\requests_app\permission_document.html:259
+#: .\templates\requests_app\request_detail.html:169
+msgid "Microcom Agents"
+msgstr "Agents Microcom"
+
+#: .\templates\requests_app\permission_document.html:263
+#: .\templates\requests_app\request_detail.html:176
+msgid "TT"
+msgstr "TT"
+
+#: .\templates\requests_app\permission_document.html:267
+#: .\templates\requests_app\request_detail.html:183
+msgid "External Persons"
+msgstr "Personnes externes"
+
+#: .\templates\requests_app\permission_document.html:273
+msgid "Reason / Observation"
+msgstr "Motif / Observation"
+
+#: .\templates\requests_app\request_detail.html:4
+#: .\templates\requests_app\request_detail.html:9
+msgid "Request Detail"
+msgstr "Détail de la demande"
+
+#: .\templates\requests_app\request_detail.html:10
+msgid "Full request information and approval history."
+msgstr "Informations complètes de la demande et historique des approbations."
+
+#: .\templates\requests_app\request_detail.html:33
+msgid "Edit and Resubmit"
+msgstr "Modifier et soumettre à nouveau"
+
+#: .\templates\requests_app\request_detail.html:94
+msgid "Permission Details"
+msgstr "Détails de l’autorisation"
+
+#: .\templates\requests_app\request_detail.html:100
+msgid "Permission Group"
+msgstr "Groupe d’autorisation"
+
+#: .\templates\requests_app\request_detail.html:208
+msgid "Note"
+msgstr "Note"
+
+#: .\templates\requests_app\request_detail.html:244
+msgid "No materials added."
+msgstr "Aucun matériel ajouté."
+
+#: .\templates\requests_app\request_detail.html:268
+msgid "File Name"
+msgstr "Nom du fichier"
+
+#: .\templates\requests_app\request_detail.html:269
+msgid "Uploaded By"
+msgstr "Téléversé par"
+
+#: .\templates\requests_app\request_detail.html:270
+msgid "Uploaded At"
+msgstr "Téléversé le"
+
+#: .\templates\requests_app\request_detail.html:302
+msgid "Download"
+msgstr "Télécharger"
+
+#: .\templates\requests_app\request_detail.html:315
+msgid "No attachments uploaded."
+msgstr "Aucune pièce jointe téléversée."
+
+#: .\templates\requests_app\request_detail.html:328
+msgid "Approval Timeline"
+msgstr "Chronologie des approbations"
+
+#: .\templates\requests_app\request_detail.html:389
+msgid "No approval steps found."
+msgstr "Aucune étape d’approbation trouvée."
+
+#: .\templates\requests_app\request_detail.html:402
+msgid "Audit Log"
+msgstr "Journal d’audit"
+
+#: .\templates\requests_app\request_detail.html:412
+msgid "Performed By"
+msgstr "Effectué par"
+
+#: .\templates\requests_app\request_detail.html:414
+msgid "Date"
+msgstr "Date"
+
+#: .\templates\requests_app\request_detail.html:446
+msgid "No logs available."
+msgstr "Aucun journal disponible."
+
+#: .\templates\registration\login.html:9
+msgid "Login"
+msgstr "Connexion"
+
+#: .\templates\registration\login.html:91
+msgid "Forgot Password?"
+msgstr "Mot de passe oublié ?"
+
+#: .\templates\registration\password_reset.html:9
+#: .\templates\registration\password_reset.html:87
+msgid "Reset Password"
+msgstr "Réinitialiser le mot de passe"
+
+#: .\templates\registration\password_reset.html:90
+msgid "Enter your email address and we will send you a password reset link."
+msgstr "Entrez votre adresse e-mail et nous vous enverrons un lien de réinitialisation du mot de passe."
+
+#: .\templates\registration\password_reset.html:102
+msgid "Send Reset Link"
+msgstr "Envoyer le lien de réinitialisation"
+
+#: .\templates\registration\password_reset_done.html:9
+#: .\templates\registration\password_reset_done.html:47
+msgid "Password Reset Sent"
+msgstr "Réinitialisation du mot de passe envoyée"
+
+#: .\templates\registration\password_reset_done.html:50
+msgid "A password reset link has been sent. Please check your email or console output."
+msgstr "Un lien de réinitialisation du mot de passe a été envoyé. Veuillez vérifier votre e-mail ou la console."
+
+
+#: .\templates\registration\password_reset_confirm.html:9
+#: .\templates\registration\password_reset_confirm.html:88
+msgid "Set New Password"
+msgstr "Définir un nouveau mot de passe"
+
+#: .\templates\registration\password_reset_confirm.html:91
+msgid "Enter your new password below."
+msgstr "Entrez votre nouveau mot de passe ci-dessous."
+
+#: .\templates\registration\password_reset_confirm.html:108
+msgid "Set Password"
+msgstr "Définir le mot de passe"
+
+#: .\templates\registration\password_reset.html:106
+#: .\templates\registration\password_reset_done.html:54
+#: .\templates\registration\password_reset_confirm.html:112
+#: .\templates\registration\password_reset_complete.html:63
+msgid "Back to Login"
+msgstr "Retour à la connexion"
+
+#: .\templates\registration\password_reset_confirm.html:91
+msgid "Enter your new password twice to confirm it. Make sure both passwords match before submitting."
+msgstr "Entrez votre nouveau mot de passe deux fois pour le confirmer. Assurez-vous que les deux mots de passe correspondent avant de soumettre."
+
+#: .\templates\registration\password_reset_confirm.html:97
+msgid "New Password"
+msgstr "Nouveau mot de passe"
+
+#: .\templates\registration\password_reset_confirm.html:107
+msgid "Confirm New Password"
+msgstr "Confirmer le nouveau mot de passe"
+
+#: .\templates\registration\password_reset_complete.html:8
+#: .\templates\registration\password_reset_complete.html:56
+msgid "Password Set"
+msgstr "Mot de passe défini"
+
+#: .\templates\registration\password_reset_complete.html:59
+msgid "Your password has been set successfully. You can now log in."
+msgstr "Votre mot de passe a été défini avec succès. Vous pouvez maintenant vous connecter."
+
+msgid "Email address"
+msgstr "Adresse e-mail"
+
+msgid "No active account exists with this email address."
+msgstr "Aucun compte actif n’existe avec cette adresse e-mail."
