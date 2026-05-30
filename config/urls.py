@@ -84,6 +84,11 @@ urlpatterns = [
         auth_views.PasswordResetView.as_view(
             template_name="auth/password_reset.html",
             form_class=CustomPasswordResetForm,
+            extra_email_context={
+                "domain": "192.168.88.140",
+                "protocol": "http",
+                "site_name": "Microcom Approval System",
+            },
         ),
         name="password_reset",
     ),
