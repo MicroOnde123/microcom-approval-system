@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 from django.db import models
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
 
 from .forms import RequestForm, RequestMaterialItemFormSet
@@ -17,6 +17,7 @@ from .approval_forms import ApprovalActionForm
 from .models import Request, RequestApproval, RequestAttachment
 from .services import submit_request, approve_step, reject_step, return_step, resubmit_request
 from django.utils.translation import gettext as _
+
 
 
 MATERIAL_FORMSET_PREFIX = "material_items"
@@ -478,7 +479,7 @@ def material_reports(request):
     requests = Request.objects.filter(
         status="APPROVED",
         material_items__isnull=False,
-        metadata_json__permission_group__isnull=True,
+       
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
@@ -541,7 +542,7 @@ def export_material_report_csv(request):
     requests = Request.objects.filter(
         status="APPROVED",
         material_items__isnull=False,
-        metadata_json__permission_group__isnull=True,
+        
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
@@ -639,7 +640,7 @@ def bulk_print_material_documents(request):
         id__in=selected_ids,
         status="APPROVED",
         material_items__isnull=False,
-        metadata_json__permission_group__isnull=True,
+        
     ).distinct().prefetch_related(
         "material_items__material",
         "approvals__approver_user",
@@ -653,3 +654,21 @@ def bulk_print_material_documents(request):
         "requests_app/bulk_print_material_documents.html",
         {"requests": requests},
     )
+
+@login_required
+def notification_count(request):
+    pending_count = RequestApproval.objects.filter(
+        approver_user=request.user,
+        status="PENDING",
+        request__current_step_order=models.F("step_order"),
+    ).count()
+
+    returned_count = Request.objects.filter(
+        submitted_by=request.user,
+        status="RETURNED",
+    ).count()
+
+    return JsonResponse({
+        "pending": pending_count,
+        "returned": returned_count,
+    })

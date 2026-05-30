@@ -340,20 +340,16 @@
 
             <a href="{% url 'my_requests' %}">
                 {% trans "My Requests" %}
-                {% if returned_requests_count > 0 %}
-                <span class="nav-badge">
+                <span class="nav-badge" id="returned-request-count">
                     {{ returned_requests_count }}
                 </span>
-                {% endif %}
             </a>
 
             <a href="{% url 'pending_approvals' %}">
                 {% trans "Approvals" %}
-                {% if pending_approval_count > 0 %}
-                <span class="nav-badge">
+                <span class="nav-badge" id="pending-approval-count">
                     {{ pending_approval_count }}
                 </span>
-                {% endif %}
             </a>
 
             <a href="{% url 'approval_history' %}">{% trans "Approval History" %}</a>
@@ -398,6 +394,27 @@
             {% block content %}{% endblock %}
         </div>
     </div>
+    <script>
+        setInterval(function () {
+            fetch("{% url 'notification_count' %}")
+                .then(response => response.json())
+                .then(data => {
+                    const pendingBadge = document.getElementById("pending-approval-count");
+                    const returnedBadge = document.getElementById("returned-request-count");
+
+                    if (pendingBadge) {
+                        pendingBadge.textContent = data.pending;
+                        pendingBadge.style.display = data.pending > 0 ? "inline-block" : "none";
+                    }
+
+                    if (returnedBadge) {
+                        returnedBadge.textContent = data.returned;
+                        returnedBadge.style.display = data.returned > 0 ? "inline-block" : "none";
+                    }
+                })
+                .catch(error => console.error("Notification count error:", error));
+        }, 30000);
+    </script>
 </body>
 
 </html>

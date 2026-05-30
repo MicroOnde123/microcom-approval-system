@@ -19,6 +19,7 @@ from requests_app.views import (
     material_reports,
     bulk_print_material_documents,
     export_material_report_csv,
+    notification_count,
 )
 
 urlpatterns = [
@@ -40,6 +41,7 @@ urlpatterns = [
     path("requests/create/", create_request, name="create_request"),
     path("requests/<int:request_id>/", request_detail, name="request_detail"),
     path("requests/<int:request_id>/edit/", edit_request, name="edit_request"),
+    
 
     # APPROVALS
     path("approvals/pending/", pending_approvals, name="pending_approvals"),
@@ -76,6 +78,12 @@ urlpatterns = [
         "materials/reports/export-csv/",
         export_material_report_csv,
         name="export_material_report_csv",
+    ),
+
+    path(
+        "notifications/count/",
+        notification_count,
+        name="notification_count",
     ),
 
     # PASSWORD RESET
