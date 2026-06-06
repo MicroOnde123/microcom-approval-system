@@ -478,7 +478,7 @@ def material_reports(request):
     requests = Request.objects.filter(
         status="APPROVED",
         material_items__isnull=False,
-        metadata_json__permission_group__isnull=True,
+        
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
@@ -541,7 +541,7 @@ def export_material_report_csv(request):
     requests = Request.objects.filter(
         status="APPROVED",
         material_items__isnull=False,
-        metadata_json__permission_group__isnull=True,
+       
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
@@ -639,7 +639,7 @@ def bulk_print_material_documents(request):
         id__in=selected_ids,
         status="APPROVED",
         material_items__isnull=False,
-        metadata_json__permission_group__isnull=True,
+        
     ).distinct().prefetch_related(
         "material_items__material",
         "approvals__approver_user",
