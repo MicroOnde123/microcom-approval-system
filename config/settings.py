@@ -193,8 +193,6 @@ DEFAULT_FROM_EMAIL = config(
     default="alert@microcom-rdc.net",
 )
 
->>>>>>> origin/feature-stock-return
-
 SESSION_COOKIE_AGE = 900
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
