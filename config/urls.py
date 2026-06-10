@@ -19,7 +19,7 @@ from requests_app.views import (
     material_reports,
     bulk_print_material_documents,
     export_material_report_csv,
-    notification_count,
+    notification_count, return_material_to_stock,
 )
 
 urlpatterns = [
@@ -84,6 +84,11 @@ urlpatterns = [
         "notifications/count/",
         notification_count,
         name="notification_count",
+    ),
+    path(
+        "materials/return/<int:item_id>/",
+        return_material_to_stock,
+        name="return_material_to_stock",
     ),
 
     # PASSWORD RESET

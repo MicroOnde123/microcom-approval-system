@@ -1,3 +1,5 @@
+from urllib import request
+
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
@@ -76,6 +78,7 @@ def create_approval_steps(request, workflow):
             workflow_step=step,
             step_order=step.step_order,
             approver_user=approver,
+            alternate_approver_user=step.alternate_approver_user,
         )
 
         approvals.append(approval)
@@ -95,11 +98,20 @@ def submit_request(request):
     approvals = create_approval_steps(request, workflow)
 
     first_step = approvals[0] if approvals else None
-    if first_step and first_step.approver_user and first_step.approver_user.email:
+    
+    if first_step:
+        recipients = []
+
+        if first_step.approver_user and first_step.approver_user.email:
+            recipients.append(first_step.approver_user.email)
+
+        if first_step.alternate_approver_user and first_step.alternate_approver_user.email:
+            recipients.append(first_step.alternate_approver_user.email)
+
         send_notification_email(
             subject="New Request Awaiting Your Approval",
             message=f"Request {request.request_number} requires your approval.",
-            recipients=[first_step.approver_user.email],
+            recipients=recipients,
         )
 
     log_action(request, "SUBMITTED", request.submitted_by)
@@ -146,10 +158,14 @@ def deduct_material_stock(request, user=None):
 
 @transaction.atomic
 def approve_step(approval, user, comment=""):
+    approval = RequestApproval.objects.select_for_update().select_related(
+        "request",
+    ).get(pk=approval.pk)
+
     if approval.status != "PENDING":
         raise ValidationError("This step has already been acted upon.")
 
-    if approval.approver_user != user:
+    if user.id not in [approval.approver_user_id, approval.alternate_approver_user_id]:
         raise ValidationError("You are not allowed to approve this step.")
 
     request = approval.request
@@ -163,6 +179,7 @@ def approve_step(approval, user, comment=""):
     approval.status = "APPROVED"
     approval.comment = comment
     approval.acted_at = timezone.now()
+    approval.acted_by = user
     approval.save()
 
     log_action(request, "APPROVED_STEP", user, comment)
@@ -177,13 +194,19 @@ def approve_step(approval, user, comment=""):
         request.status = "IN_REVIEW"
         request.save()
 
-        if next_step.approver_user and next_step.approver_user.email:
-            send_notification_email(
-                subject="Request Awaiting Your Approval",
-                message=f"Request {request.request_number} is now awaiting your approval.",
-                recipients=[next_step.approver_user.email],
-            )
+        recipients = []
 
+        if next_step.approver_user and next_step.approver_user.email:
+            recipients.append(next_step.approver_user.email)
+
+        if next_step.alternate_approver_user and next_step.alternate_approver_user.email:
+            recipients.append(next_step.alternate_approver_user.email)
+
+        send_notification_email(
+            subject="Request Awaiting Your Approval",
+            message=f"Request {request.request_number} is now awaiting your approval.",
+            recipients=recipients,
+        )
         return
 
     deduct_material_stock(request)
@@ -205,10 +228,14 @@ def approve_step(approval, user, comment=""):
 
 @transaction.atomic
 def reject_step(approval, user, comment=""):
+    approval = RequestApproval.objects.select_for_update().select_related(
+        "request",
+    ).get(pk=approval.pk)
+
     if approval.status != "PENDING":
         raise ValidationError("This step has already been acted upon.")
 
-    if approval.approver_user != user:
+    if user.id not in [approval.approver_user_id, approval.alternate_approver_user_id]:
         raise ValidationError("You are not allowed to reject this step.")
 
     request = approval.request
@@ -222,6 +249,7 @@ def reject_step(approval, user, comment=""):
     approval.status = "REJECTED"
     approval.comment = comment
     approval.acted_at = timezone.now()
+    approval.acted_by = user
     approval.save()
 
     request.status = "REJECTED"
@@ -241,10 +269,14 @@ def reject_step(approval, user, comment=""):
 
 @transaction.atomic
 def return_step(approval, user, comment=""):
+    approval = RequestApproval.objects.select_for_update().select_related(
+        "request",
+    ).get(pk=approval.pk)
+
     if approval.status != "PENDING":
         raise ValidationError("This step has already been acted upon.")
 
-    if approval.approver_user != user:
+    if user.id not in [approval.approver_user_id, approval.alternate_approver_user_id]:
         raise ValidationError("You are not allowed to return this step.")
 
     request = approval.request
@@ -258,6 +290,7 @@ def return_step(approval, user, comment=""):
     approval.status = "RETURNED"
     approval.comment = comment
     approval.acted_at = timezone.now()
+    approval.acted_by = user
     approval.save()
 
     request.status = "RETURNED"

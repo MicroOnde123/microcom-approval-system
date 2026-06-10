@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from .models import Request, RequestMaterialItem
 from inventory.models import Material
@@ -9,65 +10,65 @@ from inventory.models import Material
 class RequestForm(forms.ModelForm):
     permission_group = forms.ChoiceField(
         required=False,
-        label="Permission Group",
+        label=_("Permission Group"),
         choices=[
             ("", "---------"),
-            ("LEAVE_PERMISSION", "Leave Permission"),
-            ("SITE_AUTHORIZATION", "Site Authorization"),
+            ("LEAVE_PERMISSION", _("Leave Permission")),
+            ("SITE_AUTHORIZATION", _("Site Authorization")),
         ],
     )
 
     permission_subgroup = forms.ChoiceField(
         required=False,
-        label="Permission Type",
+        label=_("Permission Type"),
         choices=[
             ("", "---------"),
-            ("BY_FOOT", "By Foot"),
-            ("BY_CAR", "By Car"),
+            ("BY_FOOT", _("By Foot")),
+            ("BY_CAR", _("By Car")),
         ],
     )
 
-    destination = forms.CharField(required=False, label="Destination")
+    destination = forms.CharField(required=False, label=_("Destination"))
     exit_reason = forms.CharField(
         required=False,
-        label="Reason / Motif",
+        label=_("Reason / Motif"),
         widget=forms.Textarea(attrs={"rows": 3}),
     )
 
     departure_time = forms.TimeField(
         required=False,
-        label="Departure Time",
+        label=_("Departure Time"),
         widget=forms.TimeInput(attrs={"type": "time"}),
     )
 
     return_time = forms.TimeField(
         required=False,
-        label="Return Time",
+        label=_("Return Time"),
         widget=forms.TimeInput(attrs={"type": "time"}),
     )
 
     arrival_time = forms.TimeField(
         required=False,
-        label="Arrival Time",
+        label=_("Arrival Time"),
         widget=forms.TimeInput(attrs={"type": "time"}),
     )
 
-    driver_name = forms.CharField(required=False, label="Driver Name")
+    driver_name = forms.CharField(required=False, label=_("Driver Name"))
 
-    site = forms.CharField(required=False, label="Site")
+    site = forms.CharField(required=False, label=_("Site"))
     valid_from = forms.DateField(
         required=False,
-        label="Valid From",
+        label=_("Valid From"),
         widget=forms.DateInput(attrs={"type": "date"}),
     )
     valid_to = forms.DateField(
         required=False,
-        label="Valid To",
+        label=_("Valid To"),
         widget=forms.DateInput(attrs={"type": "date"}),
     )
-    microcom_agents = forms.CharField(required=False, label="Microcom Agents")
-    tt = forms.CharField(required=False, label="TT")
-    external_persons = forms.CharField(required=False, label="External Persons")
+    microcom_agents = forms.CharField(required=False, label=_("Microcom Agents"))
+    tt = forms.CharField(required=False, label=_("TT"))
+    external_persons = forms.CharField(required=False, label=_("External Persons"))
 
     class Meta:
         model = Request
@@ -81,7 +82,7 @@ class RequestForm(forms.ModelForm):
             "date_needed": forms.DateInput(attrs={"type": "date"}),
         }
         help_texts = {
-            "description": "Explain why this request is needed.",
+            "description": _("Explain why this request is needed."),
         }
 
     def __init__(self, *args, **kwargs):
@@ -122,16 +123,9 @@ class RequestForm(forms.ModelForm):
             return cleaned_data
 
         if request_type.requires_amount and not amount:
-            self.add_error("amount", "Amount is required for this type of request.")
+            self.add_error("amount", _("Amount is required for this type of request."))
 
-        request_type_name = request_type.name.lower()
-
-        is_general_permission = (
-            "general" in request_type_name
-            or "permission" in request_type_name
-        )
-
-        if is_general_permission:
+        if request_type.is_permission_request:
             permission_group = cleaned_data.get("permission_group")
             permission_subgroup = cleaned_data.get("permission_subgroup")
             exit_reason = cleaned_data.get("exit_reason")
@@ -140,11 +134,11 @@ class RequestForm(forms.ModelForm):
                 cleaned_data["description"] = exit_reason
 
             if not permission_group:
-                self.add_error("permission_group", "Permission group is required.")
+                self.add_error("permission_group", _("Permission group is required."))
 
             if permission_group == "LEAVE_PERMISSION":
                 if not permission_subgroup:
-                    self.add_error("permission_subgroup", "Permission type is required.")
+                    self.add_error("permission_subgroup", _("Permission type is required."))
 
                 required_fields = ["destination", "exit_reason", "departure_time"]
 
@@ -156,7 +150,7 @@ class RequestForm(forms.ModelForm):
 
                 for field in required_fields:
                     if not cleaned_data.get(field):
-                        self.add_error(field, "This field is required.")
+                        self.add_error(field, _("This field is required."))
 
             if permission_group == "SITE_AUTHORIZATION":
                 required_fields = [
@@ -169,11 +163,11 @@ class RequestForm(forms.ModelForm):
 
                 for field in required_fields:
                     if not cleaned_data.get(field):
-                        self.add_error(field, "This field is required.")
+                        self.add_error(field, _("This field is required."))
 
         else:
             if not cleaned_data.get("description"):
-                self.add_error("description", "Description is required.")
+                self.add_error("description", _("Description is required."))
 
         return cleaned_data
 
@@ -182,7 +176,7 @@ class RequestMaterialItemForm(forms.ModelForm):
     material = forms.ModelChoiceField(
         queryset=Material.objects.filter(is_active=True).select_related("category"),
         required=True,
-        label="Material",
+        label=_("Material"),
     )
 
     class Meta:
@@ -207,7 +201,8 @@ class RequestMaterialItemForm(forms.ModelForm):
         if material and quantity:
             if quantity > material.stock_quantity:
                 raise forms.ValidationError(
-                    f"Only {material.stock_quantity} {material.unit} available in stock."
+                    _("Only %(quantity)s %(unit)s available in stock.")
+                    % {"quantity": material.stock_quantity, "unit": material.unit}
                 )
 
         return cleaned_data

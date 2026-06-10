@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Return to Stock" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{% trans "Return to Stock" %}</h1>
+        <p class="muted">
+            {% trans "Return undelivered or unused material back into stock." %}
+        </p>
+    </div>
+
+    <a href="{% url 'material_reports' %}" class="btn btn-secondary">
+        {% trans "Back to Material Reports" %}
+    </a>
+</div>
+
+<div class="detail-grid">
+    <div class="detail-item">
+        <strong>{% trans "Request Number" %}</strong>
+        {{ request_obj.request_number }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Material" %}</strong>
+        {{ material.name }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Requested Quantity" %}</strong>
+        {{ item.quantity }} {{ material.unit }}
+    </div>
+
+    <div class="detail-item">
+        <strong>{% trans "Current Stock" %}</strong>
+        {{ material.stock_quantity }} {{ material.unit }}
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn">
+        {% trans "Return to Stock" %}
+    </button>
+</form>
+{% endblock %}

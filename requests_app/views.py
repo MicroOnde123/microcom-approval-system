@@ -14,7 +14,8 @@ from django.utils import timezone
 
 from .forms import RequestForm, RequestMaterialItemFormSet
 from .approval_forms import ApprovalActionForm
-from .models import Request, RequestApproval, RequestAttachment
+from .stock_forms import ReturnToStockForm
+from .models import Request, RequestApproval, RequestAttachment, RequestMaterialItem, StockMovement, RequestAuditLog
 from .services import submit_request, approve_step, reject_step, return_step, resubmit_request
 from django.utils.translation import gettext as _
 
@@ -25,6 +26,20 @@ MATERIAL_FORMSET_PREFIX = "material_items"
 
 def requires_materials(req):
     return req.request_type and req.request_type.requires_materials
+
+
+def request_type_behavior_context(form):
+    request_type_field = form.fields["request_type"]
+    queryset = request_type_field.queryset
+
+    return {
+        str(request_type.id): {
+            "is_permission_request": request_type.is_permission_request,
+            "requires_materials": request_type.requires_materials,
+            "requires_amount": request_type.requires_amount,
+        }
+        for request_type in queryset
+    }
 
 
 def save_attachments(request, req):
@@ -105,7 +120,11 @@ def create_request(request):
                     return render(
                         request,
                         "requests_app/create_request.html",
-                        {"form": form, "formset": formset},
+                        {
+                            "form": form,
+                            "formset": formset,
+                            "request_type_behavior": request_type_behavior_context(form),
+                        },
                     )
 
                 items = formset.save(commit=False)
@@ -115,7 +134,11 @@ def create_request(request):
                     return render(
                         request,
                         "requests_app/create_request.html",
-                        {"form": form, "formset": formset},
+                        {
+                            "form": form,
+                            "formset": formset,
+                            "request_type_behavior": request_type_behavior_context(form),
+                        },
                     )
 
             req.save()
@@ -138,7 +161,11 @@ def create_request(request):
                 return render(
                     request,
                     "requests_app/create_request.html",
-                    {"form": form, "formset": formset},
+                    {
+                        "form": form,
+                        "formset": formset,
+                        "request_type_behavior": request_type_behavior_context(form),
+                    },
                 )
 
             messages.success(request, "Request submitted successfully.")
@@ -151,7 +178,11 @@ def create_request(request):
     return render(
         request,
         "requests_app/create_request.html",
-        {"form": form, "formset": formset},
+        {
+            "form": form,
+            "formset": formset,
+            "request_type_behavior": request_type_behavior_context(form),
+        },
     )
 
 def is_stock_manager(user):
@@ -170,7 +201,8 @@ def my_requests(request):
 @login_required
 def pending_approvals(request):
     approvals = RequestApproval.objects.filter(
-        approver_user=request.user,
+        models.Q(approver_user=request.user)
+        | models.Q(alternate_approver_user=request.user),
         status="PENDING",
         request__current_step_order=models.F("step_order"),
     ).select_related(
@@ -224,13 +256,22 @@ def pending_approvals(request):
 @login_required
 def approval_detail(request, approval_id):
     approval = get_object_or_404(
-        RequestApproval.objects.select_related("request", "request__request_type", "approver_user"),
+        RequestApproval.objects.select_related(
+            "request",
+            "request__request_type",
+            "approver_user",
+            "alternate_approver_user",
+        ).filter(
+            models.Q(approver_user=request.user)
+            | models.Q(alternate_approver_user=request.user)
+        ),
         id=approval_id,
-        approver_user=request.user,
-        status="PENDING",
     )
 
-    if approval.request.current_step_order != approval.step_order:
+    if request.method != "POST" and (
+        approval.status != "PENDING"
+        or approval.request.current_step_order != approval.step_order
+    ):
         messages.error(request, "This approval is no longer active.")
         return redirect("pending_approvals")
 
@@ -279,7 +320,10 @@ def request_detail(request, request_id):
     )
 
     is_submitter = request_obj.submitted_by == request.user
-    is_approver = request_obj.approvals.filter(approver_user=request.user).exists()
+    is_approver = request_obj.approvals.filter(
+        models.Q(approver_user=request.user)
+        | models.Q(alternate_approver_user=request.user)
+    ).exists()
     is_stock_user = is_stock_manager(request.user) and request_obj.material_items.exists()
     
     if not is_submitter and not is_approver and not request.user.is_superuser and not is_stock_user:
@@ -318,7 +362,12 @@ def edit_request(request, request_id):
                     return render(
                         request,
                         "requests_app/edit_request.html",
-                        {"form": form, "formset": formset, "request_obj": request_obj},
+                        {
+                            "form": form,
+                            "formset": formset,
+                            "request_obj": request_obj,
+                            "request_type_behavior": request_type_behavior_context(form),
+                        },
                     )
 
                 items = formset.save(commit=False)
@@ -332,7 +381,12 @@ def edit_request(request, request_id):
                     return render(
                         request,
                         "requests_app/edit_request.html",
-                        {"form": form, "formset": formset, "request_obj": request_obj},
+                        {
+                            "form": form,
+                            "formset": formset,
+                            "request_obj": request_obj,
+                            "request_type_behavior": request_type_behavior_context(form),
+                        },
                     )
             else:
                 formset = RequestMaterialItemFormSet(
@@ -369,7 +423,12 @@ def edit_request(request, request_id):
     return render(
         request,
         "requests_app/edit_request.html",
-        {"form": form, "formset": formset, "request_obj": request_obj},
+        {
+            "form": form,
+            "formset": formset,
+            "request_obj": request_obj,
+            "request_type_behavior": request_type_behavior_context(form),
+        },
     )
 
 
@@ -385,7 +444,10 @@ def approved_document(request, request_id):
 
     allowed = (
         request.user == request_obj.submitted_by
-        or request_obj.approvals.filter(approver_user=request.user).exists()
+        or request_obj.approvals.filter(
+            models.Q(approver_user=request.user)
+            | models.Q(alternate_approver_user=request.user)
+        ).exists()
         or request.user.is_superuser
         or (
             is_stock_manager(request.user)
@@ -424,7 +486,10 @@ def permission_document(request, request_id):
 
     allowed = (
         request.user == request_obj.submitted_by
-        or request_obj.approvals.filter(approver_user=request.user).exists()
+        or request_obj.approvals.filter(
+            models.Q(approver_user=request.user)
+            | models.Q(alternate_approver_user=request.user)
+        ).exists()
         or request.user.is_superuser
     )
 
@@ -458,7 +523,8 @@ def permission_document(request, request_id):
 @login_required
 def approval_history(request):
     approvals = RequestApproval.objects.filter(
-        approver_user=request.user
+        models.Q(approver_user=request.user)
+        | models.Q(alternate_approver_user=request.user)
     ).exclude(
         status="PENDING"
     ).select_related(
@@ -542,7 +608,6 @@ def export_material_report_csv(request):
     requests = Request.objects.filter(
         status="APPROVED",
         material_items__isnull=False,
-        
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
@@ -656,9 +721,88 @@ def bulk_print_material_documents(request):
     )
 
 @login_required
+def return_material_to_stock(request, item_id):
+    if not is_stock_manager(request.user):
+        return HttpResponseForbidden(_("You are not allowed to return stock."))
+
+    item = get_object_or_404(
+        RequestMaterialItem.objects.select_related(
+            "request",
+            "material",
+        ),
+        id=item_id,
+        request__status="APPROVED",
+    )
+
+    req = item.request
+    material = item.material
+
+    if request.method == "POST":
+        form = ReturnToStockForm(request.POST)
+
+        if form.is_valid():
+            quantity = form.cleaned_data["quantity"]
+            reason = form.cleaned_data["reason"]
+
+            if quantity > item.quantity:
+                messages.error(
+                    request,
+                    _("Returned quantity cannot be greater than requested quantity."),
+                )
+                return redirect("return_material_to_stock", item_id=item.id)
+
+            material.stock_quantity += quantity
+            material.save(update_fields=["stock_quantity"])
+
+            StockMovement.objects.create(
+                material=material,
+                request=req,
+                quantity=quantity,
+                movement_type="RETURN",
+                performed_by=request.user,
+                note=_("Material returned to stock."),
+                return_reason=reason,
+            )
+
+            RequestAuditLog.objects.create(
+                request=req,
+                action="STOCK_RETURNED",
+                performed_by=request.user,
+                comment=_("Returned %(quantity)s %(unit)s of %(material)s to stock. Reason: %(reason)s")
+                % {
+                    "quantity": quantity,
+                    "unit": material.unit or "",
+                    "material": material.name,
+                    "reason": reason,
+                },
+            )
+
+            messages.success(
+                request,
+                _("Material returned to stock successfully."),
+            )
+
+            return redirect("material_reports")
+
+    else:
+        form = ReturnToStockForm()
+
+    return render(
+        request,
+        "requests_app/return_material_to_stock.html",
+        {
+            "form": form,
+            "item": item,
+            "request_obj": req,
+            "material": material,
+        },
+    )
+
+@login_required
 def notification_count(request):
     pending_count = RequestApproval.objects.filter(
-        approver_user=request.user,
+        models.Q(approver_user=request.user)
+        | models.Q(alternate_approver_user=request.user),
         status="PENDING",
         request__current_step_order=models.F("step_order"),
     ).count()

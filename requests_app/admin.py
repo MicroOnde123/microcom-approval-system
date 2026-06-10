@@ -42,11 +42,17 @@ class RequestTypeAdmin(admin.ModelAdmin):
         "name",
         "code",
         "is_active",
+        "is_permission_request",
         "requires_materials",
         "requires_amount",
     )
     search_fields = ("name", "code")
-    list_filter = ("is_active", "requires_materials", "requires_amount")
+    list_filter = (
+        "is_active",
+        "is_permission_request",
+        "requires_materials",
+        "requires_amount",
+    )
 
 
 @admin.register(Request)

@@ -15,7 +15,8 @@
     <div class="form-grid">
         <div>
             <label>{% trans "Search" %}</label>
-            <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Request number, requester, material...' %}">
+            <input type="text" name="q" value="{{ q }}"
+                placeholder="{% trans 'Request number, requester, material...' %}">
         </div>
 
         <div>
@@ -34,11 +35,11 @@
                 <option value="">{% trans "All Departments" %}</option>
 
                 {% for dept_id, dept_name in departments %}
-                    {% with dept_id_string=dept_id|stringformat:"s" %}
-                        <option value="{{ dept_id }}" {% if selected_department == dept_id_string %}selected{% endif %}>
-                            {{ dept_name }}
-                        </option>
-                    {% endwith %}
+                {% with dept_id_string=dept_id|stringformat:"s" %}
+                <option value="{{ dept_id }}" {% if selected_department == dept_id_string %}selected{% endif %}>
+                    {{ dept_name }}
+                </option>
+                {% endwith %}
                 {% endfor %}
             </select>
         </div>
@@ -47,7 +48,8 @@
     <div style="margin-top:12px;">
         <button type="submit" class="btn">{% trans "Filter" %}</button>
 
-        <a href="{% url 'export_material_report_csv' %}?q={{ q }}&date_from={{ date_from }}&date_to={{ date_to }}&department={{ selected_department }}" class="btn btn-secondary">
+        <a href="{% url 'export_material_report_csv' %}?q={{ q }}&date_from={{ date_from }}&date_to={{ date_to }}&department={{ selected_department }}"
+            class="btn btn-secondary">
             {% trans "Export CSV" %}
         </a>
 
@@ -93,32 +95,42 @@
 
                     <td>
                         {% if req.finalized_at %}
-                            {{ req.finalized_at|date:"Y-m-d H:i" }}
+                        {{ req.finalized_at|date:"Y-m-d H:i" }}
                         {% else %}
-                            -
+                        -
                         {% endif %}
                     </td>
 
                     <td>
                         {% for item in req.material_items.all %}
-                            {{ item.material.name }} — {{ item.quantity }} {{ item.material.unit }}
+                        <div style="margin-bottom: 10px;">
+                            <div>
+                                {{ item.material.name }} — {{ item.quantity }} {{ item.material.unit }}
 
-                            {% if item.material.stock_quantity <= 5 %}
-                                <span class="status-badge status-REJECTED">{% trans "LOW STOCK" %}</span>
-                            {% elif item.material.stock_quantity <= 10 %}
-                                <span class="status-badge status-RETURNED">{% trans "RUNNING LOW" %}</span>
-                            {% endif %}
+                                {% if item.material.stock_quantity <= 5 %} <span class="status-badge status-REJECTED">{%
+                                    trans "LOW STOCK" %}</span>
+                                    {% elif item.material.stock_quantity <= 10 %} <span
+                                        class="status-badge status-RETURNED">{% trans "RUNNING LOW" %}</span>
+                                        {% endif %}
+                            </div>
 
-                            <br>
+                            <div style="margin-top: 6px;">
+                                <a href="{% url 'return_material_to_stock' item.id %}" class="btn btn-secondary">
+                                    {% trans "Return to Stock" %}
+                                </a>
+                            </div>
+                        </div>
                         {% empty %}
-                            -
+                        -
                         {% endfor %}
                     </td>
 
                     <td>
                         <div class="actions-inline">
                             <a href="{% url 'request_detail' req.id %}" class="btn btn-secondary">{% trans "View" %}</a>
-                            <a href="{% url 'approved_document' req.id %}" class="btn" target="_blank">{% trans "Print" %}</a>
+                            <a href="{% url 'approved_document' req.id %}" class="btn" target="_blank">
+                                {% trans "Print" %}
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -133,17 +145,17 @@
 </form>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const selectAll = document.getElementById("select-all");
-    const checkboxes = document.querySelectorAll(".request-checkbox");
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectAll = document.getElementById("select-all");
+        const checkboxes = document.querySelectorAll(".request-checkbox");
 
-    if (selectAll) {
-        selectAll.addEventListener("change", function () {
-            checkboxes.forEach(function (checkbox) {
-                checkbox.checked = selectAll.checked;
+        if (selectAll) {
+            selectAll.addEventListener("change", function () {
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = selectAll.checked;
+                });
             });
-        });
-    }
-});
+        }
+    });
 </script>
 {% endblock %}
