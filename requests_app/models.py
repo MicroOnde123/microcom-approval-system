@@ -7,6 +7,7 @@ class RequestType(models.Model):
     code = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    is_permission_request = models.BooleanField(default=False)
     requires_materials = models.BooleanField(default=False)
     requires_amount = models.BooleanField(default=False)
 
@@ -56,6 +57,16 @@ class Request(models.Model):
     stock_deducted = models.BooleanField(
         default=False,
         help_text="Prevents deducting stock more than once for the same request.",
+    )
+
+    stock_returned = models.BooleanField(
+        default=False,
+        help_text="Indicates whether stock has been returned for this request.",
+    )
+
+    stock_returned_at = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
@@ -128,6 +139,22 @@ class RequestApproval(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
     )
+    
+    alternate_approver_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="alternate_request_approvals",
+    )
+
+    acted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="acted_request_approvals",
+    )
 
     status = models.CharField(
         max_length=20,
@@ -169,6 +196,7 @@ class StockMovement(models.Model):
     MOVEMENT_TYPES = [
         ("OUT", "Stock Out"),
         ("IN", "Stock In"),
+        ("RETURN", "Return to Stock"),
     ]
 
     material = models.ForeignKey(
@@ -185,7 +213,10 @@ class StockMovement(models.Model):
         related_name="stock_movements",
     )
 
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
 
     movement_type = models.CharField(
         max_length=10,
@@ -200,6 +231,12 @@ class StockMovement(models.Model):
     )
 
     note = models.TextField(blank=True)
+
+    return_reason = models.TextField(
+        blank=True,
+        help_text="Reason why material was returned to stock.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

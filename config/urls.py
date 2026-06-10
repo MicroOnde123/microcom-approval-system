@@ -19,6 +19,7 @@ from requests_app.views import (
     material_reports,
     bulk_print_material_documents,
     export_material_report_csv,
+    notification_count, return_material_to_stock,
 )
 
 urlpatterns = [
@@ -40,6 +41,7 @@ urlpatterns = [
     path("requests/create/", create_request, name="create_request"),
     path("requests/<int:request_id>/", request_detail, name="request_detail"),
     path("requests/<int:request_id>/edit/", edit_request, name="edit_request"),
+    
 
     # APPROVALS
     path("approvals/pending/", pending_approvals, name="pending_approvals"),
@@ -78,12 +80,28 @@ urlpatterns = [
         name="export_material_report_csv",
     ),
 
+    path(
+        "notifications/count/",
+        notification_count,
+        name="notification_count",
+    ),
+    path(
+        "materials/return/<int:item_id>/",
+        return_material_to_stock,
+        name="return_material_to_stock",
+    ),
+
     # PASSWORD RESET
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
             template_name="auth/password_reset.html",
             form_class=CustomPasswordResetForm,
+            extra_email_context={
+                "domain": "192.168.88.140",
+                "protocol": "http",
+                "site_name": "Microcom Approval System",
+            },
         ),
         name="password_reset",
     ),

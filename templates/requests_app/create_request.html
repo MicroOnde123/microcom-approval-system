@@ -491,9 +491,12 @@
     }
 </style>
 
+{{ request_type_behavior|json_script:"request-type-behavior" }}
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const noMaterialsFoundText = "{% trans 'No materials found.' %}";
+    const requestTypeBehavior = JSON.parse(document.getElementById("request-type-behavior").textContent);
 
     const addButton = document.getElementById("add-material-btn");
     const container = document.getElementById("material-items");
@@ -686,22 +689,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateFormByRequestType() {
-        const selectedText = typeSelect.options[typeSelect.selectedIndex].text.toLowerCase();
+        const selectedValue = typeSelect.value;
+        const behavior = requestTypeBehavior[selectedValue] || {};
 
         permissionSection.style.display = "none";
         materialsSection.style.display = "none";
         amountSection.style.display = "none";
         descriptionSection.style.display = "block";
 
-        if (selectedText.includes("material")) {
+        if (behavior.requires_materials) {
             materialsSection.style.display = "block";
         }
 
-        if (selectedText.includes("payment")) {
+        if (behavior.requires_amount) {
             amountSection.style.display = "block";
         }
 
-        if (selectedText.includes("general") || selectedText.includes("permission")) {
+        if (behavior.is_permission_request) {
             permissionSection.style.display = "block";
             descriptionSection.style.display = "none";
         }

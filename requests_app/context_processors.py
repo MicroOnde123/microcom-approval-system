@@ -18,7 +18,8 @@ def pending_approval_count(request):
         }
 
     pending_count = RequestApproval.objects.filter(
-        approver_user=request.user,
+        models.Q(approver_user=request.user)
+        | models.Q(alternate_approver_user=request.user),
         status="PENDING",
         request__current_step_order=models.F("step_order"),
     ).count()

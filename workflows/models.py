@@ -19,6 +19,13 @@ class ApprovalWorkflowStep(models.Model):
     step_order = models.PositiveIntegerField()
     approver_role = models.ForeignKey("accounts.Role", on_delete=models.SET_NULL, null=True, blank=True)
     approver_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    alternate_approver_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="alternate_workflow_steps",
+    )
     is_required = models.BooleanField(default=True)
 
     class Meta:

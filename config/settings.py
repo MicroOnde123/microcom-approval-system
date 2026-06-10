@@ -17,7 +17,11 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "192.168.88.140",
+]
 
 
 # APPLICATIONS
@@ -95,6 +99,7 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT'),
+        'DISABLE_SERVER_SIDE_CURSORS': True,
     }
 }
 
@@ -156,7 +161,8 @@ LOCALE_PATHS = [
 
 # STATIC FILES
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # AUTH REDIRECTS
@@ -168,12 +174,37 @@ LOGIN_URL = "/login/"
 
 # EMAIL
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL
 
-DEFAULT_FROM_EMAIL = "bookingagoda7@gmail.com"
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+
+EMAIL_HOST = config("EMAIL_HOST", default="")
+EMAIL_PORT = config("EMAIL_PORT", default=25, cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
+
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL",
+    default="alert@microcom-rdc.net",
+)
 
 SESSION_COOKIE_AGE = 900
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+# FOR LAN HTTP ACCESS
+
+CSRF_TRUSTED_ORIGINS = [
+     "http://127.0.0.1",
+    "http://localhost",
+    "http://192.168.88.140",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://192.168.88.140:8000", ]
