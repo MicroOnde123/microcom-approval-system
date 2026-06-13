@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 from django.db import models
+from django.db.models.functions import RowNumber
 from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
 
@@ -312,6 +313,7 @@ def request_detail(request, request_id):
     request_obj = get_object_or_404(
         Request.objects.prefetch_related(
             "approvals__approver_user",
+            "approvals__acted_by",
             "attachments",
             "audit_logs",
             "material_items__material__category",
@@ -438,6 +440,7 @@ def approved_document(request, request_id):
         Request.objects.prefetch_related(
             "material_items__material",
             "approvals__approver_user",
+            "approvals__acted_by",
         ),
         id=request_id,
     )
@@ -480,6 +483,7 @@ def permission_document(request, request_id):
     request_obj = get_object_or_404(
         Request.objects.prefetch_related(
             "approvals__approver_user",
+            "approvals__acted_by",
         ),
         id=request_id,
     )
@@ -523,9 +527,21 @@ def permission_document(request, request_id):
 @login_required
 def approval_history(request):
     approvals = RequestApproval.objects.filter(
-        acted_by=request.user,
+        models.Q(acted_by=request.user)
+        | models.Q(acted_by__isnull=True, approver_user=request.user),
     ).exclude(
         status="PENDING"
+    ).annotate(
+        request_action_rank=models.Window(
+            expression=RowNumber(),
+            partition_by=[models.F("request_id")],
+            order_by=[
+                models.F("acted_at").desc(nulls_last=True),
+                models.F("id").desc(),
+            ],
+        )
+    ).filter(
+        request_action_rank=1
     ).select_related(
         "request",
         "request__request_type",
@@ -551,6 +567,7 @@ def material_reports(request):
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
+        "approvals__acted_by",
     ).select_related(
         "submitted_by",
         "department",
@@ -613,6 +630,7 @@ def export_material_report_csv(request):
     ).distinct().prefetch_related(
         "material_items__material__category",
         "approvals__approver_user",
+        "approvals__acted_by",
     ).select_related(
         "submitted_by",
         "department",
@@ -665,7 +683,7 @@ def export_material_report_csv(request):
 
     for req in requests.order_by("-finalized_at", "-submitted_at"):
         approvers = ", ".join([
-            approval.approver_user.full_name or approval.approver_user.username
+            approval.display_approver_name
             for approval in req.approvals.all()
             if approval.status == "APPROVED"
         ])
@@ -711,6 +729,7 @@ def bulk_print_material_documents(request):
     ).distinct().prefetch_related(
         "material_items__material",
         "approvals__approver_user",
+        "approvals__acted_by",
     ).select_related(
         "submitted_by",
         "department",

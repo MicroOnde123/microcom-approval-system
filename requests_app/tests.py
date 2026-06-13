@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from accounts.models import Department
 from requests_app.models import Request, RequestApproval, RequestType
@@ -198,3 +199,115 @@ class AlternateApproverWorkflowTests(TestCase):
             set(mail.outbox[0].to),
             {"primary@example.com", "alternate@example.com"},
         )
+
+    def test_primary_approver_name_is_displayed_as_actor(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+
+        self.act_on_approval(self.primary, approval, "APPROVE")
+
+        self.client.force_login(self.primary)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, "Primary Approver")
+
+    def test_alternate_approver_name_is_displayed_as_actor(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+
+        self.act_on_approval(self.alternate, approval, "APPROVE")
+
+        self.client.force_login(self.alternate)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, "Alternate Approver")
+        self.assertNotContains(response, "Primary Approver")
+
+    def test_historical_approval_without_actor_falls_back_to_assigned_approver(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+        approval.status = "APPROVED"
+        approval.acted_by = None
+        approval.acted_at = timezone.now()
+        approval.save()
+        request_obj.status = "APPROVED"
+        request_obj.current_step_order = None
+        request_obj.finalized_at = timezone.now()
+        request_obj.save()
+
+        self.client.force_login(self.primary)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, "Primary Approver")
+
+    def test_historical_approval_without_actor_appears_in_assigned_approver_history(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+        approval.status = "APPROVED"
+        approval.acted_by = None
+        approval.acted_at = timezone.now()
+        approval.save()
+        request_obj.status = "APPROVED"
+        request_obj.current_step_order = None
+        request_obj.finalized_at = timezone.now()
+        request_obj.save()
+
+        self.client.force_login(self.primary)
+        response = self.client.get(
+            reverse("approval_history"),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, request_obj.request_number, count=1)
+
+    def test_pending_approvals_shows_request_once_when_user_is_primary_and_alternate(self):
+        self.workflow_step.alternate_approver_user = self.primary
+        self.workflow_step.save()
+        request_obj = self.make_submitted_request()
+
+        self.client.force_login(self.primary)
+        response = self.client.get(
+            reverse("pending_approvals"),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, request_obj.request_number, count=1)
+        self.assertEqual(self.pending_count_for(self.primary), 1)
+
+    def test_approval_history_shows_request_once_for_multi_step_workflow(self):
+        ApprovalWorkflowStep.objects.create(
+            workflow=self.workflow,
+            step_order=2,
+            approver_user=self.primary,
+            alternate_approver_user=self.alternate,
+        )
+        request_obj = self.make_submitted_request()
+
+        first_approval = RequestApproval.objects.get(
+            request=request_obj,
+            step_order=1,
+        )
+        self.act_on_approval(self.primary, first_approval, "APPROVE")
+
+        second_approval = RequestApproval.objects.get(
+            request=request_obj,
+            step_order=2,
+        )
+        self.act_on_approval(self.primary, second_approval, "APPROVE")
+
+        self.client.force_login(self.primary)
+        response = self.client.get(
+            reverse("approval_history"),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, request_obj.request_number, count=1)

@@ -23,7 +23,7 @@ class RequestApprovalInline(admin.TabularInline):
     readonly_fields = (
         "workflow_step",
         "step_order",
-        "approver_user",
+        "display_approver_name",
         "status",
         "comment",
         "acted_at",
@@ -105,7 +105,7 @@ class RequestApprovalAdmin(admin.ModelAdmin):
     list_display = (
         "request",
         "step_order",
-        "approver_user",
+        "display_approver_name",
         "status",
         "acted_at",
         "created_at",

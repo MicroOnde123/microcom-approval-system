@@ -7,6 +7,10 @@
     <title>{% trans "Permission Document" %} - {{ request_obj.request_number }}</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             padding: 30px;
@@ -27,10 +31,25 @@
             cursor: pointer;
         }
 
-        .document-box {
+        .print-sheet {
             max-width: 1000px;
             margin: 0 auto;
+        }
+
+        .half-copy {
             border: 2px solid #111827;
+            margin-bottom: 18px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .cut-line {
+            border-top: 2px dashed #111827;
+            margin: 18px 0;
+            height: 1px;
+        }
+
+        .document-box {
             padding: 24px;
         }
 
@@ -117,204 +136,126 @@
             margin-top: 8px;
         }
 
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
         @media print {
+            html,
+            body {
+                width: 194mm;
+                margin: 0;
+                padding: 0;
+            }
+
             .print-actions {
                 display: none;
             }
 
-            body {
-                padding: 0;
+            .print-sheet {
+                width: 194mm;
+                height: 281mm;
+                max-width: none;
+                margin: 0;
+            }
+
+            .half-copy {
+                height: 136mm;
+                margin: 0;
+                overflow: hidden;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .cut-line {
+                height: 9mm;
+                margin: 0;
+                border-top: 2px dashed #111827;
             }
 
             .document-box {
-                border: 2px solid #111827;
-                max-width: none;
-                margin: 0;
+                padding: 4mm;
+            }
+
+            .company-header {
+                gap: 4mm;
+                padding-bottom: 2mm;
+                margin-bottom: 2mm;
+                border-bottom-width: 1px;
+            }
+
+            .company-title {
+                font-size: 10px;
+            }
+
+            .doc-meta,
+            .subtitle,
+            .approval-note {
+                font-size: 7px;
+            }
+
+            .main-title {
+                font-size: 12px;
+                margin: 2mm 0 1mm;
+                letter-spacing: 0;
+            }
+
+            .subtitle {
+                margin: 0 0 2mm;
+            }
+
+            .section-title {
+                margin-top: 2mm;
+                margin-bottom: 1mm;
+                font-size: 8px;
+                border-left-width: 2px;
+                padding-left: 2mm;
+            }
+
+            .info-table,
+            .approval-table {
+                margin-bottom: 2mm;
+            }
+
+            .info-table th,
+            .info-table td,
+            .approval-table th,
+            .approval-table td {
+                padding: 1mm;
+                font-size: 7px;
+                line-height: 1.15;
+            }
+
+            .reason-box {
+                min-height: 9mm;
+                padding: 1.5mm;
+                margin-bottom: 2mm;
+                font-size: 7px;
+                line-height: 1.15;
+            }
+
+            .approval-note {
+                margin: 1mm 0 0;
             }
         }
     </style>
 </head>
 
 <body>
-
     <div class="print-actions">
         <button onclick="window.print()">{% trans "Print / Save PDF" %}</button>
     </div>
 
-    <div class="document-box">
-
-        <div class="company-header">
-            <div>
-                <div class="company-title">MICROCOM KINSHASA</div>
-                <div>{% trans "Internal Approval System" %}</div>
-            </div>
-
-            <div class="doc-meta">
-                <strong>{% trans "Request No:" %}</strong> {{ request_obj.request_number }}<br>
-                <strong>{% trans "Status:" %}</strong> {{ request_obj.status }}<br>
-                <strong>{% trans "Date:" %}</strong>
-                {% if request_obj.finalized_at %}
-                {{ request_obj.finalized_at|date:"Y-m-d H:i" }}
-                {% else %}
-                {{ request_obj.submitted_at|date:"Y-m-d H:i" }}
-                {% endif %}
-            </div>
+    <div class="print-sheet">
+        <div class="half-copy">
+            {% include "requests_app/partials/permission_document_copy.html" %}
         </div>
-
-        {% if metadata.permission_group == "LEAVE_PERMISSION" %}
-        <h1 class="main-title">{% trans "Leave Permission" %}</h1>
-
-        {% if metadata.permission_subgroup == "BY_FOOT" %}
-        <div class="subtitle">{% trans "Exit authorization by foot" %}</div>
-        {% elif metadata.permission_subgroup == "BY_CAR" %}
-        <div class="subtitle">{% trans "Exit authorization by vehicle" %}</div>
-        {% else %}
-        <div class="subtitle">{% trans "Approved internal permission" %}</div>
-        {% endif %}
-        {% elif metadata.permission_group == "SITE_AUTHORIZATION" %}
-        <h1 class="main-title">{% trans "Site Authorization" %}</h1>
-        <div class="subtitle">{% trans "Approved site access authorization" %}</div>
-        {% else %}
-        <h1 class="main-title">{% trans "General Permission" %}</h1>
-        <div class="subtitle">{% trans "Approved internal permission request" %}</div>
-        {% endif %}
-
-        <div class="section-title">{% trans "Requester Information" %}</div>
-
-        <table class="info-table">
-            <tr>
-                <th>{% trans "Requested By" %}</th>
-                <td>{{ request_obj.submitted_by.full_name|default:request_obj.submitted_by.username }}</td>
-                <th>{% trans "Department" %}</th>
-                <td>{{ request_obj.department }}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Submitted At" %}</th>
-                <td>{{ request_obj.submitted_at|date:"Y-m-d H:i" }}</td>
-                <th>{% trans "Date Needed" %}</th>
-                <td>{{ request_obj.date_needed }}</td>
-            </tr>
-        </table>
-
-        {% if metadata.permission_group == "LEAVE_PERMISSION" %}
-        <div class="section-title">{% trans "Leave Permission Details" %}</div>
-
-        <table class="info-table">
-            <tr>
-                <th>{% trans "Permission Type" %}</th>
-                <td colspan="3">
-                    {% if metadata.permission_subgroup == "BY_FOOT" %}
-                    {% trans "By Foot" %}
-                    {% elif metadata.permission_subgroup == "BY_CAR" %}
-                    {% trans "By Car" %}
-                    {% else %}
-                    -
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <th>{% trans "Destination" %}</th>
-                <td colspan="3">{{ metadata.destination }}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Departure Time" %}</th>
-                <td>{{ metadata.departure_time }}</td>
-
-                {% if metadata.permission_subgroup == "BY_FOOT" %}
-                <th>{% trans "Return Time" %}</th>
-                <td>{{ metadata.return_time }}</td>
-                {% elif metadata.permission_subgroup == "BY_CAR" %}
-                <th>{% trans "Arrival Time" %}</th>
-                <td>{{ metadata.arrival_time }}</td>
-                {% else %}
-                <th>{% trans "Return / Arrival" %}</th>
-                <td>-</td>
-                {% endif %}
-            </tr>
-
-            {% if metadata.permission_subgroup == "BY_CAR" %}
-            <tr>
-                <th>{% trans "Driver Name" %}</th>
-                <td colspan="3">{{ metadata.driver_name }}</td>
-            </tr>
-            {% endif %}
-        </table>
-        {% endif %}
-
-        {% if metadata.permission_group == "SITE_AUTHORIZATION" %}
-        <div class="section-title">{% trans "Site Authorization Details" %}</div>
-
-        <table class="info-table">
-            <tr>
-                <th>{% trans "Site" %}</th>
-                <td colspan="3">{{ metadata.site }}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Valid From" %}</th>
-                <td>{{ metadata.valid_from }}</td>
-                <th>{% trans "Valid To" %}</th>
-                <td>{{ metadata.valid_to }}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Microcom Agents" %}</th>
-                <td colspan="3">{{ metadata.microcom_agents }}</td>
-            </tr>
-            <tr>
-                <th>{% trans "TT" %}</th>
-                <td colspan="3">{{ metadata.tt|default:"-" }}</td>
-            </tr>
-            <tr>
-                <th>{% trans "External Persons" %}</th>
-                <td colspan="3">{{ metadata.external_persons|default:"-" }}</td>
-            </tr>
-        </table>
-        {% endif %}
-
-        <div class="section-title">{% trans "Reason / Observation" %}</div>
-
-        <div class="reason-box">
-            {{ request_obj.description }}
+        <div class="cut-line"></div>
+        <div class="half-copy">
+            {% include "requests_app/partials/permission_document_copy.html" %}
         </div>
-
-        <div class="section-title">{% trans "Approval History" %}</div>
-
-        <table class="approval-table">
-            <thead>
-                <tr>
-                    <th>{% trans "Step" %}</th>
-                    <th>{% trans "Approver" %}</th>
-                    <th>{% trans "Status" %}</th>
-                    <th>{% trans "Comment" %}</th>
-                    <th>{% trans "Approved At" %}</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for approval in approvals %}
-                <tr>
-                    <td>{{ approval.step_order }}</td>
-                    <td>{{ approval.approver_user.full_name|default:approval.approver_user.username }}</td>
-                    <td>{{ approval.status }}</td>
-                    <td>{{ approval.comment|default:"-" }}</td>
-                    <td>{{ approval.acted_at|date:"Y-m-d H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">{% trans "No approvals found." %}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <p class="approval-note">
-            ______________________________________________________
-        </p>
-        <p class="approval-note">
-            {% trans "Please print, sign and archive it for record keeping." %}
-        </p>
-
     </div>
-
 </body>
 
 </html>

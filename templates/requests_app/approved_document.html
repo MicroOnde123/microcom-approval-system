@@ -6,6 +6,10 @@
     <title>{% trans "Approved Document" %} - {{ request_obj.request_number }}</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             color: #111827;
@@ -28,11 +32,16 @@
             display: inline-block;
         }
 
-        .document {
+        .print-sheet {
             max-width: 1000px;
             margin: auto;
+        }
+
+        .document {
             border: 2px solid #111827;
             padding: 24px;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .company-header {
@@ -121,264 +130,115 @@
             margin-top: 8px;
         }
 
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
         @media print {
+            html,
+            body {
+                width: 194mm;
+                margin: 0;
+                padding: 0;
+            }
+
             .top-actions {
                 display: none;
             }
 
-            body {
-                margin: 15mm;
+            .print-sheet {
+                width: 194mm;
+                min-height: 281mm;
+                max-width: none;
+                margin: 0;
+                page-break-after: auto;
+                break-after: auto;
             }
 
             .document {
-                border: 2px solid #111827;
-                max-width: none;
+                padding: 4mm;
+                min-height: 281mm;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .company-header {
+                gap: 4mm;
+                padding-bottom: 2mm;
+                margin-bottom: 2mm;
+                border-bottom-width: 1px;
+            }
+
+            .company-title {
+                font-size: 13px;
+            }
+
+            .doc-meta,
+            .subtitle,
+            .approval-note {
+                font-size: 9px;
+            }
+
+            .main-title {
+                font-size: 15px;
+                margin: 3mm 0 2mm;
+                letter-spacing: 0;
+            }
+
+            .subtitle {
+                margin: 0 0 2mm;
+            }
+
+            .section-title {
+                margin-top: 2mm;
+                margin-bottom: 1mm;
+                font-size: 10px;
+                border-left-width: 2px;
+                padding-left: 2mm;
+            }
+
+            .info-table,
+            .approval-table,
+            .materials-table {
+                margin-bottom: 2mm;
+            }
+
+            .info-table th,
+            .info-table td,
+            .approval-table th,
+            .approval-table td,
+            .materials-table th,
+            .materials-table td {
+                padding: 1mm;
+                font-size: 9px;
+                line-height: 1.2;
+            }
+
+            .notes-box {
+                min-height: 14mm;
+                padding: 1.5mm;
+                margin-bottom: 2mm;
+                font-size: 9px;
+                line-height: 1.2;
+            }
+
+            .approval-note {
+                margin: 1mm 0 0;
             }
         }
     </style>
 </head>
 
 <body>
-
     <div class="top-actions">
-        <button class="btn" onclick="window.print()">
-            {% trans "Print / Save as PDF" %}
-        </button>
-
-        <a href="{% url 'request_detail' request_obj.id %}" class="btn">
-            {% trans "Back" %}
-        </a>
+        <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
+        <a href="{% url 'request_detail' request_obj.id %}" class="btn">{% trans "Back" %}</a>
     </div>
 
-    <div class="document">
-
-        <div class="company-header">
-
-            <div>
-                <div class="company-title">MICROCOM KINSHASA</div>
-                <div>{% trans "Technical Service" %}</div>
-            </div>
-
-            <div class="doc-meta">
-
-                <strong>{% trans "Request No:" %}</strong>
-                {{ request_obj.request_number }}
-                <br>
-
-                <strong>{% trans "Status:" %}</strong>
-                {{ request_obj.status }}
-                <br>
-
-                <strong>{% trans "Date:" %}</strong>
-
-                {% if request_obj.finalized_at %}
-                    {{ request_obj.finalized_at|date:"Y-m-d H:i" }}
-                {% else %}
-                    {{ request_obj.submitted_at|date:"Y-m-d H:i" }}
-                {% endif %}
-
-            </div>
-
-        </div>
-
-        <h1 class="main-title">
-            {% trans "Purchase Order" %}
-        </h1>
-
-        <div class="subtitle">
-            {% trans "Approved material request document" %}
-        </div>
-
-        <div class="section-title">
-            {% trans "Requester Information" %}
-        </div>
-
-        <table class="info-table">
-
-            <tr>
-
-                <th>{% trans "Requested By" %}</th>
-
-                <td>
-                    {{ request_obj.submitted_by.full_name|default:request_obj.submitted_by.username }}
-                </td>
-
-                <th>{% trans "Department" %}</th>
-
-                <td>
-                    {{ request_obj.department }}
-                </td>
-
-            </tr>
-
-            <tr>
-
-                <th>{% trans "Submitted At" %}</th>
-
-                <td>
-                    {{ request_obj.submitted_at|date:"Y-m-d H:i" }}
-                </td>
-
-                <th>{% trans "Date Needed" %}</th>
-
-                <td>
-                    {{ request_obj.date_needed }}
-                </td>
-
-            </tr>
-
-        </table>
-
-        <div class="section-title">
-            {% trans "Requested Materials" %}
-        </div>
-
-        <table class="materials-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>{% trans "Quantity" %}</th>
-                    <th>{% trans "Material" %}</th>
-                    <th>{% trans "Material Code" %}</th>
-                    <th>{% trans "Destination" %}</th>
-                    <th>{% trans "Available Stock" %}</th>
-                    <th>{% trans "Observation" %}</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for item in request_obj.material_items.all %}
-
-                <tr>
-
-                    <td>{{ item.quantity }}</td>
-
-                    <td>
-                        {{ item.material.name }}
-                    </td>
-
-                    <td>
-                        {{ item.material.code }}
-                    </td>
-
-                    <td>
-                        {{ request_obj.description }}
-                    </td>
-
-                    <td>
-                        {{ item.material.stock_quantity }}
-                        {{ item.material.unit }}
-                    </td>
-
-                    <td>
-                        {{ item.note|default:request_obj.description }}
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="6">
-                        {% trans "No materials found." %}
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-        <div class="section-title">
-            {% trans "General Observation" %}
-        </div>
-
-        <div class="notes-box">
-            {{ request_obj.description }}
-        </div>
-
-        <div class="section-title">
-            {% trans "Approval History" %}
-        </div>
-
-        <table class="approval-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>{% trans "Step" %}</th>
-                    <th>{% trans "Approver" %}</th>
-                    <th>{% trans "Status" %}</th>
-                    <th>{% trans "Comment" %}</th>
-                    <th>{% trans "Approved At" %}</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for approval in approvals %}
-
-                <tr>
-
-                    <td>
-                        {{ approval.step_order }}
-                    </td>
-
-                    <td>
-                        {{ approval.approver_user.full_name|default:approval.approver_user.username }}
-                    </td>
-
-                    <td>
-                        {{ approval.status }}
-                    </td>
-
-                    <td>
-                        {{ approval.comment|default:"-" }}
-                    </td>
-
-                    <td>
-                        {{ approval.acted_at|date:"Y-m-d H:i" }}
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="5">
-                        {% trans "No approvals found." %}
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-        <p class="approval-note">
-            ______________________________________________________
-        </p>
-
-        <p class="approval-note">
-            {% trans "Please print, sign and archive it for record keeping." %}
-        </p>
-
+    <div class="print-sheet">
+        {% include "requests_app/partials/approved_document_copy.html" %}
     </div>
-
 </body>
 
 </html>

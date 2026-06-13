@@ -169,6 +169,17 @@ class RequestApproval(models.Model):
     def __str__(self):
         return f"{self.request.request_number} - Step {self.step_order}"
 
+    @property
+    def display_approver(self):
+        return self.acted_by or self.approver_user
+
+    @property
+    def display_approver_name(self):
+        approver = self.display_approver
+        if not approver:
+            return ""
+        return approver.full_name or approver.username
+
 
 class RequestAuditLog(models.Model):
     request = models.ForeignKey(

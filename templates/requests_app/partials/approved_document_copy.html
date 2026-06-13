@@ -1,0 +1,116 @@
+{% load i18n %}
+<div class="document">
+    <div class="company-header">
+        <div>
+            <div class="company-title">MICROCOM KINSHASA</div>
+            <div>{% trans "Technical Service" %}</div>
+        </div>
+
+        <div class="doc-meta">
+            <strong>{% trans "Request No:" %}</strong>
+            {{ request_obj.request_number }}
+            <br>
+            <strong>{% trans "Status:" %}</strong>
+            {{ request_obj.status }}
+            <br>
+            <strong>{% trans "Date:" %}</strong>
+            {% if request_obj.finalized_at %}
+                {{ request_obj.finalized_at|date:"Y-m-d H:i" }}
+            {% else %}
+                {{ request_obj.submitted_at|date:"Y-m-d H:i" }}
+            {% endif %}
+        </div>
+    </div>
+
+    <h1 class="main-title">{% trans "Purchase Order" %}</h1>
+
+    <div class="subtitle">{% trans "Approved material request document" %}</div>
+
+    <div class="section-title">{% trans "Requester Information" %}</div>
+
+    <table class="info-table">
+        <tr>
+            <th>{% trans "Requested By" %}</th>
+            <td>{{ request_obj.submitted_by.full_name|default:request_obj.submitted_by.username }}</td>
+            <th>{% trans "Department" %}</th>
+            <td>{{ request_obj.department }}</td>
+        </tr>
+        <tr>
+            <th>{% trans "Submitted At" %}</th>
+            <td>{{ request_obj.submitted_at|date:"Y-m-d H:i" }}</td>
+            <th>{% trans "Date Needed" %}</th>
+            <td>{{ request_obj.date_needed }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">{% trans "Requested Materials" %}</div>
+
+    <table class="materials-table">
+        <thead>
+            <tr>
+                <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Material" %}</th>
+                <th>{% trans "Material Code" %}</th>
+                <th>{% trans "Destination" %}</th>
+                <th>{% trans "Available Stock" %}</th>
+                <th>{% trans "Observation" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in request_obj.material_items.all %}
+            <tr>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.material.name }}</td>
+                <td>{{ item.material.code }}</td>
+                <td>{{ request_obj.description }}</td>
+                <td>{{ item.material.stock_quantity }} {{ item.material.unit }}</td>
+                <td>{{ item.note|default:request_obj.description }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">{% trans "No materials found." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">{% trans "General Observation" %}</div>
+
+    <div class="notes-box">
+        {{ request_obj.description }}
+    </div>
+
+    <div class="section-title">{% trans "Approval History" %}</div>
+
+    <table class="approval-table">
+        <thead>
+            <tr>
+                <th>{% trans "Step" %}</th>
+                <th>{% trans "Approver" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Comment" %}</th>
+                <th>{% trans "Approved At" %}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for approval in approvals %}
+            <tr>
+                <td>{{ approval.step_order }}</td>
+                <td>{{ approval.display_approver_name }}</td>
+                <td>{{ approval.status }}</td>
+                <td>{{ approval.comment|default:"-" }}</td>
+                <td>{{ approval.acted_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">{% trans "No approvals found." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="approval-note">______________________________________________________</p>
+    <p class="approval-note">{% trans "Please print, sign and archive it for record keeping." %}</p>
+</div>

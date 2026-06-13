@@ -1,10 +1,15 @@
 {% load i18n %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>{% trans "Bulk Material Print" %}</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             color: #111827;
@@ -27,16 +32,23 @@
             display: inline-block;
         }
 
-        .document {
+        .print-sheet {
             max-width: 1000px;
-            margin: auto;
-            border: 2px solid #111827;
-            padding: 24px;
+            margin: 0 auto 30px;
             page-break-after: always;
+            break-after: page;
         }
 
-        .document:last-child {
+        .print-sheet:last-of-type {
             page-break-after: auto;
+            break-after: auto;
+        }
+
+        .document {
+            border: 2px solid #111827;
+            padding: 24px;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .company-header {
@@ -102,144 +114,108 @@
             white-space: pre-wrap;
         }
 
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
         @media print {
+            html,
+            body {
+                width: 194mm;
+                margin: 0;
+                padding: 0;
+            }
+
             .top-actions {
                 display: none;
             }
 
-            body {
-                margin: 15mm;
+            .print-sheet {
+                width: 194mm;
+                min-height: 281mm;
+                max-width: none;
+                margin: 0;
+                page-break-after: always;
+                break-after: page;
+            }
+
+            .print-sheet:last-of-type {
+                page-break-after: auto;
+                break-after: auto;
             }
 
             .document {
-                max-width: none;
-                margin: 0;
+                padding: 4mm;
+                min-height: 281mm;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .company-header {
+                gap: 4mm;
+                padding-bottom: 2mm;
+                margin-bottom: 2mm;
+                border-bottom-width: 1px;
+            }
+
+            .company-title {
+                font-size: 13px;
+            }
+
+            .doc-meta {
+                font-size: 9px;
+            }
+
+            .main-title {
+                font-size: 15px;
+                margin: 3mm 0;
+                letter-spacing: 0;
+            }
+
+            .section-title {
+                margin-top: 2mm;
+                margin-bottom: 1mm;
+                font-size: 10px;
+                border-left-width: 2px;
+                padding-left: 2mm;
+            }
+
+            table {
+                margin-bottom: 2mm;
+            }
+
+            th,
+            td {
+                padding: 1mm;
+                font-size: 9px;
+                line-height: 1.2;
+            }
+
+            .notes-box {
+                min-height: 14mm;
+                padding: 1.5mm;
+                margin-bottom: 2mm;
+                font-size: 9px;
+                line-height: 1.2;
             }
         }
     </style>
 </head>
 
 <body>
-
-<div class="top-actions">
-    <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
-    <a href="{% url 'material_reports' %}" class="btn">{% trans "Back" %}</a>
-</div>
-
-{% for req in requests %}
-<div class="document">
-
-    <div class="company-header">
-        <div>
-            <div class="company-title">MICROCOM KINSHASA</div>
-            <div>{% trans "Technical Service" %}</div>
-        </div>
-
-        <div class="doc-meta">
-            <strong>{% trans "Request No:" %}</strong> {{ req.request_number }}<br>
-            <strong>{% trans "Status:" %}</strong> {{ req.status }}<br>
-            <strong>{% trans "Date:" %}</strong>
-            {% if req.finalized_at %}
-                {{ req.finalized_at|date:"Y-m-d H:i" }}
-            {% else %}
-                {{ req.submitted_at|date:"Y-m-d H:i" }}
-            {% endif %}
-        </div>
+    <div class="top-actions">
+        <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
+        <a href="{% url 'material_reports' %}" class="btn">{% trans "Back" %}</a>
     </div>
 
-    <h1 class="main-title">{% trans "Purchase Order" %}</h1>
-
-    <div class="section-title">{% trans "Requester Information" %}</div>
-
-    <table>
-        <tr>
-            <th>{% trans "Requested By" %}</th>
-            <td>{{ req.submitted_by.full_name|default:req.submitted_by.username }}</td>
-            <th>{% trans "Department" %}</th>
-            <td>{{ req.department }}</td>
-        </tr>
-        <tr>
-            <th>{% trans "Submitted At" %}</th>
-            <td>{{ req.submitted_at|date:"Y-m-d H:i" }}</td>
-            <th>{% trans "Date Needed" %}</th>
-            <td>{{ req.date_needed }}</td>
-        </tr>
-    </table>
-
-    <div class="section-title">{% trans "Requested Materials" %}</div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>{% trans "Quantity" %}</th>
-                <th>{% trans "Material" %}</th>
-                <th>{% trans "Material Code" %}</th>
-                <th>{% trans "Description" %}</th>
-                <th>{% trans "Available Stock" %}</th>
-                <th>{% trans "Observation" %}</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for item in req.material_items.all %}
-            <tr>
-                <td>{{ item.quantity }}</td>
-                <td>{{ item.material.name }}</td>
-                <td>{{ item.material.code }}</td>
-                <td>{{ req.description }}</td>
-                <td>{{ item.material.stock_quantity }} {{ item.material.unit }}</td>
-                <td>{{ item.note|default:req.description }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">{% trans "No materials found." %}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="section-title">{% trans "General Observation" %}</div>
-
-    <div class="notes-box">
-        {{ req.description }}
+    {% for req in requests %}
+    <div class="print-sheet">
+        {% include "requests_app/partials/bulk_material_document_copy.html" %}
     </div>
-
-    <div class="section-title">{% trans "Approval History" %}</div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>{% trans "Step" %}</th>
-                <th>{% trans "Approver" %}</th>
-                <th>{% trans "Status" %}</th>
-                <th>{% trans "Comment" %}</th>
-                <th>{% trans "Approved At" %}</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for approval in req.approvals.all %}
-                {% if approval.status == "APPROVED" %}
-                <tr>
-                    <td>{{ approval.step_order }}</td>
-                    <td>{{ approval.approver_user.full_name|default:approval.approver_user.username }}</td>
-                    <td>{{ approval.status }}</td>
-                    <td>{{ approval.comment|default:"-" }}</td>
-                    <td>{{ approval.acted_at|date:"Y-m-d H:i" }}</td>
-                </tr>
-                {% endif %}
-            {% empty %}
-            <tr>
-                <td colspan="5">{% trans "No approvals found." %}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-</div>
-{% empty %}
-<p>{% trans "No selected documents found." %}</p>
-{% endfor %}
-
+    {% empty %}
+    <p>{% trans "No selected documents found." %}</p>
+    {% endfor %}
 </body>
+
 </html>
