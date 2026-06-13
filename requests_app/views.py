@@ -523,13 +523,15 @@ def permission_document(request, request_id):
 @login_required
 def approval_history(request):
     approvals = RequestApproval.objects.filter(
-        models.Q(approver_user=request.user)
-        | models.Q(alternate_approver_user=request.user)
+        acted_by=request.user,
     ).exclude(
         status="PENDING"
     ).select_related(
         "request",
         "request__request_type",
+        "acted_by",
+        "approver_user",
+        "alternate_approver_user",
     ).order_by("-acted_at")
 
     return render(
