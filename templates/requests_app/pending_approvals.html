@@ -12,6 +12,10 @@
             {% trans "Requests currently waiting for your decision." %}
         </p>
     </div>
+
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        {% trans "Back to Dashboard" %}
+    </a>
 </div>
 
 <form method="get" class="filter-form" style="margin-bottom: 20px;">
@@ -172,12 +176,12 @@
 
                     <div class="actions-inline">
 
-                        <a href="{% url 'approval_detail' approval.id %}" class="btn">
+                        <a href="{% url 'approval_detail' approval.id %}?next={{ current_list_url|urlencode }}" class="btn">
                             {% trans "Review" %}
                         </a>
 
                         <a
-                            href="{% url 'request_detail' approval.request.id %}"
+                            href="{% url 'request_detail' approval.request.id %}?next={{ current_list_url|urlencode }}"
                             class="btn btn-secondary"
                         >
                             {% trans "View" %}

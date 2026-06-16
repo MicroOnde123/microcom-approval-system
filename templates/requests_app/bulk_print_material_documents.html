@@ -206,7 +206,7 @@
 <body>
     <div class="top-actions">
         <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
-        <a href="{% url 'material_reports' %}" class="btn">{% trans "Back" %}</a>
+        <a href="{{ back_url }}" class="btn">{% trans "Back" %}</a>
     </div>
 
     {% for req in requests %}

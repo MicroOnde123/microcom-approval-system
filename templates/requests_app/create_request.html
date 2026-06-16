@@ -9,6 +9,10 @@
         <h1>{% trans "Create Request" %}</h1>
         <p class="muted">{% trans "Submit a new internal request for approval." %}</p>
     </div>
+
+    <a href="{% url 'my_requests' %}" class="btn btn-secondary">
+        {% trans "Back to My Requests" %}
+    </a>
 </div>
 
 <form method="post" enctype="multipart/form-data">

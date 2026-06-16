@@ -9,6 +9,10 @@
         <h1>{% trans "Material Reports" %}</h1>
         <p class="muted">{% trans "Approved material requests for stock management." %}</p>
     </div>
+
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        {% trans "Back to Dashboard" %}
+    </a>
 </div>
 
 <form method="get" style="margin-bottom: 20px;">
@@ -48,7 +52,7 @@
     <div style="margin-top:12px;">
         <button type="submit" class="btn">{% trans "Filter" %}</button>
 
-        <a href="{% url 'export_material_report_csv' %}?q={{ q }}&date_from={{ date_from }}&date_to={{ date_to }}&department={{ selected_department }}"
+        <a href="{% url 'export_material_report_csv' %}{% if active_querystring %}?{{ active_querystring }}{% endif %}"
             class="btn btn-secondary">
             {% trans "Export CSV" %}
         </a>
@@ -61,6 +65,7 @@
 
 <form method="post" action="{% url 'bulk_print_material_documents' %}">
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ current_list_url }}">
 
     <div style="margin-bottom: 15px;">
         <button type="submit" class="btn">{% trans "Print Selected" %}</button>
@@ -115,7 +120,7 @@
                             </div>
 
                             <div style="margin-top: 6px;">
-                                <a href="{% url 'return_material_to_stock' item.id %}" class="btn btn-secondary">
+                                <a href="{% url 'return_material_to_stock' item.id %}?next={{ current_list_url|urlencode }}" class="btn btn-secondary">
                                     {% trans "Return to Stock" %}
                                 </a>
                             </div>
@@ -127,8 +132,8 @@
 
                     <td>
                         <div class="actions-inline">
-                            <a href="{% url 'request_detail' req.id %}" class="btn btn-secondary">{% trans "View" %}</a>
-                            <a href="{% url 'approved_document' req.id %}" class="btn" target="_blank">
+                            <a href="{% url 'request_detail' req.id %}?next={{ current_list_url|urlencode }}" class="btn btn-secondary">{% trans "View" %}</a>
+                            <a href="{% url 'approved_document' req.id %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">
                                 {% trans "Print" %}
                             </a>
                         </div>

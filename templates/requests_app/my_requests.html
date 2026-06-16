@@ -10,9 +10,15 @@
         <p class="muted">{% trans "Track the status of all requests you have submitted." %}</p>
     </div>
 
-    <a href="{% url 'create_request' %}" class="btn">
-        {% trans "Create Request" %}
-    </a>
+    <div class="actions-inline">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+            {% trans "Back to Dashboard" %}
+        </a>
+
+        <a href="{% url 'create_request' %}" class="btn">
+            {% trans "Create Request" %}
+        </a>
+    </div>
 </div>
 
 <div class="table-wrap">
@@ -35,7 +41,7 @@
             <tr>
 
                 <td>
-                    <a href="{% url 'request_detail' r.id %}">
+                    <a href="{% url 'request_detail' r.id %}?next={{ request.get_full_path|urlencode }}">
                         <strong>{{ r.request_number }}</strong>
                     </a>
                 </td>

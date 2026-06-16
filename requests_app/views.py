@@ -1,11 +1,13 @@
 import csv
 from django.http import HttpResponse
+from urllib.parse import urlencode
 from urllib import request
 
 from urllib import request
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 from django.db import models
@@ -23,6 +25,22 @@ from django.utils.translation import gettext as _
 
 
 MATERIAL_FORMSET_PREFIX = "material_items"
+
+
+def safe_next_url(raw_url, default_url):
+    if raw_url and raw_url.startswith("/") and not raw_url.startswith("//"):
+        return raw_url
+
+    return default_url
+
+
+def current_path_with_query(request):
+    querystring = request.GET.urlencode()
+
+    if querystring:
+        return f"{request.path}?{querystring}"
+
+    return request.path
 
 
 def requires_materials(req):
@@ -209,7 +227,7 @@ def pending_approvals(request):
     ).select_related(
         "request",
         "request__request_type",
-    ).order_by("request__date_needed", "created_at")
+    ).order_by("-request__submitted_at", "-created_at")
 
     date_from = request.GET.get("date_from", "").strip()
     date_to = request.GET.get("date_to", "").strip()
@@ -250,12 +268,17 @@ def pending_approvals(request):
             "selected_request_type": request_type,
             "today": today,
             "q": q,
+            "current_list_url": current_path_with_query(request),
         },
     )
 
 
 @login_required
 def approval_detail(request, approval_id):
+    back_url = safe_next_url(
+        request.POST.get("next") or request.GET.get("next"),
+        reverse("pending_approvals"),
+    )
     approval = get_object_or_404(
         RequestApproval.objects.select_related(
             "request",
@@ -274,7 +297,7 @@ def approval_detail(request, approval_id):
         or approval.request.current_step_order != approval.step_order
     ):
         messages.error(request, "This approval is no longer active.")
-        return redirect("pending_approvals")
+        return redirect(back_url)
 
     if request.method == "POST":
         form = ApprovalActionForm(request.POST)
@@ -295,16 +318,18 @@ def approval_detail(request, approval_id):
                     messages.success(request, "Request returned for changes.")
             except Exception as e:
                 messages.error(request, str(e))
-                return redirect("approval_detail", approval_id=approval.id)
+                return redirect(
+                    f"{reverse('approval_detail', args=[approval.id])}?{urlencode({'next': back_url})}"
+                )
 
-            return redirect("pending_approvals")
+            return redirect(back_url)
     else:
         form = ApprovalActionForm()
 
     return render(
         request,
         "requests_app/approval_detail.html",
-        {"approval": approval, "request_obj": approval.request, "form": form},
+        {"approval": approval, "request_obj": approval.request, "form": form, "back_url": back_url},
     )
 
 
@@ -330,9 +355,23 @@ def request_detail(request, request_id):
     
     if not is_submitter and not is_approver and not request.user.is_superuser and not is_stock_user:
         return HttpResponseForbidden("You are not allowed to view this request.")
-    
 
-    return render(request, "requests_app/request_detail.html", {"request_obj": request_obj})
+    if is_submitter:
+        default_back_url = reverse("my_requests")
+    elif is_stock_user:
+        default_back_url = reverse("material_reports")
+    elif is_approver:
+        default_back_url = reverse("pending_approvals")
+    else:
+        default_back_url = reverse("dashboard")
+
+    back_url = safe_next_url(request.GET.get("next"), default_back_url)
+
+    return render(
+        request,
+        "requests_app/request_detail.html",
+        {"request_obj": request_obj, "back_url": back_url},
+    )
 
 
 @login_required
@@ -430,6 +469,7 @@ def edit_request(request, request_id):
             "formset": formset,
             "request_obj": request_obj,
             "request_type_behavior": request_type_behavior_context(form),
+            "back_url": reverse("request_detail", args=[request_obj.id]),
         },
     )
 
@@ -475,6 +515,10 @@ def approved_document(request, request_id):
         {
             "request_obj": request_obj,
             "approvals": approvals,
+            "back_url": safe_next_url(
+                request.GET.get("next"),
+                reverse("request_detail", args=[request_obj.id]),
+            ),
         },
     )
 
@@ -521,6 +565,10 @@ def permission_document(request, request_id):
             "request_obj": request_obj,
             "metadata": metadata,
             "approvals": approvals,
+            "back_url": safe_next_url(
+                request.GET.get("next"),
+                reverse("request_detail", args=[request_obj.id]),
+            ),
         },
     )
 
@@ -553,7 +601,7 @@ def approval_history(request):
     return render(
         request,
         "requests_app/approval_history.html",
-        {"approvals": approvals},
+        {"approvals": approvals, "current_list_url": current_path_with_query(request)},
     )
 @login_required
 def material_reports(request):
@@ -616,6 +664,8 @@ def material_reports(request):
             "date_from": date_from,
             "date_to": date_to,
             "selected_department": department,
+            "current_list_url": current_path_with_query(request),
+            "active_querystring": request.GET.urlencode(),
         },
     )
 
@@ -715,11 +765,13 @@ def bulk_print_material_documents(request):
     if request.method != "POST":
         return redirect("material_reports")
 
+    back_url = safe_next_url(request.POST.get("next"), reverse("material_reports"))
+
     selected_ids = request.POST.getlist("selected_requests")
 
     if not selected_ids:
         messages.error(request, "Select at least one material request to print.")
-        return redirect("material_reports")
+        return redirect(back_url)
 
     requests = Request.objects.filter(
         id__in=selected_ids,
@@ -738,7 +790,7 @@ def bulk_print_material_documents(request):
     return render(
         request,
         "requests_app/bulk_print_material_documents.html",
-        {"requests": requests},
+        {"requests": requests, "back_url": back_url},
     )
 
 @login_required
@@ -757,6 +809,10 @@ def return_material_to_stock(request, item_id):
 
     req = item.request
     material = item.material
+    back_url = safe_next_url(
+        request.POST.get("next") or request.GET.get("next"),
+        reverse("material_reports"),
+    )
 
     if request.method == "POST":
         form = ReturnToStockForm(request.POST)
@@ -803,7 +859,7 @@ def return_material_to_stock(request, item_id):
                 _("Material returned to stock successfully."),
             )
 
-            return redirect("material_reports")
+            return redirect(back_url)
 
     else:
         form = ReturnToStockForm()
@@ -816,6 +872,7 @@ def return_material_to_stock(request, item_id):
             "item": item,
             "request_obj": req,
             "material": material,
+            "back_url": back_url,
         },
     )
 

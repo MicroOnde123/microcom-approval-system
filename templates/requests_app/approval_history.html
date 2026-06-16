@@ -17,6 +17,10 @@
 
     </div>
 
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        {% trans "Back to Dashboard" %}
+    </a>
+
 </div>
 
 <div class="table-wrap">
@@ -91,7 +95,7 @@
 
                     <div class="actions-inline">
 
-                        <a href="{% url 'request_detail' approval.request.id %}" class="btn btn-secondary">
+                        <a href="{% url 'request_detail' approval.request.id %}?next={{ current_list_url|urlencode }}" class="btn btn-secondary">
                             {% trans "View" %}
                         </a>
 
@@ -99,13 +103,13 @@
 
                             {% if approval.request.metadata_json.permission_group %}
 
-                                <a href="{% url 'permission_document' approval.request.id %}" class="btn" target="_blank">
+                                <a href="{% url 'permission_document' approval.request.id %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">
                                     {% trans "Permission Document" %}
                                 </a>
 
                             {% elif approval.request.material_items.exists %}
 
-                                <a href="{% url 'approved_document' approval.request.id %}" class="btn" target="_blank">
+                                <a href="{% url 'approved_document' approval.request.id %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">
                                     {% trans "Approved Document" %}
                                 </a>
 

@@ -5,10 +5,19 @@
 
 {% block content %}
 
-<h2>{% trans "Review Request" %}</h2>
+<div class="page-header">
+    <div>
+        <h1>{% trans "Review Request" %}</h1>
+        <p class="muted">{% trans "Approve, reject, or return this request." %}</p>
+    </div>
+
+    <a href="{{ back_url }}" class="btn btn-secondary">
+        {% trans "Back to Pending Approvals" %}
+    </a>
+</div>
 
 <p>
-    <strong>{{ r.description|truncatechars:60 }}</strong>
+    <strong>{{ request_obj.request_number }}</strong>
 </p>
 
 <p>
@@ -18,6 +27,7 @@
 <form method="post">
 
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ back_url }}">
 
     {{ form.as_p }}
 

@@ -12,7 +12,7 @@
         </p>
     </div>
 
-    <a href="{% url 'material_reports' %}" class="btn btn-secondary">
+    <a href="{{ back_url }}" class="btn btn-secondary">
         {% trans "Back to Material Reports" %}
     </a>
 </div>
@@ -41,6 +41,7 @@
 
 <form method="post">
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ back_url }}">
 
     {{ form.as_p }}
 

@@ -11,14 +11,18 @@
     </div>
 
     <div class="actions-inline">
+        <a href="{{ back_url }}" class="btn btn-secondary">
+            {% trans "Back" %}
+        </a>
+
         {% if request_obj.status == "APPROVED" %}
 
             {% if request_obj.metadata_json.permission_group %}
-                <a href="{% url 'permission_document' request_obj.id %}" class="btn" target="_blank">
+                <a href="{% url 'permission_document' request_obj.id %}?next={{ request.get_full_path|urlencode }}" class="btn" target="_blank">
                     {% trans "Permission Document" %}
                 </a>
             {% elif request_obj.material_items.exists %}
-                <a href="{% url 'approved_document' request_obj.id %}" class="btn" target="_blank">
+                <a href="{% url 'approved_document' request_obj.id %}?next={{ request.get_full_path|urlencode }}" class="btn" target="_blank">
                     {% trans "Approved Document" %}
                 </a>
             {% endif %}

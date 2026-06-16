@@ -22,13 +22,16 @@
             margin-bottom: 20px;
         }
 
-        .print-actions button {
+        .print-actions button,
+        .print-actions .btn {
             background: #123d6b;
             color: white;
             border: none;
             border-radius: 6px;
             padding: 9px 14px;
             cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
         }
 
         .print-sheet {
@@ -245,6 +248,7 @@
 <body>
     <div class="print-actions">
         <button onclick="window.print()">{% trans "Print / Save PDF" %}</button>
+        <a href="{{ back_url }}" class="btn">{% trans "Back" %}</a>
     </div>
 
     <div class="print-sheet">

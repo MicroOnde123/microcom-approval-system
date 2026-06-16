@@ -909,41 +909,11 @@ msgstr "Adresse e-mail"
 msgid "No active account exists with this email address."
 msgstr "Aucun compte actif n’existe avec cette adresse e-mail."
 
-msgid "Reason / Motif"
-msgstr "Motif"
-
-msgid "Amount is required for this type of request."
-msgstr "Le montant est obligatoire pour ce type de demande."
-
-msgid "Permission group is required."
-msgstr "Le groupe d’autorisation est obligatoire."
-
-msgid "Permission type is required."
-msgstr "Le type d’autorisation est obligatoire."
-
-msgid "This field is required."
-msgstr "Ce champ est obligatoire."
-
-msgid "Description is required."
-msgstr "La description est obligatoire."
-
-msgid "Only %(quantity)s %(unit)s available in stock."
-msgstr "Seulement %(quantity)s %(unit)s disponible(s) en stock."
-
 msgid "Return to Stock"
-msgstr "Remettre en stock"
+msgstr "Retour au stock"
 
-msgid "Return undelivered or unused material back into stock."
-msgstr "Remettez en stock le matériel non livré ou non utilisé."
-
-msgid "Back to Material Reports"
-msgstr "Retour aux rapports de matériel"
-
-msgid "Requested Quantity"
-msgstr "Quantité demandée"
-
-msgid "Current Stock"
-msgstr "Stock actuel"
+msgid "Print"
+msgstr "Imprimer"
 
 msgid "Returned Quantity"
 msgstr "Quantité retournée"
@@ -951,18 +921,29 @@ msgstr "Quantité retournée"
 msgid "Return Reason"
 msgstr "Motif du retour"
 
-msgid "You are not allowed to return stock."
-msgstr "Vous n’êtes pas autorisé à remettre du matériel en stock."
-
-msgid "Returned quantity cannot be greater than requested quantity."
-msgstr "La quantité retournée ne peut pas être supérieure à la quantité demandée."
-
-msgid "Material returned to stock."
-msgstr "Matériel remis en stock."
-
-#, python-format
-msgid "Returned %(quantity)s %(unit)s of %(material)s to stock. Reason: %(reason)s"
-msgstr "%(quantity)s %(unit)s de %(material)s remis(es) en stock. Motif : %(reason)s"
-
 msgid "Material returned to stock successfully."
-msgstr "Matériel remis en stock avec succès."
+msgstr "Le matériel a été retourné au stock avec succès."
+
+msgid "Back to Material Reports"
+msgstr "Retour aux rapports matériels"
+
+msgid "Back to Dashboard"
+msgstr "Retour au tableau de bord"
+
+msgid "Back to My Requests"
+msgstr "Retour à mes demandes"
+
+msgid "Back to Pending Approvals"
+msgstr "Retour aux approbations en attente"
+
+msgid "Back to Request Detail"
+msgstr "Retour au détail de la demande"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Current Stock"
+msgstr "Stock actuel"
+
+msgid "Requested Quantity"
+msgstr "Quantité demandée"
