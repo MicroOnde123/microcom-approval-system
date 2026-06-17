@@ -32,6 +32,17 @@
             display: inline-block;
         }
 
+        .print-warning {
+            max-width: 1000px;
+            margin: 0 auto 16px;
+            padding: 12px 14px;
+            border: 1px solid #b45309;
+            border-left: 5px solid #b45309;
+            background: #fffbeb;
+            color: #78350f;
+            font-weight: 700;
+        }
+
         .print-sheet {
             max-width: 1000px;
             margin: auto;
@@ -151,6 +162,10 @@
                 display: none;
             }
 
+            .print-warning {
+                display: none;
+            }
+
             .print-sheet {
                 width: 194mm;
                 min-height: 281mm;
@@ -260,6 +275,12 @@
         <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
         <a href="{{ back_url }}" class="btn">{% trans "Back" %}</a>
     </div>
+
+    {% if two_copy_warning %}
+    <div class="print-warning">
+        {{ two_copy_warning }}
+    </div>
+    {% endif %}
 
     <div class="print-sheet{% if copies == '2' %} two-copies{% endif %}">
         {% include "requests_app/partials/approved_document_copy.html" %}

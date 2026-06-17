@@ -25,6 +25,11 @@ from django.utils.translation import gettext as _
 
 
 MATERIAL_FORMSET_PREFIX = "material_items"
+MATERIAL_TWO_COPY_ITEM_LIMIT = 6
+MATERIAL_TWO_COPY_WARNING = (
+    "This request has too many material items for two-copy printing. "
+    "Please print one copy."
+)
 
 
 def safe_next_url(raw_url, default_url):
@@ -509,6 +514,11 @@ def approved_document(request, request_id):
         messages.error(request, "This request is not approved yet.")
         return redirect("request_detail", request_id=request_obj.id)
 
+    two_copy_warning = ""
+    if copies == "2" and request_obj.material_items.count() > MATERIAL_TWO_COPY_ITEM_LIMIT:
+        copies = "1"
+        two_copy_warning = MATERIAL_TWO_COPY_WARNING
+
     approvals = request_obj.approvals.filter(
         status="APPROVED"
     ).order_by("step_order")
@@ -524,6 +534,7 @@ def approved_document(request, request_id):
                 reverse("request_detail", args=[request_obj.id]),
             ),
             "copies": copies,
+            "two_copy_warning": two_copy_warning,
         },
     )
 
@@ -796,10 +807,26 @@ def bulk_print_material_documents(request):
         "department",
     ).order_by("-finalized_at", "-submitted_at")
 
+    two_copy_warning = ""
+    if copies == "2":
+        for req in requests:
+            req.print_copies = "2"
+            if req.material_items.count() > MATERIAL_TWO_COPY_ITEM_LIMIT:
+                req.print_copies = "1"
+                two_copy_warning = MATERIAL_TWO_COPY_WARNING
+    else:
+        for req in requests:
+            req.print_copies = "1"
+
     return render(
         request,
         "requests_app/bulk_print_material_documents.html",
-        {"requests": requests, "back_url": back_url, "copies": copies},
+        {
+            "requests": requests,
+            "back_url": back_url,
+            "copies": copies,
+            "two_copy_warning": two_copy_warning,
+        },
     )
 
 @login_required

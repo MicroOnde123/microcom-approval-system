@@ -5,9 +5,16 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import Department
-from requests_app.models import Request, RequestApproval, RequestType
+from inventory.models import Material, MaterialCategory
+from requests_app.models import Request, RequestApproval, RequestMaterialItem, RequestType
 from requests_app.services import submit_request
 from workflows.models import ApprovalWorkflow, ApprovalWorkflowStep
+
+
+TWO_COPY_WARNING = (
+    "This request has too many material items for two-copy printing. "
+    "Please print one copy."
+)
 
 
 class AlternateApproverWorkflowTests(TestCase):
@@ -311,3 +318,113 @@ class AlternateApproverWorkflowTests(TestCase):
         )
 
         self.assertContains(response, request_obj.request_number, count=1)
+
+
+class MaterialPrintCopyLimitTests(TestCase):
+    def setUp(self):
+        self.department = Department.objects.create(
+            name="Technical",
+            code="TECH",
+        )
+
+        User = get_user_model()
+        self.submitter = User.objects.create_user(
+            username="material_submitter",
+            password="pass12345",
+            email="material-submit@example.com",
+            full_name="Material Submitter",
+            department=self.department,
+        )
+        self.stock_user = User.objects.create_user(
+            username="stock_user",
+            password="pass12345",
+            email="stock@example.com",
+            full_name="Stock User",
+            can_manage_stock=True,
+        )
+
+        self.request_type = RequestType.objects.create(
+            name="Material Request",
+            code="MAT",
+            is_active=True,
+            requires_materials=True,
+        )
+        self.category = MaterialCategory.objects.create(
+            name="General",
+            code="GEN",
+        )
+
+    def make_material_request(self, item_count, number_suffix):
+        request_obj = Request.objects.create(
+            request_number=f"MAT-{number_suffix}",
+            request_type=self.request_type,
+            submitted_by=self.submitter,
+            department=self.department,
+            description="For installation",
+            date_needed=timezone.now().date(),
+            status="APPROVED",
+            finalized_at=timezone.now(),
+        )
+
+        for index in range(item_count):
+            material = Material.objects.create(
+                category=self.category,
+                name=f"Material {number_suffix}-{index}",
+                code=f"MAT-{number_suffix}-{index}",
+                unit="pcs",
+                stock_quantity=10,
+            )
+            RequestMaterialItem.objects.create(
+                request=request_obj,
+                material=material,
+                quantity=1,
+            )
+
+        return request_obj
+
+    def assert_material_slip_count(self, response, count):
+        content = response.content.decode()
+        self.assertEqual(content.count("Material Exit Slip"), count)
+
+    def test_single_material_print_forces_one_copy_when_more_than_six_items(self):
+        request_obj = self.make_material_request(item_count=7, number_suffix="007")
+        self.client.force_login(self.submitter)
+
+        response = self.client.get(
+            f"{reverse('approved_document', args=[request_obj.id])}?copies=2",
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, TWO_COPY_WARNING)
+        self.assertNotContains(response, 'class="print-sheet two-copies"')
+        self.assert_material_slip_count(response, 1)
+
+    def test_single_material_print_allows_two_copies_at_six_items(self):
+        request_obj = self.make_material_request(item_count=6, number_suffix="006")
+        self.client.force_login(self.submitter)
+
+        response = self.client.get(
+            f"{reverse('approved_document', args=[request_obj.id])}?copies=2",
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertNotContains(response, TWO_COPY_WARNING)
+        self.assertContains(response, 'class="print-sheet two-copies"')
+        self.assert_material_slip_count(response, 2)
+
+    def test_bulk_material_print_forces_one_copy_only_for_oversized_requests(self):
+        small_request = self.make_material_request(item_count=2, number_suffix="002")
+        large_request = self.make_material_request(item_count=7, number_suffix="107")
+        self.client.force_login(self.stock_user)
+
+        response = self.client.post(
+            f"{reverse('bulk_print_material_documents')}?copies=2",
+            data={
+                "selected_requests": [small_request.id, large_request.id],
+            },
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, TWO_COPY_WARNING)
+        self.assert_material_slip_count(response, 3)
+        self.assertContains(response, 'class="print-sheet two-copies"', count=1)
