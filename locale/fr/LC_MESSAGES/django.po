@@ -289,6 +289,14 @@ msgstr "Aucun historique d’approbation disponible."
 msgid "Print / Save as PDF"
 msgstr "Imprimer / Enregistrer en PDF"
 
+#: .\templates\requests_app\approved_document.html:252
+msgid "Print 1 copy"
+msgstr "Imprimer 1 exemplaire"
+
+#: .\templates\requests_app\approved_document.html:253
+msgid "Print 2 copies"
+msgstr "Imprimer 2 exemplaires"
+
 #: .\templates\requests_app\approved_document.html:149
 #: .\templates\requests_app\bulk_print_material_documents.html:126
 msgid "Back"
@@ -318,10 +326,10 @@ msgstr "Statut"
 msgid "Date:"
 msgstr "Date :"
 
-#: .\templates\requests_app\approved_document.html:185
-#: .\templates\requests_app\bulk_print_material_documents.html:150
-msgid "Purchase Order"
-msgstr "Bon de Commande"
+#: .\templates\requests_app\partials\approved_document_copy.html:25
+#: .\templates\requests_app\partials\bulk_material_document_copy.html:21
+msgid "Material Exit Slip"
+msgstr "Bon de Sortie"
 
 #: .\templates\requests_app\approved_document.html:189
 msgid "Approved material request document"
@@ -561,6 +569,14 @@ msgstr "Effacer"
 #: .\templates\requests_app\material_reports.html:64
 msgid "Print Selected"
 msgstr "Imprimer la sélection"
+
+#: .\templates\requests_app\material_reports.html:70
+msgid "Print selected: 1 copy"
+msgstr "Imprimer la selection : 1 exemplaire"
+
+#: .\templates\requests_app\material_reports.html:71
+msgid "Print selected: 2 copies"
+msgstr "Imprimer la selection : 2 exemplaires"
 
 #: .\templates\requests_app\material_reports.html:78
 #: .\templates\requests_app\pending_approvals.html:107

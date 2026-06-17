@@ -68,7 +68,8 @@
     <input type="hidden" name="next" value="{{ current_list_url }}">
 
     <div style="margin-bottom: 15px;">
-        <button type="submit" class="btn">{% trans "Print Selected" %}</button>
+        <button type="submit" class="btn" formaction="{% url 'bulk_print_material_documents' %}?copies=1">{% trans "Print selected: 1 copy" %}</button>
+        <button type="submit" class="btn" formaction="{% url 'bulk_print_material_documents' %}?copies=2">{% trans "Print selected: 2 copies" %}</button>
     </div>
 
     <div class="table-wrap">

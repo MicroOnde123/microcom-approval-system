@@ -476,6 +476,10 @@ def edit_request(request, request_id):
 
 @login_required
 def approved_document(request, request_id):
+    copies = request.GET.get("copies", "1")
+    if copies not in {"1", "2"}:
+        copies = "1"
+
     request_obj = get_object_or_404(
         Request.objects.prefetch_related(
             "material_items__material",
@@ -519,6 +523,7 @@ def approved_document(request, request_id):
                 request.GET.get("next"),
                 reverse("request_detail", args=[request_obj.id]),
             ),
+            "copies": copies,
         },
     )
 
@@ -762,6 +767,10 @@ def bulk_print_material_documents(request):
     if not is_stock_manager(request.user):
         return HttpResponseForbidden("You are not allowed to bulk print material documents.")
 
+    copies = request.GET.get("copies", "1")
+    if copies not in {"1", "2"}:
+        copies = "1"
+
     if request.method != "POST":
         return redirect("material_reports")
 
@@ -790,7 +799,7 @@ def bulk_print_material_documents(request):
     return render(
         request,
         "requests_app/bulk_print_material_documents.html",
-        {"requests": requests, "back_url": back_url},
+        {"requests": requests, "back_url": back_url, "copies": copies},
     )
 
 @login_required

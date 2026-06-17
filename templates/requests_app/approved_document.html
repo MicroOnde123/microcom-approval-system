@@ -37,6 +37,10 @@
             margin: auto;
         }
 
+        .cut-line {
+            display: none;
+        }
+
         .document {
             border: 2px solid #111827;
             padding: 24px;
@@ -156,11 +160,30 @@
                 break-after: auto;
             }
 
+            .print-sheet.two-copies {
+                min-height: 281mm;
+                display: flex;
+                flex-direction: column;
+            }
+
             .document {
                 padding: 4mm;
                 min-height: 281mm;
                 break-inside: avoid;
                 page-break-inside: avoid;
+            }
+
+            .two-copies .document {
+                min-height: 136mm;
+                height: 136mm;
+                overflow: hidden;
+            }
+
+            .cut-line {
+                display: block;
+                height: 9mm;
+                border-top: 1px dashed #111827;
+                margin: 0;
             }
 
             .company-header {
@@ -232,12 +255,18 @@
 
 <body>
     <div class="top-actions">
+        <a class="btn" href="{% url 'approved_document' request_obj.id %}?copies=1&next={{ back_url|urlencode }}">{% trans "Print 1 copy" %}</a>
+        <a class="btn" href="{% url 'approved_document' request_obj.id %}?copies=2&next={{ back_url|urlencode }}">{% trans "Print 2 copies" %}</a>
         <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
         <a href="{{ back_url }}" class="btn">{% trans "Back" %}</a>
     </div>
 
-    <div class="print-sheet">
+    <div class="print-sheet{% if copies == '2' %} two-copies{% endif %}">
         {% include "requests_app/partials/approved_document_copy.html" %}
+        {% if copies == "2" %}
+        <div class="cut-line"></div>
+        {% include "requests_app/partials/approved_document_copy.html" %}
+        {% endif %}
     </div>
 </body>
 

@@ -44,6 +44,10 @@
             break-after: auto;
         }
 
+        .cut-line {
+            display: none;
+        }
+
         .document {
             border: 2px solid #111827;
             padding: 24px;
@@ -140,6 +144,12 @@
                 break-after: page;
             }
 
+            .print-sheet.two-copies {
+                min-height: 281mm;
+                display: flex;
+                flex-direction: column;
+            }
+
             .print-sheet:last-of-type {
                 page-break-after: auto;
                 break-after: auto;
@@ -150,6 +160,19 @@
                 min-height: 281mm;
                 break-inside: avoid;
                 page-break-inside: avoid;
+            }
+
+            .two-copies .document {
+                min-height: 136mm;
+                height: 136mm;
+                overflow: hidden;
+            }
+
+            .cut-line {
+                display: block;
+                height: 9mm;
+                border-top: 1px dashed #111827;
+                margin: 0;
             }
 
             .company-header {
@@ -210,8 +233,12 @@
     </div>
 
     {% for req in requests %}
-    <div class="print-sheet">
+    <div class="print-sheet{% if copies == '2' %} two-copies{% endif %}">
         {% include "requests_app/partials/bulk_material_document_copy.html" %}
+        {% if copies == "2" %}
+        <div class="cut-line"></div>
+        {% include "requests_app/partials/bulk_material_document_copy.html" %}
+        {% endif %}
     </div>
     {% empty %}
     <p>{% trans "No selected documents found." %}</p>
