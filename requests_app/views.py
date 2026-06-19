@@ -372,10 +372,23 @@ def request_detail(request, request_id):
 
     back_url = safe_next_url(request.GET.get("next"), default_back_url)
 
+    active_approval_for_user = None
+    if request_obj.status in ["PENDING", "IN_REVIEW"]:
+        active_approval_for_user = request_obj.approvals.filter(
+            models.Q(approver_user=request.user)
+            | models.Q(alternate_approver_user=request.user),
+            status="PENDING",
+            step_order=request_obj.current_step_order,
+        ).first()
+
     return render(
         request,
         "requests_app/request_detail.html",
-        {"request_obj": request_obj, "back_url": back_url},
+        {
+            "request_obj": request_obj,
+            "back_url": back_url,
+            "active_approval_for_user": active_approval_for_user,
+        },
     )
 
 

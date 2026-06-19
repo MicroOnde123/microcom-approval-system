@@ -779,6 +779,9 @@ msgstr "Motif / Observation"
 msgid "Request Detail"
 msgstr "Détail de la demande"
 
+msgid "Review / Approve Request"
+msgstr "Examiner / Approuver la demande"
+
 #: .\templates\requests_app\request_detail.html:10
 msgid "Full request information and approval history."
 msgstr "Informations complètes de la demande et historique des approbations."

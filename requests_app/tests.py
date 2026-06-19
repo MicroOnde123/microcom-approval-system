@@ -3,6 +3,7 @@ from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from urllib.parse import quote
 
 from accounts.models import Department
 from inventory.models import Material, MaterialCategory
@@ -235,6 +236,135 @@ class AlternateApproverWorkflowTests(TestCase):
 
         self.assertContains(response, "Alternate Approver")
         self.assertNotContains(response, "Primary Approver")
+
+    def test_request_detail_shows_review_button_to_primary_approver(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+        detail_url = (
+            f"{reverse('request_detail', args=[request_obj.id])}"
+            "?next=%2Fapprovals%2Fpending%2F%3Fstatus%3DPENDING"
+        )
+
+        self.client.force_login(self.primary)
+        response = self.client.get(detail_url, HTTP_HOST="127.0.0.1")
+
+        expected_url = (
+            f"{reverse('approval_detail', args=[approval.id])}"
+            f"?next={quote(detail_url, safe='/')}"
+        )
+        self.assertContains(response, "Review / Approve Request")
+        self.assertContains(response, expected_url)
+        self.assertEqual(response.context["active_approval_for_user"], approval)
+
+    def test_request_detail_shows_review_button_to_alternate_approver(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+
+        self.client.force_login(self.alternate)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, "Review / Approve Request")
+        self.assertEqual(response.context["active_approval_for_user"], approval)
+
+    def test_request_detail_hides_review_button_from_requester(self):
+        request_obj = self.make_submitted_request()
+
+        self.client.force_login(self.submitter)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertNotContains(response, "Review / Approve Request")
+        self.assertIsNone(response.context["active_approval_for_user"])
+
+    def test_request_detail_hides_review_button_from_later_step_approver(self):
+        later_approver = get_user_model().objects.create_user(
+            username="later-approver",
+            password="pass12345",
+            email="later@example.com",
+            full_name="Later Approver",
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=self.workflow,
+            step_order=2,
+            approver_user=later_approver,
+        )
+        request_obj = self.make_submitted_request()
+
+        self.client.force_login(later_approver)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertNotContains(response, "Review / Approve Request")
+        self.assertIsNone(response.context["active_approval_for_user"])
+
+    def test_request_detail_hides_review_button_from_unassigned_admin(self):
+        request_obj = self.make_submitted_request()
+        admin = get_user_model().objects.create_superuser(
+            username="admin",
+            password="pass12345",
+            email="admin@example.com",
+            full_name="Admin User",
+        )
+
+        self.client.force_login(admin)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertNotContains(response, "Review / Approve Request")
+        self.assertIsNone(response.context["active_approval_for_user"])
+
+    def test_request_detail_hides_review_button_from_unassigned_stock_manager(self):
+        request_obj = self.make_submitted_request()
+        stock_manager = get_user_model().objects.create_user(
+            username="stock-manager",
+            password="pass12345",
+            email="stock@example.com",
+            full_name="Stock Manager",
+            can_manage_stock=True,
+        )
+        category = MaterialCategory.objects.create(name="Office", code="OFFICE")
+        material = Material.objects.create(
+            category=category,
+            name="Paper",
+            code="PAPER",
+        )
+        RequestMaterialItem.objects.create(
+            request=request_obj,
+            material=material,
+            quantity=1,
+        )
+
+        self.client.force_login(stock_manager)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertNotContains(response, "Review / Approve Request")
+        self.assertIsNone(response.context["active_approval_for_user"])
+
+    def test_request_detail_hides_review_button_after_approval(self):
+        request_obj = self.make_submitted_request()
+        approval = self.get_approval(request_obj)
+        self.act_on_approval(self.primary, approval, "APPROVE")
+
+        self.client.force_login(self.primary)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertNotContains(response, "Review / Approve Request")
+        self.assertIsNone(response.context["active_approval_for_user"])
 
     def test_historical_approval_without_actor_falls_back_to_assigned_approver(self):
         request_obj = self.make_submitted_request()
