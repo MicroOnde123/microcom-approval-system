@@ -1,0 +1,180 @@
+{% load i18n %}
+{% trans "No materials found." as no_materials_found %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const addButton = document.getElementById("add-material-btn");
+    const container = document.getElementById("material-items");
+    const totalForms = document.getElementById("id_material_items-TOTAL_FORMS");
+    const templateElement = document.getElementById("empty-material-template");
+    const categoryFilter = document.getElementById("material-category-filter");
+    const noMaterialsFoundText = "{{ no_materials_found|escapejs }}";
+
+    if (!addButton || !container || !totalForms || !templateElement || !categoryFilter) {
+        return;
+    }
+
+    function getOptionsForRow(row) {
+        const select = row.querySelector('select[name$="-material"]');
+
+        if (!select) {
+            return [];
+        }
+
+        return Array.from(select.options)
+            .filter(function (option) {
+                return option.value;
+            })
+            .map(function (option) {
+                return {
+                    value: option.value,
+                    text: option.text
+                };
+            });
+    }
+
+    function renderMaterialResults(row) {
+        const input = row.querySelector(".material-search-field");
+        const results = row.querySelector(".material-results");
+        const select = row.querySelector('select[name$="-material"]');
+
+        if (!input || !results || !select || row.hidden) {
+            return;
+        }
+
+        const searchText = input.value.toLowerCase().trim();
+        const selectedCategory = categoryFilter.value;
+        const selectedCategoryText = selectedCategory
+            ? categoryFilter.options[categoryFilter.selectedIndex].text.toLowerCase()
+            : "";
+        const matches = getOptionsForRow(row).filter(function (item) {
+            const text = item.text.toLowerCase();
+            const matchesSearch = !searchText || text.includes(searchText);
+            const matchesCategory = !selectedCategory || text.includes(selectedCategoryText);
+            return matchesSearch && matchesCategory;
+        }).slice(0, 20);
+
+        results.innerHTML = "";
+
+        if (!matches.length) {
+            const emptyResult = document.createElement("div");
+            emptyResult.className = "material-result-item material-result-muted";
+            emptyResult.textContent = noMaterialsFoundText;
+            results.appendChild(emptyResult);
+            results.style.display = "block";
+            return;
+        }
+
+        matches.forEach(function (item) {
+            const result = document.createElement("div");
+            result.className = "material-result-item";
+            result.textContent = item.text;
+
+            result.addEventListener("click", function () {
+                select.value = item.value;
+                select.dispatchEvent(new Event("change", { bubbles: true }));
+                input.value = item.text;
+                results.style.display = "none";
+            });
+
+            results.appendChild(result);
+        });
+
+        results.style.display = "block";
+    }
+
+    function initializeMaterialRow(row) {
+        const input = row.querySelector(".material-search-field");
+        const results = row.querySelector(".material-results");
+        const select = row.querySelector('select[name$="-material"]');
+        const deleteInput = row.querySelector('input[name$="-DELETE"]');
+
+        if (!input || !results || !select) {
+            return;
+        }
+
+        if (deleteInput && deleteInput.checked) {
+            row.hidden = true;
+        }
+
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            input.value = selectedOption.text;
+        }
+
+        input.addEventListener("input", function () {
+            select.value = "";
+            renderMaterialResults(row);
+        });
+
+        input.addEventListener("focus", function () {
+            renderMaterialResults(row);
+        });
+
+        input.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                results.style.display = "none";
+            }
+        });
+    }
+
+    function addMaterialRow() {
+        const formIndex = parseInt(totalForms.value, 10);
+        const newFormHtml = templateElement.innerHTML.replace(/__prefix__/g, formIndex);
+
+        container.insertAdjacentHTML("beforeend", newFormHtml);
+        totalForms.value = formIndex + 1;
+
+        const newRow = container.lastElementChild;
+        initializeMaterialRow(newRow);
+        newRow.querySelector(".material-search-field").focus();
+    }
+
+    function activeRows() {
+        return Array.from(container.querySelectorAll(".material-line")).filter(function (row) {
+            return !row.hidden;
+        });
+    }
+
+    container.addEventListener("click", function (event) {
+        const removeButton = event.target.closest(".remove-material-btn");
+
+        if (!removeButton) {
+            return;
+        }
+
+        const row = removeButton.closest(".material-line");
+        const deleteInput = row.querySelector('input[name$="-DELETE"]');
+
+        if (deleteInput) {
+            deleteInput.checked = true;
+        }
+
+        row.hidden = true;
+
+        if (!activeRows().length) {
+            addMaterialRow();
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!event.target.closest(".material-picker")) {
+            document.querySelectorAll(".material-results").forEach(function (results) {
+                results.style.display = "none";
+            });
+        }
+    });
+
+    categoryFilter.addEventListener("change", function () {
+        const focusedRow = document.activeElement.closest
+            ? document.activeElement.closest(".material-line")
+            : null;
+
+        if (focusedRow) {
+            renderMaterialResults(focusedRow);
+        }
+    });
+
+    addButton.addEventListener("click", addMaterialRow);
+    container.querySelectorAll(".material-line").forEach(initializeMaterialRow);
+});
+</script>

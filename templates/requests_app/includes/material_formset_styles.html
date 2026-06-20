@@ -1,0 +1,128 @@
+    .category-filter {
+        margin-bottom: 16px;
+    }
+
+    .category-filter select {
+        max-width: 320px;
+    }
+
+    .material-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 12px;
+    }
+
+    .material-section-header h3 {
+        margin-bottom: 4px;
+    }
+
+    .materials-table {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: visible;
+        background: white;
+    }
+
+    .materials-header,
+    .material-line {
+        display: grid;
+        grid-template-columns: 1fr 160px 110px;
+        gap: 12px;
+        align-items: start;
+        padding: 12px;
+    }
+
+    .materials-header {
+        background: #f8fafc;
+        font-weight: 700;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .material-line {
+        border-bottom: 1px solid #f0f0f0;
+        position: relative;
+    }
+
+    .material-line:last-child {
+        border-bottom: none;
+    }
+
+    .material-picker {
+        position: relative;
+    }
+
+    .hidden-material-select {
+        display: none;
+    }
+
+    .material-results {
+        display: none;
+        position: absolute;
+        z-index: 50;
+        left: 0;
+        right: 0;
+        top: 42px;
+        max-height: 240px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .material-result-item {
+        padding: 9px 10px;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .material-result-item:hover {
+        background: #f8fafc;
+    }
+
+    .material-result-muted {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .remove-cell {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .remove-cell input[type="checkbox"] {
+        display: none;
+    }
+
+    .remove-material-btn {
+        background: transparent;
+        border: none;
+        color: #b91c1c;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .remove-material-btn:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 800px) {
+        .materials-header {
+            display: none;
+        }
+
+        .material-line {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .material-section-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }

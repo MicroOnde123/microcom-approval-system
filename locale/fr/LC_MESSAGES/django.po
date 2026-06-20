@@ -117,6 +117,22 @@ msgstr "Description"
 msgid "Approvers"
 msgstr "Approbateurs"
 
+#: .\requests_app\views.py
+msgid "Material Report"
+msgstr "Rapport de matériel"
+
+#: .\requests_app\views.py
+msgid "Microcom Material Report"
+msgstr "Rapport de matériel Microcom"
+
+#: .\requests_app\views.py
+msgid "Generated At"
+msgstr "Généré le"
+
+#: .\requests_app\views.py
+msgid "You are not allowed to export material reports."
+msgstr "Vous n’êtes pas autorisé à exporter les rapports de matériel."
+
 #: .\templates\base.html:9 .\templates\base.html:335
 msgid "Microcom Approval System"
 msgstr "Système d’approbation Microcom"
@@ -561,6 +577,10 @@ msgstr "Filtrer"
 msgid "Export CSV"
 msgstr "Exporter CSV"
 
+#: .\templates\requests_app\material_reports.html
+msgid "Export Excel"
+msgstr "Exporter Excel"
+
 #: .\templates\requests_app\material_reports.html:55
 #: .\templates\requests_app\pending_approvals.html:88
 msgid "Clear"
@@ -572,11 +592,11 @@ msgstr "Imprimer la sélection"
 
 #: .\templates\requests_app\material_reports.html:70
 msgid "Print selected: 1 copy"
-msgstr "Imprimer la selection : 1 exemplaire"
+msgstr "Imprimer la sélection : 1 exemplaire"
 
 #: .\templates\requests_app\material_reports.html:71
 msgid "Print selected: 2 copies"
-msgstr "Imprimer la selection : 2 exemplaires"
+msgstr "Imprimer la sélection : 2 exemplaires"
 
 #: .\templates\requests_app\material_reports.html:78
 #: .\templates\requests_app\pending_approvals.html:107

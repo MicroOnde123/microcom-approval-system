@@ -1,0 +1,114 @@
+{% load i18n %}
+
+<div class="form-section" id="section-materials">
+    <div class="section-header material-section-header">
+        <div class="category-filter">
+            <label for="material-category-filter">{% trans "Filter By Category" %}</label>
+            <select id="material-category-filter">
+                <option value="">{% trans "All Categories" %}</option>
+                {% regroup formset.forms.0.fields.material.queryset by category as grouped_materials %}
+                {% for group in grouped_materials %}
+                <option value="{{ group.grouper.id }}">{{ group.grouper.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <h3>{% trans "Materials" %}</h3>
+            <p class="muted">{% trans "Search by name, code, or category, then enter the quantity needed." %}</p>
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="add-material-btn">
+            + {% trans "Add Material" %}
+        </button>
+    </div>
+
+    {{ formset.management_form }}
+
+    {% if formset.non_form_errors %}
+    <div class="field-error global-error">{{ formset.non_form_errors }}</div>
+    {% endif %}
+
+    <div class="materials-table">
+        <div class="materials-header">
+            <div>{% trans "Material" %}</div>
+            <div>{% trans "Quantity" %}</div>
+            <div>{% trans "Remove" %}</div>
+        </div>
+
+        <div id="material-items">
+            {% for subform in formset %}
+            <div class="material-line"{% if subform.DELETE.value %} hidden{% endif %}>
+                <div class="material-picker">
+                    <input
+                        type="text"
+                        class="material-search-field"
+                        placeholder="{% trans 'Search material by name, code, or category...' %}"
+                        autocomplete="off"
+                    >
+
+                    <div class="material-results"></div>
+
+                    <div class="hidden-material-select">
+                        {{ subform.material }}
+                    </div>
+
+                    {% if subform.material.errors %}
+                    <div class="field-error">{{ subform.material.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ subform.quantity }}
+                    {% if subform.quantity.errors %}
+                    <div class="field-error">{{ subform.quantity.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="remove-cell">
+                    {{ subform.DELETE }}
+                    <button type="button" class="remove-material-btn">{% trans "Remove" %}</button>
+                </div>
+
+                {% if subform.non_field_errors %}
+                <div class="field-error row-error">{{ subform.non_field_errors }}</div>
+                {% endif %}
+
+                {% for hidden in subform.hidden_fields %}
+                {{ hidden }}
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<template id="empty-material-template">
+    <div class="material-line">
+        <div class="material-picker">
+            <input
+                type="text"
+                class="material-search-field"
+                placeholder="{% trans 'Search material by name, code, or category...' %}"
+                autocomplete="off"
+            >
+
+            <div class="material-results"></div>
+
+            <div class="hidden-material-select">
+                {{ formset.empty_form.material }}
+            </div>
+        </div>
+
+        <div>{{ formset.empty_form.quantity }}</div>
+
+        <div class="remove-cell">
+            {{ formset.empty_form.DELETE }}
+            <button type="button" class="remove-material-btn">{% trans "Remove" %}</button>
+        </div>
+
+        {% for hidden in formset.empty_form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+    </div>
+</template>

@@ -161,88 +161,7 @@
         </div>
     </div>
 
-    <div class="form-section" id="section-materials">
-        <div class="section-header">
-            <div class="category-filter">
-                <label for="material-category-filter">{% trans "Filter By Category" %}</label>
-                <select id="material-category-filter">
-                    <option value="">{% trans "All Categories" %}</option>
-                    {% regroup formset.forms.0.fields.material.queryset by category as grouped_materials %}
-                    {% for group in grouped_materials %}
-                    <option value="{{ group.grouper.id }}">{{ group.grouper.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div>
-                <h3>{% trans "Materials" %}</h3>
-                <p class="muted">{% trans "Search by name, code, or category, then enter the quantity needed." %}</p>
-            </div>
-
-            <button type="button" class="btn btn-secondary" id="add-material-btn">+ {% trans "Add Material" %}</button>
-        </div>
-
-        {{ formset.management_form }}
-
-        {% if formset.non_form_errors %}
-        <div class="field-error global-error">{{ formset.non_form_errors }}</div>
-        {% endif %}
-
-        <div class="materials-table">
-            <div class="materials-header">
-                <div>{% trans "Material" %}</div>
-                <div>{% trans "Quantity" %}</div>
-                <div>{% trans "Remove" %}</div>
-            </div>
-
-            <div id="material-items">
-                {% for subform in formset %}
-                <div class="material-line">
-                    <div class="material-picker">
-                        <input
-                            type="text"
-                            class="material-search-field"
-                            placeholder="{% trans 'Search material by name, code, or category...' %}"
-                            autocomplete="off"
-                        >
-
-                        <div class="material-results"></div>
-
-                        <div class="hidden-material-select">
-                            {{ subform.material }}
-                        </div>
-
-                        {% if subform.material.errors %}
-                        <div class="field-error">{{ subform.material.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div>
-                        {{ subform.quantity }}
-                        {% if subform.quantity.errors %}
-                        <div class="field-error">{{ subform.quantity.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="remove-cell">
-                        {{ subform.DELETE }}
-                        <button type="button" class="remove-material-btn">{% trans "Remove" %}</button>
-                    </div>
-
-                    {% if subform.non_field_errors %}
-                    <div class="field-error row-error">
-                        {{ subform.non_field_errors }}
-                    </div>
-                    {% endif %}
-
-                    {% for hidden in subform.hidden_fields %}
-                    {{ hidden }}
-                    {% endfor %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
+    {% include "requests_app/includes/material_formset.html" %}
 
     <div class="form-section" id="description-section">
         <label for="{{ form.description.id_for_label }}">{% trans "Description / Reason" %}</label>
@@ -281,50 +200,12 @@
     </div>
 </form>
 
-<template id="empty-material-template">
-    <div class="material-line">
-        <div class="material-picker">
-            <input
-                type="text"
-                class="material-search-field"
-                placeholder="{% trans 'Search material by name, code, or category...' %}"
-                autocomplete="off"
-            >
-
-            <div class="material-results"></div>
-
-            <div class="hidden-material-select">
-                {{ formset.empty_form.material }}
-            </div>
-        </div>
-
-        <div>{{ formset.empty_form.quantity }}</div>
-
-        <div class="remove-cell">
-            {{ formset.empty_form.DELETE }}
-            <button type="button" class="remove-material-btn">{% trans "Remove" %}</button>
-        </div>
-
-        {% for hidden in formset.empty_form.hidden_fields %}
-        {{ hidden }}
-        {% endfor %}
-    </div>
-</template>
-
 <style>
     .permission-box {
         border: 1px solid #e5e7eb;
         background: #f9fafb;
         border-radius: 10px;
         padding: 16px;
-    }
-
-    .category-filter {
-        margin-bottom: 16px;
-    }
-
-    .category-filter select {
-        max-width: 320px;
     }
 
     .form-section {
@@ -359,111 +240,6 @@
         margin-top: 4px;
     }
 
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 12px;
-    }
-
-    .section-header h3 {
-        margin-bottom: 4px;
-    }
-
-    .materials-table {
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        overflow: visible;
-        background: white;
-    }
-
-    .materials-header,
-    .material-line {
-        display: grid;
-        grid-template-columns: 1fr 160px 110px;
-        gap: 12px;
-        align-items: start;
-        padding: 12px;
-    }
-
-    .materials-header {
-        background: #f8fafc;
-        font-weight: 700;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .material-line {
-        border-bottom: 1px solid #f0f0f0;
-        position: relative;
-    }
-
-    .material-line:last-child {
-        border-bottom: none;
-    }
-
-    .material-picker {
-        position: relative;
-    }
-
-    .hidden-material-select {
-        display: none;
-    }
-
-    .material-results {
-        display: none;
-        position: absolute;
-        z-index: 50;
-        left: 0;
-        right: 0;
-        top: 42px;
-        max-height: 240px;
-        overflow-y: auto;
-        background: white;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    }
-
-    .material-result-item {
-        padding: 9px 10px;
-        cursor: pointer;
-        font-size: 13px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .material-result-item:hover {
-        background: #f8fafc;
-    }
-
-    .material-result-muted {
-        color: #6b7280;
-        font-size: 12px;
-    }
-
-    .remove-cell {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 6px;
-    }
-
-    .remove-cell input[type="checkbox"] {
-        display: none;
-    }
-
-    .remove-material-btn {
-        background: transparent;
-        border: none;
-        color: #b91c1c;
-        cursor: pointer;
-        font-size: 13px;
-    }
-
-    .remove-material-btn:hover {
-        text-decoration: underline;
-    }
-
     .form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -475,44 +251,26 @@
     }
 
     @media (max-width: 800px) {
-        .materials-header {
-            display: none;
-        }
-
-        .material-line {
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-
         .form-grid {
             grid-template-columns: 1fr;
         }
 
-        .section-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
     }
+
+    {% include "requests_app/includes/material_formset_styles.html" %}
 </style>
 
 {{ request_type_behavior|json_script:"request-type-behavior" }}
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const noMaterialsFoundText = "{% trans 'No materials found.' %}";
     const requestTypeBehavior = JSON.parse(document.getElementById("request-type-behavior").textContent);
-
-    const addButton = document.getElementById("add-material-btn");
-    const container = document.getElementById("material-items");
-    const totalForms = document.getElementById("id_material_items-TOTAL_FORMS");
-    const template = document.getElementById("empty-material-template").innerHTML;
 
     const typeSelect = document.getElementById("id_request_type");
     const permissionSection = document.getElementById("section-permission");
     const materialsSection = document.getElementById("section-materials");
     const amountSection = document.getElementById("section-amount");
     const descriptionSection = document.getElementById("description-section");
-    const categoryFilter = document.getElementById("material-category-filter");
 
     const permissionGroup = document.getElementById("id_permission_group");
     const permissionSubgroup = document.getElementById("id_permission_subgroup");
@@ -523,139 +281,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const returnTimeWrapper = document.getElementById("return-time-wrapper");
     const arrivalTimeWrapper = document.getElementById("arrival-time-wrapper");
     const driverWrapper = document.getElementById("driver-wrapper");
-
-    const prefix = "material_items";
-
-    function getOptionsForRow(row) {
-        const select = row.querySelector('select[name$="-material"]');
-
-        if (!select) return [];
-
-        return Array.from(select.options)
-            .filter(option => option.value)
-            .map(option => ({
-                value: option.value,
-                text: option.text
-            }));
-    }
-
-    function renderMaterialResults(row) {
-        const input = row.querySelector(".material-search-field");
-        const results = row.querySelector(".material-results");
-        const select = row.querySelector('select[name$="-material"]');
-
-        if (!input || !results || !select) return;
-
-        const searchText = input.value.toLowerCase().trim();
-        const selectedCategoryText = categoryFilter.options[categoryFilter.selectedIndex].text.toLowerCase();
-        const selectedCategory = categoryFilter.value;
-
-        const matches = getOptionsForRow(row).filter(item => {
-            const text = item.text.toLowerCase();
-            const matchesSearch = !searchText || text.includes(searchText);
-            const matchesCategory = !selectedCategory || text.includes(selectedCategoryText);
-            return matchesSearch && matchesCategory;
-        }).slice(0, 20);
-
-        results.innerHTML = "";
-
-        if (!matches.length) {
-            results.innerHTML = '<div class="material-result-item material-result-muted">' + noMaterialsFoundText + '</div>';
-            results.style.display = "block";
-            return;
-        }
-
-        matches.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "material-result-item";
-            div.textContent = item.text;
-
-            div.addEventListener("click", function () {
-                select.value = item.value;
-                input.value = item.text;
-                results.style.display = "none";
-            });
-
-            results.appendChild(div);
-        });
-
-        results.style.display = "block";
-    }
-
-    function initializeMaterialSearch() {
-        document.querySelectorAll(".material-line").forEach(function (row) {
-            const input = row.querySelector(".material-search-field");
-            const results = row.querySelector(".material-results");
-            const select = row.querySelector('select[name$="-material"]');
-
-            if (!input || !results || !select) return;
-
-            const selectedOption = select.options[select.selectedIndex];
-
-            if (selectedOption && selectedOption.value) {
-                input.value = selectedOption.text;
-            }
-
-            input.oninput = function () {
-                select.value = "";
-                renderMaterialResults(row);
-            };
-
-            input.onfocus = function () {
-                renderMaterialResults(row);
-            };
-        });
-    }
-
-    function renumberForms() {
-        const rows = container.querySelectorAll(".material-line");
-
-        rows.forEach(function (row, index) {
-            row.querySelectorAll("input, select, textarea, label").forEach(function (el) {
-                ["name", "id", "for"].forEach(function (attr) {
-                    if (el.hasAttribute(attr)) {
-                        el.setAttribute(
-                            attr,
-                            el.getAttribute(attr).replace(
-                                new RegExp(prefix + "-\\d+-", "g"),
-                                prefix + "-" + index + "-"
-                            )
-                        );
-                    }
-                });
-            });
-        });
-
-        totalForms.value = rows.length;
-        initializeMaterialSearch();
-    }
-
-    function updateRemoveButtons() {
-        document.querySelectorAll(".remove-material-btn").forEach(function (button) {
-            button.onclick = function () {
-                const row = button.closest(".material-line");
-                row.remove();
-                renumberForms();
-
-                if (container.querySelectorAll(".material-line").length === 0) {
-                    addMaterialRow();
-                }
-            };
-        });
-    }
-
-    function addMaterialRow() {
-        const formIndex = parseInt(totalForms.value, 10);
-        const newFormHtml = template.replace(/__prefix__/g, formIndex);
-
-        container.insertAdjacentHTML("beforeend", newFormHtml);
-        totalForms.value = formIndex + 1;
-
-        categoryFilter.value = "";
-
-        updateRemoveButtons();
-        initializeMaterialSearch();
-    }
 
     function updatePermissionFields() {
         if (!permissionGroup) return;
@@ -717,18 +342,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updatePermissionFields();
     }
 
-    document.addEventListener("click", function (event) {
-        if (!event.target.closest(".material-picker")) {
-            document.querySelectorAll(".material-results").forEach(function (results) {
-                results.style.display = "none";
-            });
-        }
-    });
-
-    categoryFilter.addEventListener("change", function () {
-        document.querySelectorAll(".material-line").forEach(renderMaterialResults);
-    });
-
     if (permissionGroup) {
         permissionGroup.addEventListener("change", updatePermissionFields);
     }
@@ -737,13 +350,10 @@ document.addEventListener("DOMContentLoaded", function () {
         permissionSubgroup.addEventListener("change", updatePermissionFields);
     }
 
-    addButton.addEventListener("click", addMaterialRow);
-
-    updateRemoveButtons();
-    initializeMaterialSearch();
     updateFormByRequestType();
 
     typeSelect.addEventListener("change", updateFormByRequestType);
 });
 </script>
+{% include "requests_app/includes/material_formset_script.html" %}
 {% endblock %}

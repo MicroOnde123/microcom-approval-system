@@ -1,9 +1,6 @@
 import csv
 from django.http import HttpResponse
 from urllib.parse import urlencode
-from urllib import request
-
-from urllib import request
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -20,7 +17,10 @@ from .approval_forms import ApprovalActionForm
 from .stock_forms import ReturnToStockForm
 from .models import Request, RequestApproval, RequestAttachment, RequestMaterialItem, StockMovement, RequestAuditLog
 from .services import submit_request, approve_step, reject_step, return_step, resubmit_request
-from django.utils.translation import gettext as _
+from django.utils.translation import get_language, gettext as _
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 
 
@@ -426,6 +426,7 @@ def edit_request(request, request_id):
                             "formset": formset,
                             "request_obj": request_obj,
                             "request_type_behavior": request_type_behavior_context(form),
+                            "back_url": reverse("request_detail", args=[request_obj.id]),
                         },
                     )
 
@@ -445,6 +446,7 @@ def edit_request(request, request_id):
                             "formset": formset,
                             "request_obj": request_obj,
                             "request_type_behavior": request_type_behavior_context(form),
+                            "back_url": reverse("request_detail", args=[request_obj.id]),
                         },
                     )
             else:
@@ -632,6 +634,46 @@ def approval_history(request):
         "requests_app/approval_history.html",
         {"approvals": approvals, "current_list_url": current_path_with_query(request)},
     )
+    
+def get_filtered_material_report_requests(request):
+    requests = Request.objects.filter(
+        status="APPROVED",
+        material_items__isnull=False,
+    ).distinct().prefetch_related(
+        "material_items__material__category",
+        "approvals__approver_user",
+        "approvals__acted_by",
+    ).select_related(
+        "submitted_by",
+        "department",
+        "request_type",
+    )
+
+    q = request.GET.get("q", "").strip()
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
+    department = request.GET.get("department", "").strip()
+
+    if q:
+        requests = requests.filter(
+            models.Q(request_number__icontains=q)
+            | models.Q(submitted_by__username__icontains=q)
+            | models.Q(submitted_by__full_name__icontains=q)
+            | models.Q(material_items__material__name__icontains=q)
+            | models.Q(material_items__material__code__icontains=q)
+        )
+
+    if date_from:
+        requests = requests.filter(date_needed__gte=date_from)
+
+    if date_to:
+        requests = requests.filter(date_needed__lte=date_to)
+
+    if department:
+        requests = requests.filter(department_id=department)
+
+    return requests.order_by("-finalized_at", "-submitted_at")
+
 @login_required
 def material_reports(request):
     if not is_stock_manager(request.user):
@@ -943,3 +985,123 @@ def notification_count(request):
         "pending": pending_count,
         "returned": returned_count,
     })
+
+
+@login_required
+def export_material_report_excel(request):
+    if not is_stock_manager(request.user):
+        return HttpResponseForbidden(
+            _("You are not allowed to export material reports.")
+        )
+
+    requests = get_filtered_material_report_requests(request)
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = _("Material Report")
+
+    headers = [
+        _("Request Number"),
+        _("Requester"),
+        _("Department"),
+        _("Date Needed"),
+        _("Approved Date"),
+        _("Material"),
+        _("Material Code"),
+        _("Category"),
+        _("Quantity"),
+        _("Unit"),
+        _("Available Stock"),
+        _("Description"),
+        _("Approvers"),
+    ]
+
+    sheet.merge_cells("A1:M1")
+    sheet["A1"] = _("Microcom Material Report")
+    sheet["A1"].font = Font(bold=True, size=14)
+    sheet["A1"].alignment = Alignment(horizontal="center")
+
+    sheet["A2"] = _("Generated At")
+    sheet["B2"] = timezone.now().strftime("%Y-%m-%d %H:%M")
+
+    start_row = 4
+
+    for col, header in enumerate(headers, start=1):
+        cell = sheet.cell(row=start_row, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill("solid", fgColor="D9EAF7")
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+    row_num = start_row + 1
+
+    for req in requests:
+        approvers = ", ".join([
+            approval.display_approver_name
+            for approval in req.approvals.all()
+            if approval.status == "APPROVED"
+        ])
+
+        for item in req.material_items.all():
+            sheet.append([
+                req.request_number,
+                req.submitted_by.full_name or req.submitted_by.username,
+                req.department.name if req.department else "",
+                req.date_needed,
+                req.finalized_at.strftime("%Y-%m-%d %H:%M") if req.finalized_at else "",
+                item.material.name,
+                item.material.code,
+                item.material.category.name if item.material.category else "",
+                item.quantity,
+                item.material.unit,
+                item.material.stock_quantity,
+                req.description,
+                approvers,
+            ])
+            row_num += 1
+
+    thin_border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin"),
+    )
+
+    for row in sheet.iter_rows(min_row=start_row, max_row=sheet.max_row, min_col=1, max_col=len(headers)):
+        for cell in row:
+            cell.border = thin_border
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+    sheet.freeze_panes = "A5"
+    sheet.auto_filter.ref = f"A{start_row}:M{sheet.max_row}"
+
+    widths = {
+        "A": 18,
+        "B": 24,
+        "C": 20,
+        "D": 15,
+        "E": 20,
+        "F": 30,
+        "G": 18,
+        "H": 22,
+        "I": 12,
+        "J": 12,
+        "K": 16,
+        "L": 45,
+        "M": 35,
+    }
+
+    for col, width in widths.items():
+        sheet.column_dimensions[col].width = width
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    filename = (
+        "rapport_materiel.xlsx"
+        if get_language() == "fr"
+        else "material_report.xlsx"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    workbook.save(response)
+    return response

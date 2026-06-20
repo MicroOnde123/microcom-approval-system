@@ -39,11 +39,11 @@
                 <option value="">{% trans "All Departments" %}</option>
 
                 {% for dept_id, dept_name in departments %}
-                {% with dept_id_string=dept_id|stringformat:"s" %}
-                <option value="{{ dept_id }}" {% if selected_department == dept_id_string %}selected{% endif %}>
-                    {{ dept_name }}
-                </option>
-                {% endwith %}
+                    {% with dept_id_string=dept_id|stringformat:"s" %}
+                        <option value="{{ dept_id }}" {% if selected_department == dept_id_string %}selected{% endif %}>
+                            {{ dept_name }}
+                        </option>
+                    {% endwith %}
                 {% endfor %}
             </select>
         </div>
@@ -57,6 +57,11 @@
             {% trans "Export CSV" %}
         </a>
 
+        <a href="{% url 'export_material_report_excel' %}{% if active_querystring %}?{{ active_querystring }}{% endif %}"
+            class="btn btn-secondary">
+            {% trans "Export Excel" %}
+        </a>
+
         <a href="{% url 'material_reports' %}" class="btn btn-secondary">
             {% trans "Clear" %}
         </a>
@@ -68,8 +73,13 @@
     <input type="hidden" name="next" value="{{ current_list_url }}">
 
     <div style="margin-bottom: 15px;">
-        <button type="submit" class="btn" formaction="{% url 'bulk_print_material_documents' %}?copies=1">{% trans "Print selected: 1 copy" %}</button>
-        <button type="submit" class="btn" formaction="{% url 'bulk_print_material_documents' %}?copies=2">{% trans "Print selected: 2 copies" %}</button>
+        <button type="submit" class="btn" formaction="{% url 'bulk_print_material_documents' %}?copies=1">
+            {% trans "Print selected: 1 copy" %}
+        </button>
+
+        <button type="submit" class="btn" formaction="{% url 'bulk_print_material_documents' %}?copies=2">
+            {% trans "Print selected: 2 copies" %}
+        </button>
     </div>
 
     <div class="table-wrap">
@@ -101,40 +111,46 @@
 
                     <td>
                         {% if req.finalized_at %}
-                        {{ req.finalized_at|date:"Y-m-d H:i" }}
+                            {{ req.finalized_at|date:"Y-m-d H:i" }}
                         {% else %}
-                        -
+                            -
                         {% endif %}
                     </td>
 
                     <td>
                         {% for item in req.material_items.all %}
-                        <div style="margin-bottom: 10px;">
-                            <div>
-                                {{ item.material.name }} — {{ item.quantity }} {{ item.material.unit }}
+                            <div style="margin-bottom: 10px;">
+                                <div>
+                                    {{ item.material.name }} — {{ item.quantity }} {{ item.material.unit }}
 
-                                {% if item.material.stock_quantity <= 5 %} <span class="status-badge status-REJECTED">{%
-                                    trans "LOW STOCK" %}</span>
-                                    {% elif item.material.stock_quantity <= 10 %} <span
-                                        class="status-badge status-RETURNED">{% trans "RUNNING LOW" %}</span>
-                                        {% endif %}
-                            </div>
+                                    {% if item.material.stock_quantity <= 5 %}
+                                        <span class="status-badge status-REJECTED">{% trans "LOW STOCK" %}</span>
+                                    {% elif item.material.stock_quantity <= 10 %}
+                                        <span class="status-badge status-RETURNED">{% trans "RUNNING LOW" %}</span>
+                                    {% endif %}
+                                </div>
 
-                            <div style="margin-top: 6px;">
-                                <a href="{% url 'return_material_to_stock' item.id %}?next={{ current_list_url|urlencode }}" class="btn btn-secondary">
-                                    {% trans "Return to Stock" %}
-                                </a>
+                                <div style="margin-top: 6px;">
+                                    <a href="{% url 'return_material_to_stock' item.id %}?next={{ current_list_url|urlencode }}"
+                                        class="btn btn-secondary">
+                                        {% trans "Return to Stock" %}
+                                    </a>
+                                </div>
                             </div>
-                        </div>
                         {% empty %}
-                        -
+                            -
                         {% endfor %}
                     </td>
 
                     <td>
                         <div class="actions-inline">
-                            <a href="{% url 'request_detail' req.id %}?next={{ current_list_url|urlencode }}" class="btn btn-secondary">{% trans "View" %}</a>
-                            <a href="{% url 'approved_document' req.id %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">
+                            <a href="{% url 'request_detail' req.id %}?next={{ current_list_url|urlencode }}"
+                                class="btn btn-secondary">
+                                {% trans "View" %}
+                            </a>
+
+                            <a href="{% url 'approved_document' req.id %}?next={{ current_list_url|urlencode }}"
+                                class="btn" target="_blank">
                                 {% trans "Print" %}
                             </a>
                         </div>

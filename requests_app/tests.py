@@ -1,8 +1,11 @@
+from io import BytesIO
+
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from openpyxl import load_workbook
 from urllib.parse import quote
 
 from accounts.models import Department
@@ -516,6 +519,97 @@ class MaterialPrintCopyLimitTests(TestCase):
         content = response.content.decode()
         self.assertEqual(content.count("Material Exit Slip"), count)
 
+    def export_workbook(self, language):
+        self.client.force_login(self.stock_user)
+
+        response = self.client.get(
+            reverse("export_material_report_excel"),
+            HTTP_ACCEPT_LANGUAGE=language,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        workbook = load_workbook(BytesIO(response.content))
+        return response, workbook.active
+
+    def test_material_reports_excel_and_print_controls_are_localized(self):
+        self.client.force_login(self.stock_user)
+
+        english_response = self.client.get(
+            reverse("material_reports"),
+            HTTP_ACCEPT_LANGUAGE="en",
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(english_response, "Export Excel")
+        self.assertContains(english_response, "Print selected: 1 copy")
+        self.assertContains(english_response, "Print selected: 2 copies")
+
+        french_response = self.client.get(
+            reverse("material_reports"),
+            HTTP_ACCEPT_LANGUAGE="fr",
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(french_response, "Exporter Excel")
+        self.assertContains(french_response, "Imprimer la sélection : 1 exemplaire")
+        self.assertContains(french_response, "Imprimer la sélection : 2 exemplaires")
+
+    def test_excel_export_uses_english_filename_and_labels(self):
+        response, sheet = self.export_workbook("en")
+
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="material_report.xlsx"',
+        )
+        self.assertEqual(sheet.title, "Material Report")
+        self.assertEqual(sheet["A1"].value, "Microcom Material Report")
+        self.assertEqual(sheet["A2"].value, "Generated At")
+        self.assertEqual(
+            [sheet.cell(row=4, column=column).value for column in range(1, 14)],
+            [
+                "Request Number",
+                "Requester",
+                "Department",
+                "Date Needed",
+                "Approved Date",
+                "Material",
+                "Material Code",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Available Stock",
+                "Description",
+                "Approvers",
+            ],
+        )
+
+    def test_excel_export_uses_french_filename_and_labels(self):
+        response, sheet = self.export_workbook("fr")
+
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="rapport_materiel.xlsx"',
+        )
+        self.assertEqual(sheet.title, "Rapport de matériel")
+        self.assertEqual(sheet["A1"].value, "Rapport de matériel Microcom")
+        self.assertEqual(sheet["A2"].value, "Généré le")
+        self.assertEqual(
+            [sheet.cell(row=4, column=column).value for column in range(1, 14)],
+            [
+                "Numéro de demande",
+                "Demandeur",
+                "Département",
+                "Date requise",
+                "Date d’approbation",
+                "Matériel",
+                "Code matériel",
+                "Catégorie",
+                "Quantité",
+                "Unité",
+                "Stock disponible",
+                "Description",
+                "Approbateurs",
+            ],
+        )
+
     def test_single_material_print_forces_one_copy_when_more_than_six_items(self):
         request_obj = self.make_material_request(item_count=7, number_suffix="007")
         self.client.force_login(self.submitter)
@@ -558,3 +652,193 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertContains(response, TWO_COPY_WARNING)
         self.assert_material_slip_count(response, 3)
         self.assertContains(response, 'class="print-sheet two-copies"', count=1)
+
+
+class ReturnedMaterialRequestEditTests(TestCase):
+    def setUp(self):
+        self.department = Department.objects.create(
+            name="Operations",
+            code="OPS",
+        )
+
+        User = get_user_model()
+        self.requester = User.objects.create_user(
+            username="returned_requester",
+            password="pass12345",
+            email="returned-requester@example.com",
+            full_name="Returned Requester",
+            department=self.department,
+        )
+        self.approver = User.objects.create_user(
+            username="returned_approver",
+            password="pass12345",
+            email="returned-approver@example.com",
+            full_name="Returned Approver",
+        )
+
+        self.request_type = RequestType.objects.create(
+            name="Material Request",
+            code="RETURNED-MATERIAL",
+            is_active=True,
+            requires_materials=True,
+        )
+        self.workflow = ApprovalWorkflow.objects.create(
+            name="Returned material approval",
+            request_type=self.request_type,
+            department=self.department,
+            is_active=True,
+        )
+        self.workflow_step = ApprovalWorkflowStep.objects.create(
+            workflow=self.workflow,
+            step_order=1,
+            approver_user=self.approver,
+        )
+
+        self.category = MaterialCategory.objects.create(
+            name="Networking",
+            code="NETWORKING",
+        )
+        self.existing_material = Material.objects.create(
+            category=self.category,
+            name="Ethernet Cable",
+            code="ETH-CABLE",
+            unit="roll",
+            stock_quantity=10,
+        )
+        self.new_material = Material.objects.create(
+            category=self.category,
+            name="Network Switch",
+            code="NET-SWITCH",
+            unit="pcs",
+            stock_quantity=8,
+        )
+
+        self.request_obj = Request.objects.create(
+            request_number="REQ-RETURNED-MATERIAL",
+            request_type=self.request_type,
+            submitted_by=self.requester,
+            department=self.department,
+            description="Network installation",
+            date_needed=timezone.localdate(),
+            status="RETURNED",
+        )
+        self.existing_item = RequestMaterialItem.objects.create(
+            request=self.request_obj,
+            material=self.existing_material,
+            quantity=2,
+        )
+        RequestApproval.objects.create(
+            request=self.request_obj,
+            workflow_step=self.workflow_step,
+            step_order=1,
+            approver_user=self.approver,
+            status="RETURNED",
+        )
+
+        self.client.force_login(self.requester)
+
+    def edit_url(self):
+        return reverse("edit_request", args=[self.request_obj.id])
+
+    def request_data(self):
+        return {
+            "request_type": self.request_type.id,
+            "description": "Corrected network installation",
+            "date_needed": timezone.localdate().isoformat(),
+        }
+
+    def test_edit_page_uses_shared_searchable_material_picker(self):
+        response = self.client.get(
+            self.edit_url(),
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="material-category-filter"')
+        self.assertContains(response, 'class="material-search-field"')
+        self.assertContains(response, 'id="add-material-btn"')
+        self.assertContains(response, 'id="empty-material-template"')
+        self.assertContains(response, 'name="material_items-TOTAL_FORMS"')
+        self.assertContains(response, "Ethernet Cable")
+        self.assertContains(response, "ETH-CABLE")
+        self.assertContains(response, "Networking")
+        self.assertContains(response, "Stock: 10.00 roll")
+
+    def test_resubmit_can_remove_existing_item_and_add_new_item(self):
+        data = self.request_data()
+        data.update(
+            {
+                "material_items-TOTAL_FORMS": "3",
+                "material_items-INITIAL_FORMS": "1",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-0-id": self.existing_item.id,
+                "material_items-0-material": self.existing_material.id,
+                "material_items-0-quantity": "2",
+                "material_items-0-DELETE": "on",
+                "material_items-2-material": self.new_material.id,
+                "material_items-2-quantity": "3",
+            }
+        )
+
+        response = self.client.post(
+            self.edit_url(),
+            data=data,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("request_detail", args=[self.request_obj.id]),
+            fetch_redirect_response=False,
+        )
+
+        self.request_obj.refresh_from_db()
+        self.existing_material.refresh_from_db()
+        self.new_material.refresh_from_db()
+
+        self.assertEqual(self.request_obj.status, "IN_REVIEW")
+        self.assertEqual(self.request_obj.material_items.count(), 1)
+        self.assertEqual(
+            self.request_obj.material_items.get().material,
+            self.new_material,
+        )
+        self.assertEqual(self.request_obj.material_items.get().quantity, 3)
+        self.assertEqual(self.request_obj.approvals.count(), 1)
+        self.assertEqual(self.request_obj.approvals.get().status, "PENDING")
+        self.assertEqual(self.existing_material.stock_quantity, 10)
+        self.assertEqual(self.new_material.stock_quantity, 8)
+        self.assertFalse(self.request_obj.stock_deducted)
+
+    def test_resubmit_rejects_quantity_above_available_stock(self):
+        data = self.request_data()
+        data.update(
+            {
+                "material_items-TOTAL_FORMS": "2",
+                "material_items-INITIAL_FORMS": "1",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-0-id": self.existing_item.id,
+                "material_items-0-material": self.existing_material.id,
+                "material_items-0-quantity": "11",
+            }
+        )
+
+        response = self.client.post(
+            self.edit_url(),
+            data=data,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Only 10.00 roll available in stock.")
+        self.assertContains(
+            response,
+            f'href="{reverse("request_detail", args=[self.request_obj.id])}"',
+        )
+
+        self.request_obj.refresh_from_db()
+        self.existing_item.refresh_from_db()
+        self.assertEqual(self.request_obj.status, "RETURNED")
+        self.assertEqual(self.existing_item.quantity, 2)
+        self.assertEqual(self.request_obj.approvals.get().status, "RETURNED")

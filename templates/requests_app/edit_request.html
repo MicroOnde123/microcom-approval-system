@@ -239,93 +239,7 @@
 
     </div>
 
-    <div class="form-section" id="section-materials">
-
-        <h3>{% trans "Materials" %}</h3>
-
-        {{ formset.management_form }}
-
-        <div class="table-wrap">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>{% trans "Material" %}</th>
-                        <th>{% trans "Quantity" %}</th>
-                        <th>{% trans "Remove" %}</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {% for subform in formset %}
-
-                    <tr>
-
-                        <td>
-
-                            {{ subform.material }}
-
-                            {% if subform.material.errors %}
-                            <div class="field-error">
-                                {{ subform.material.errors }}
-                            </div>
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {{ subform.quantity }}
-
-                            {% if subform.quantity.errors %}
-                            <div class="field-error">
-                                {{ subform.quantity.errors }}
-                            </div>
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-                            {{ subform.DELETE }}
-                        </td>
-
-                        {% for hidden in subform.hidden_fields %}
-                            {{ hidden }}
-                        {% endfor %}
-
-                    </tr>
-
-                    {% if subform.non_field_errors %}
-
-                    <tr>
-
-                        <td colspan="3">
-
-                            <div class="message error">
-                                {{ subform.non_field_errors }}
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                    {% endif %}
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
+    {% include "requests_app/includes/material_formset.html" %}
 
     <div class="form-section" id="description-section">
 
@@ -405,6 +319,22 @@
         color: #b91c1c;
         font-size: 13px;
         margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    .field-error ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .global-error,
+    .row-error {
+        grid-column: 1 / -1;
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 8px 10px;
+        border-radius: 6px;
+        margin-top: 4px;
     }
 
     .form-grid {
@@ -418,6 +348,8 @@
             grid-template-columns: 1fr;
         }
     }
+
+    {% include "requests_app/includes/material_formset_styles.html" %}
 </style>
 
 {{ request_type_behavior|json_script:"request-type-behavior" }}
@@ -521,5 +453,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+{% include "requests_app/includes/material_formset_script.html" %}
 
 {% endblock %}
