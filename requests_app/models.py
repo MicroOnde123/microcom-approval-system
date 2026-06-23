@@ -69,6 +69,8 @@ class Request(models.Model):
         blank=True,
     )
 
+    material_issue_note = models.TextField(blank=True)
+
     def __str__(self):
         return self.request_number
 

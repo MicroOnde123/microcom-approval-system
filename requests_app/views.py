@@ -7,12 +7,13 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.contrib import messages
-from django.db import models
+from django.db import models, transaction
 from django.db.models.functions import RowNumber
 from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
-from .forms import RequestForm, RequestMaterialItemFormSet
+from .forms import MaterialIssueNoteForm, RequestForm, RequestMaterialItemFormSet
 from .approval_forms import ApprovalActionForm
 from .stock_forms import ReturnToStockForm
 from .models import Request, RequestApproval, RequestAttachment, RequestMaterialItem, StockMovement, RequestAuditLog
@@ -388,8 +389,61 @@ def request_detail(request, request_id):
             "request_obj": request_obj,
             "back_url": back_url,
             "active_approval_for_user": active_approval_for_user,
+            "can_edit_material_issue_note": (
+                request_obj.status == "APPROVED"
+                and requires_materials(request_obj)
+                and is_stock_manager(request.user)
+            ),
+            "material_issue_note_form": MaterialIssueNoteForm(instance=request_obj),
         },
     )
+
+
+@login_required
+@require_POST
+def update_material_issue_note(request, request_id):
+    request_obj = get_object_or_404(
+        Request.objects.select_related("request_type"),
+        id=request_id,
+    )
+    detail_url = reverse("request_detail", args=[request_obj.id])
+    back_url = safe_next_url(request.POST.get("next"), detail_url)
+
+    if not is_stock_manager(request.user):
+        return HttpResponseForbidden(
+            _("You are not allowed to edit the material issue note.")
+        )
+
+    if request_obj.status != "APPROVED":
+        messages.error(
+            request,
+            _("Only approved requests can have a material issue note."),
+        )
+        return redirect(back_url)
+
+    if not requires_materials(request_obj):
+        messages.error(
+            request,
+            _("Only material requests can have a material issue note."),
+        )
+        return redirect(back_url)
+
+    form = MaterialIssueNoteForm(request.POST, instance=request_obj)
+    if not form.is_valid():
+        messages.error(request, _("The material issue note could not be saved."))
+        return redirect(back_url)
+
+    with transaction.atomic():
+        form.save()
+        RequestAuditLog.objects.create(
+            request=request_obj,
+            action="MATERIAL_ISSUE_NOTE_UPDATED",
+            performed_by=request.user,
+            comment=_("Material issue note updated."),
+        )
+
+    messages.success(request, _("Material issue note saved successfully."))
+    return redirect(back_url)
 
 
 @login_required
@@ -799,6 +853,7 @@ def export_material_report_csv(request):
         _("Unit"),
         _("Available Stock"),
         _("Description"),
+        _("Material Issue Note"),
         _("Approvers"),
     ])
 
@@ -823,6 +878,7 @@ def export_material_report_csv(request):
                 item.material.unit,
                 item.material.stock_quantity,
                 req.description,
+                req.material_issue_note,
                 approvers,
             ])
 
@@ -1013,10 +1069,11 @@ def export_material_report_excel(request):
         _("Unit"),
         _("Available Stock"),
         _("Description"),
+        _("Material Issue Note"),
         _("Approvers"),
     ]
 
-    sheet.merge_cells("A1:M1")
+    sheet.merge_cells("A1:N1")
     sheet["A1"] = _("Microcom Material Report")
     sheet["A1"].font = Font(bold=True, size=14)
     sheet["A1"].alignment = Alignment(horizontal="center")
@@ -1055,6 +1112,7 @@ def export_material_report_excel(request):
                 item.material.unit,
                 item.material.stock_quantity,
                 req.description,
+                req.material_issue_note,
                 approvers,
             ])
             row_num += 1
@@ -1072,7 +1130,7 @@ def export_material_report_excel(request):
             cell.alignment = Alignment(vertical="top", wrap_text=True)
 
     sheet.freeze_panes = "A5"
-    sheet.auto_filter.ref = f"A{start_row}:M{sheet.max_row}"
+    sheet.auto_filter.ref = f"A{start_row}:N{sheet.max_row}"
 
     widths = {
         "A": 18,
@@ -1087,7 +1145,8 @@ def export_material_report_excel(request):
         "J": 12,
         "K": 16,
         "L": 45,
-        "M": 35,
+        "M": 45,
+        "N": 35,
     }
 
     for col, width in widths.items():

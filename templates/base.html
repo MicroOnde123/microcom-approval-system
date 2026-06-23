@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
@@ -310,6 +310,157 @@
             gap: 16px;
         }
 
+        .independence-ribbon {
+            min-height: 46px;
+            padding: 10px 24px;
+            background: #0077c8;
+            border-top: 3px solid #f7d116;
+            border-bottom: 3px solid #f7d116;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.1px;
+        }
+
+        .independence-ribbon__accent {
+            width: 18px;
+            height: 5px;
+            border-radius: 999px;
+            background: #ce1021;
+            box-shadow: 0 8px 0 #f7d116;
+            flex: 0 0 auto;
+        }
+
+        .independence-banner {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            margin-bottom: 26px;
+            min-height: 290px;
+            border-radius: 16px;
+            background: #082f62;
+            box-shadow: 0 14px 34px rgba(13, 45, 79, 0.24);
+            color: white;
+            animation: independence-fade-in 600ms ease-out both;
+        }
+
+        .independence-banner::before {
+            content: "";
+            position: absolute;
+            z-index: -2;
+            inset: -12% -10%;
+            background: url("{% static 'images/drc_flag.jpg' %}") center / cover no-repeat;
+            transform: translate3d(-4%, 0, 0) scale(1.04);
+            animation: independence-flag-drift 34s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+
+        .independence-banner::after {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            inset: 0;
+            background:
+                linear-gradient(
+                    115deg,
+                    rgba(2, 27, 67, 0.76),
+                    rgba(0, 47, 108, 0.58) 50%,
+                    rgba(2, 27, 67, 0.78)
+                );
+        }
+
+        .independence-banner__content {
+            position: relative;
+            z-index: 1;
+            min-height: 290px;
+            padding: 32px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .independence-banner__logo-card {
+            width: 180px;
+            min-height: 118px;
+            padding: 20px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .independence-banner__logo {
+            display: block;
+            max-width: 100%;
+            max-height: 82px;
+            object-fit: contain;
+        }
+
+        .independence-banner__copy {
+            max-width: 760px;
+            text-align: center;
+        }
+
+        .independence-banner__copy h1 {
+            margin-bottom: 10px;
+            font-size: clamp(27px, 3.8vw, 42px);
+            line-height: 1.15;
+            text-shadow: 0 3px 16px rgba(0, 0, 0, 0.42);
+        }
+
+        .independence-banner__copy p {
+            margin: 0;
+            color: #f8fafc;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
+        }
+
+        @keyframes independence-flag-drift {
+            0% {
+                transform: translate3d(-4%, -1%, 0) scale(1.04);
+            }
+            50% {
+                transform: translate3d(0, 1%, 0) scale(1.08);
+            }
+            100% {
+                transform: translate3d(4%, -1%, 0) scale(1.05);
+            }
+        }
+
+        @keyframes independence-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .independence-banner {
+                animation: none;
+            }
+
+            .independence-banner::before {
+                animation: none;
+                transform: scale(1.06);
+            }
+        }
+
         @media (max-width: 700px) {
             .detail-grid {
                 grid-template-columns: 1fr;
@@ -324,6 +475,26 @@
             .nav-left,
             .nav-right {
                 align-items: flex-start;
+            }
+
+            .independence-banner__content {
+                min-height: 270px;
+                padding: 26px 20px;
+                gap: 18px;
+            }
+
+            .independence-banner__logo-card {
+                width: 150px;
+                min-height: 100px;
+                padding: 16px 20px;
+            }
+
+            .independence-banner__logo {
+                max-height: 68px;
+            }
+
+            .independence-banner__copy p {
+                font-size: 16px;
             }
         }
     </style>
@@ -380,6 +551,10 @@
             </form>
         </div>
     </div>
+
+    {% if show_independence_banner %}
+        {% include "includes/independence_ribbon.html" %}
+    {% endif %}
 
     <div class="page">
         <div class="card">

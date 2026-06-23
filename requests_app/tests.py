@@ -10,7 +10,13 @@ from urllib.parse import quote
 
 from accounts.models import Department
 from inventory.models import Material, MaterialCategory
-from requests_app.models import Request, RequestApproval, RequestMaterialItem, RequestType
+from requests_app.models import (
+    Request,
+    RequestApproval,
+    RequestAuditLog,
+    RequestMaterialItem,
+    RequestType,
+)
 from requests_app.services import submit_request
 from workflows.models import ApprovalWorkflow, ApprovalWorkflowStep
 
@@ -563,7 +569,7 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertEqual(sheet["A1"].value, "Microcom Material Report")
         self.assertEqual(sheet["A2"].value, "Generated At")
         self.assertEqual(
-            [sheet.cell(row=4, column=column).value for column in range(1, 14)],
+            [sheet.cell(row=4, column=column).value for column in range(1, 15)],
             [
                 "Request Number",
                 "Requester",
@@ -577,6 +583,7 @@ class MaterialPrintCopyLimitTests(TestCase):
                 "Unit",
                 "Available Stock",
                 "Description",
+                "Material Issue Note",
                 "Approvers",
             ],
         )
@@ -592,7 +599,7 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertEqual(sheet["A1"].value, "Rapport de matériel Microcom")
         self.assertEqual(sheet["A2"].value, "Généré le")
         self.assertEqual(
-            [sheet.cell(row=4, column=column).value for column in range(1, 14)],
+            [sheet.cell(row=4, column=column).value for column in range(1, 15)],
             [
                 "Numéro de demande",
                 "Demandeur",
@@ -606,6 +613,7 @@ class MaterialPrintCopyLimitTests(TestCase):
                 "Unité",
                 "Stock disponible",
                 "Description",
+                "Note de sortie matériel",
                 "Approbateurs",
             ],
         )
@@ -652,6 +660,236 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertContains(response, TWO_COPY_WARNING)
         self.assert_material_slip_count(response, 3)
         self.assertContains(response, 'class="print-sheet two-copies"', count=1)
+
+
+class MaterialIssueNoteTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.department = Department.objects.create(name="Field Services", code="FIELD")
+        User = get_user_model()
+        cls.requester = User.objects.create_user(
+            username="note-requester",
+            password="pass12345",
+            email="note-requester@example.com",
+            full_name="Note Requester",
+            department=cls.department,
+        )
+        cls.approver = User.objects.create_user(
+            username="note-approver",
+            password="pass12345",
+            email="note-approver@example.com",
+            full_name="Note Approver",
+        )
+        cls.stock_manager = User.objects.create_user(
+            username="note-stock-manager",
+            password="pass12345",
+            email="note-stock@example.com",
+            full_name="Note Stock Manager",
+            can_manage_stock=True,
+        )
+        cls.regular_user = User.objects.create_user(
+            username="note-regular",
+            password="pass12345",
+            email="note-regular@example.com",
+            full_name="Note Regular User",
+        )
+        cls.superuser = User.objects.create_superuser(
+            username="note-superuser",
+            password="pass12345",
+            email="note-admin@example.com",
+            full_name="Note Superuser",
+        )
+        cls.material_type = RequestType.objects.create(
+            name="Material Request",
+            code="NOTE-MATERIAL",
+            requires_materials=True,
+        )
+        cls.non_material_type = RequestType.objects.create(
+            name="Service Request",
+            code="NOTE-SERVICE",
+            requires_materials=False,
+        )
+        cls.category = MaterialCategory.objects.create(name="Network", code="NOTE-NET")
+        cls.material = Material.objects.create(
+            category=cls.category,
+            name="Router",
+            code="NOTE-ROUTER",
+            unit="pcs",
+            stock_quantity=5,
+        )
+        cls.request_obj = Request.objects.create(
+            request_number="NOTE-001",
+            request_type=cls.material_type,
+            submitted_by=cls.requester,
+            department=cls.department,
+            description="Install customer router",
+            status="APPROVED",
+            finalized_at=timezone.now(),
+            material_issue_note="SN-OLD",
+        )
+        RequestMaterialItem.objects.create(
+            request=cls.request_obj,
+            material=cls.material,
+            quantity=1,
+        )
+        workflow = ApprovalWorkflow.objects.create(
+            name="Note approval",
+            request_type=cls.material_type,
+            department=cls.department,
+        )
+        workflow_step = ApprovalWorkflowStep.objects.create(
+            workflow=workflow,
+            step_order=1,
+            approver_user=cls.approver,
+        )
+        RequestApproval.objects.create(
+            request=cls.request_obj,
+            workflow_step=workflow_step,
+            step_order=1,
+            approver_user=cls.approver,
+            acted_by=cls.approver,
+            status="APPROVED",
+            acted_at=timezone.now(),
+        )
+
+    def update_url(self, request_obj=None):
+        request_obj = request_obj or self.request_obj
+        return reverse("update_material_issue_note", args=[request_obj.id])
+
+    def post_note(self, user, note, request_obj=None):
+        self.client.force_login(user)
+        return self.client.post(
+            self.update_url(request_obj),
+            {"material_issue_note": note},
+            HTTP_HOST="127.0.0.1",
+        )
+
+    def test_stock_manager_can_add_and_edit_note_with_audit_log(self):
+        self.request_obj.material_issue_note = ""
+        self.request_obj.save(update_fields=["material_issue_note"])
+
+        response = self.post_note(self.stock_manager, "SN-100")
+        self.assertRedirects(
+            response,
+            reverse("request_detail", args=[self.request_obj.id]),
+            fetch_redirect_response=False,
+        )
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.material_issue_note, "SN-100")
+
+        self.post_note(self.stock_manager, "SN-101; installed")
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.material_issue_note, "SN-101; installed")
+        self.assertEqual(
+            RequestAuditLog.objects.filter(
+                request=self.request_obj,
+                action="MATERIAL_ISSUE_NOTE_UPDATED",
+                performed_by=self.stock_manager,
+            ).count(),
+            2,
+        )
+
+    def test_superuser_can_edit_note(self):
+        self.post_note(self.superuser, "Updated by admin")
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.material_issue_note, "Updated by admin")
+
+    def test_stock_manager_sees_edit_form_and_french_label(self):
+        self.client.force_login(self.stock_manager)
+        response = self.client.get(
+            reverse("request_detail", args=[self.request_obj.id]),
+            HTTP_ACCEPT_LANGUAGE="fr",
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(response, "Note de sortie matériel")
+        self.assertContains(response, "Enregistrer la note")
+        self.assertContains(response, "SN-OLD")
+
+    def test_requester_can_view_note_but_not_edit(self):
+        self.client.force_login(self.requester)
+        response = self.client.get(
+            reverse("request_detail", args=[self.request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(response, "SN-OLD")
+        self.assertNotContains(response, "Save Note")
+        self.assertEqual(self.post_note(self.requester, "Forbidden").status_code, 403)
+
+    def test_approver_can_view_note_but_not_edit(self):
+        self.client.force_login(self.approver)
+        response = self.client.get(
+            reverse("request_detail", args=[self.request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(response, "SN-OLD")
+        self.assertNotContains(response, "Save Note")
+        self.assertEqual(self.post_note(self.approver, "Forbidden").status_code, 403)
+
+    def test_non_stock_user_cannot_post_update(self):
+        response = self.post_note(self.regular_user, "Forbidden")
+        self.assertEqual(response.status_code, 403)
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.material_issue_note, "SN-OLD")
+
+    def test_non_approved_request_cannot_update_note(self):
+        self.request_obj.status = "PENDING"
+        self.request_obj.save(update_fields=["status"])
+        response = self.post_note(self.stock_manager, "Forbidden")
+        self.assertEqual(response.status_code, 302)
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.material_issue_note, "SN-OLD")
+
+    def test_non_material_request_cannot_update_note(self):
+        request_obj = Request.objects.create(
+            request_number="NOTE-002",
+            request_type=self.non_material_type,
+            submitted_by=self.requester,
+            department=self.department,
+            description="Service only",
+            status="APPROVED",
+        )
+        response = self.post_note(self.stock_manager, "Forbidden", request_obj)
+        self.assertEqual(response.status_code, 302)
+        request_obj.refresh_from_db()
+        self.assertEqual(request_obj.material_issue_note, "")
+
+    def test_update_endpoint_is_post_only(self):
+        self.client.force_login(self.stock_manager)
+        response = self.client.get(self.update_url(), HTTP_HOST="127.0.0.1")
+        self.assertEqual(response.status_code, 405)
+
+    def test_note_appears_in_single_and_bulk_material_slips(self):
+        self.client.force_login(self.stock_manager)
+        single_response = self.client.get(
+            reverse("approved_document", args=[self.request_obj.id]),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(single_response, "Material Issue Note")
+        self.assertContains(single_response, "SN-OLD")
+
+        bulk_response = self.client.post(
+            reverse("bulk_print_material_documents"),
+            {"selected_requests": [self.request_obj.id]},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(bulk_response, "Material Issue Note")
+        self.assertContains(bulk_response, "SN-OLD")
+
+    def test_note_appears_in_material_report_and_excel_export(self):
+        self.client.force_login(self.stock_manager)
+        report_response = self.client.get(
+            reverse("material_reports"),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(report_response, "SN-OLD")
+
+        excel_response = self.client.get(
+            reverse("export_material_report_excel"),
+            HTTP_HOST="127.0.0.1",
+        )
+        sheet = load_workbook(BytesIO(excel_response.content)).active
+        self.assertEqual(sheet["M4"].value, "Material Issue Note")
+        self.assertEqual(sheet["M5"].value, "SN-OLD")
 
 
 class ReturnedMaterialRequestEditTests(TestCase):

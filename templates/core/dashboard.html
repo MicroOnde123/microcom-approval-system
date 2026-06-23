@@ -4,6 +4,10 @@
 {% block title %}{% trans "Dashboard" %}{% endblock %}
 
 {% block content %}
+{% if show_independence_banner %}
+    {% include "includes/independence_banner.html" %}
+{% endif %}
+
 <div class="page-header">
     <div>
         <h1>{% trans "Dashboard" %}</h1>

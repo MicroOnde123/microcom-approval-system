@@ -986,3 +986,42 @@ msgstr "Stock actuel"
 
 msgid "Requested Quantity"
 msgstr "Quantité demandée"
+
+msgid "Material Issue Note"
+msgstr "Note de sortie matériel"
+
+msgid "Serial numbers, delivery remarks, installation notes, or other material issue details."
+msgstr "Numéros de série, remarques de livraison, notes d’installation ou autres détails de sortie du matériel."
+
+msgid "Save Note"
+msgstr "Enregistrer la note"
+
+msgid "No material issue note has been added."
+msgstr "Aucune note de sortie matériel n’a été ajoutée."
+
+msgid "You are not allowed to edit the material issue note."
+msgstr "Vous n’êtes pas autorisé à modifier la note de sortie matériel."
+
+msgid "Only approved requests can have a material issue note."
+msgstr "Seules les demandes approuvées peuvent avoir une note de sortie matériel."
+
+msgid "Only material requests can have a material issue note."
+msgstr "Seules les demandes de matériel peuvent avoir une note de sortie matériel."
+
+msgid "The material issue note could not be saved."
+msgstr "La note de sortie matériel n’a pas pu être enregistrée."
+
+msgid "Material issue note updated."
+msgstr "Note de sortie matériel mise à jour."
+
+msgid "Material issue note saved successfully."
+msgstr "Note de sortie matériel enregistrée avec succès."
+
+msgid "Happy Congolese Independence Day — June 30, 2026"
+msgstr "Bonne fête de l’Indépendance de la RDC — 30 juin 2026"
+
+msgid "Microcom Approval & Workflow System"
+msgstr "Système d’approbation et de workflow Microcom"
+
+msgid "Microcom logo"
+msgstr "Logo Microcom"

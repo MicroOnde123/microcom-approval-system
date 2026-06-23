@@ -75,6 +75,12 @@
         {{ req.description }}
     </div>
 
+    <div class="section-title">{% trans "Material Issue Note" %}</div>
+
+    <div class="notes-box">
+        {{ req.material_issue_note|default:"-" }}
+    </div>
+
     <div class="section-title">{% trans "Approval History" %}</div>
 
     <table>

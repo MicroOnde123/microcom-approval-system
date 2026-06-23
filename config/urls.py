@@ -12,6 +12,7 @@ from requests_app.views import (
     pending_approvals,
     approval_detail,
     request_detail,
+    update_material_issue_note,
     edit_request,
     approved_document,
     approval_history,
@@ -40,6 +41,11 @@ urlpatterns = [
     path("requests/", my_requests, name="my_requests"),
     path("requests/create/", create_request, name="create_request"),
     path("requests/<int:request_id>/", request_detail, name="request_detail"),
+    path(
+        "requests/<int:request_id>/material-issue-note/",
+        update_material_issue_note,
+        name="update_material_issue_note",
+    ),
     path("requests/<int:request_id>/edit/", edit_request, name="edit_request"),
     
 

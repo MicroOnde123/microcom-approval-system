@@ -265,6 +265,34 @@
 
 {% endif %}
 
+{% if request_obj.status == "APPROVED" and request_obj.request_type.requires_materials %}
+<div class="detail-item" style="margin-top: 24px; padding: 20px;">
+    <h3 style="margin-top: 0;">{% trans "Material Issue Note" %}</h3>
+
+    {% if can_edit_material_issue_note %}
+        <form method="post" action="{% url 'update_material_issue_note' request_obj.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <label for="{{ material_issue_note_form.material_issue_note.id_for_label }}">
+                {% trans "Serial numbers, delivery remarks, installation notes, or other material issue details." %}
+            </label>
+            {{ material_issue_note_form.material_issue_note }}
+            <div style="margin-top: 12px;">
+                <button type="submit" class="btn">{% trans "Save Note" %}</button>
+            </div>
+        </form>
+    {% else %}
+        <div style="white-space: pre-wrap;">
+            {% if request_obj.material_issue_note %}
+                {{ request_obj.material_issue_note }}
+            {% else %}
+                {% trans "No material issue note has been added." %}
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
 <h3 style="margin-top: 30px;">
     {% trans "Attachments" %}
 </h3>

@@ -93,6 +93,7 @@
                     <th>{% trans "Date Needed" %}</th>
                     <th>{% trans "Approved Date" %}</th>
                     <th>{% trans "Materials" %}</th>
+                    <th>{% trans "Material Issue Note" %}</th>
                     <th>{% trans "Action" %}</th>
                 </tr>
             </thead>
@@ -116,6 +117,8 @@
                             -
                         {% endif %}
                     </td>
+
+                    <td style="white-space: pre-wrap;">{{ req.material_issue_note|default:"-" }}</td>
 
                     <td>
                         {% for item in req.material_items.all %}
@@ -158,7 +161,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8">{% trans "No approved material requests found." %}</td>
+                    <td colspan="9">{% trans "No approved material requests found." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>

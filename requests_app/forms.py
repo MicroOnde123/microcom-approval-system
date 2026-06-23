@@ -172,6 +172,25 @@ class RequestForm(forms.ModelForm):
         return cleaned_data
 
 
+class MaterialIssueNoteForm(forms.ModelForm):
+    class Meta:
+        model = Request
+        fields = ["material_issue_note"]
+        labels = {
+            "material_issue_note": _("Material Issue Note"),
+        }
+        widgets = {
+            "material_issue_note": forms.Textarea(
+                attrs={
+                    "rows": 5,
+                    "placeholder": _(
+                        "Serial numbers, delivery remarks, installation notes, or other material issue details."
+                    ),
+                }
+            ),
+        }
+
+
 class RequestMaterialItemForm(forms.ModelForm):
     material = forms.ModelChoiceField(
         queryset=Material.objects.filter(is_active=True).select_related("category"),

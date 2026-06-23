@@ -17,6 +17,12 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
+SHOW_INDEPENDENCE_BANNER = config(
+    "SHOW_INDEPENDENCE_BANNER",
+    default=False,
+    cast=bool,
+)
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
@@ -80,6 +86,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 'requests_app.context_processors.pending_approval_count',
+                'core.context_processors.independence_banner',
             ],
         },
     },
@@ -163,6 +170,7 @@ LOCALE_PATHS = [
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 
 # AUTH REDIRECTS
