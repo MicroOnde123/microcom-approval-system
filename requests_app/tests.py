@@ -1002,6 +1002,52 @@ class ReturnedMaterialRequestEditTests(TestCase):
         self.assertContains(response, "Networking")
         self.assertContains(response, "Stock: 10.00 roll")
 
+    def test_create_and_edit_pages_use_safe_material_formset_controls(self):
+        for url in (reverse("create_request"), self.edit_url()):
+            with self.subTest(url=url):
+                response = self.client.get(url, HTTP_HOST="127.0.0.1")
+                html = response.content.decode()
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(
+                    '<button type="button" class="btn btn-secondary" id="add-material-btn">',
+                    html,
+                )
+                self.assertIn(
+                    '<button type="button" class="remove-material-btn">',
+                    html,
+                )
+                self.assertIn('const initialForms = document.getElementById(', html)
+                self.assertIn("deleteInput.checked = true;", html)
+                self.assertIn("row.remove();", html)
+                self.assertIn("totalForms.value = formIndex + 1;", html)
+                self.assertNotIn("addMaterialRow();", html)
+
+    def test_create_accepts_form_index_gap_left_by_removed_unsaved_rows(self):
+        data = self.request_data()
+        data.update(
+            {
+                "material_items-TOTAL_FORMS": "3",
+                "material_items-INITIAL_FORMS": "0",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-2-material": self.new_material.id,
+                "material_items-2-quantity": "3",
+            }
+        )
+
+        response = self.client.post(
+            reverse("create_request"),
+            data=data,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        created_request = Request.objects.exclude(id=self.request_obj.id).get()
+        self.assertEqual(created_request.material_items.count(), 1)
+        self.assertEqual(created_request.material_items.get().material, self.new_material)
+        self.assertEqual(created_request.material_items.get().quantity, 3)
+
     def test_resubmit_can_remove_existing_item_and_add_new_item(self):
         data = self.request_data()
         data.update(

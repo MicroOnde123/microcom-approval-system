@@ -5,13 +5,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const addButton = document.getElementById("add-material-btn");
     const container = document.getElementById("material-items");
     const totalForms = document.getElementById("id_material_items-TOTAL_FORMS");
+    const initialForms = document.getElementById("id_material_items-INITIAL_FORMS");
     const templateElement = document.getElementById("empty-material-template");
     const categoryFilter = document.getElementById("material-category-filter");
     const noMaterialsFoundText = "{{ no_materials_found|escapejs }}";
 
-    if (!addButton || !container || !totalForms || !templateElement || !categoryFilter) {
+    if (!addButton || !container || !totalForms || !initialForms || !templateElement || !categoryFilter) {
         return;
     }
+
+    // The partial is shared by create and edit pages. Guard the formset itself so
+    // an accidental second script include cannot bind Add/Remove handlers twice.
+    if (container.dataset.formsetInitialized === "true") {
+        return;
+    }
+    container.dataset.formsetInitialized = "true";
 
     function getOptionsForRow(row) {
         const select = row.querySelector('select[name$="-material"]');
@@ -83,6 +91,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function initializeMaterialRow(row) {
+        if (row.dataset.materialRowInitialized === "true") {
+            return;
+        }
+
         const input = row.querySelector(".material-search-field");
         const results = row.querySelector(".material-results");
         const select = row.querySelector('select[name$="-material"]');
@@ -91,6 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!input || !results || !select) {
             return;
         }
+
+        row.dataset.materialRowInitialized = "true";
 
         if (deleteInput && deleteInput.checked) {
             row.hidden = true;
@@ -118,6 +132,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function addMaterialRow() {
+        // Form indexes are never reused. TOTAL_FORMS advances only here, which
+        // keeps every newly added row's field names unique after removals.
         const formIndex = parseInt(totalForms.value, 10);
         const newFormHtml = templateElement.innerHTML.replace(/__prefix__/g, formIndex);
 
@@ -129,10 +145,10 @@ document.addEventListener("DOMContentLoaded", function () {
         newRow.querySelector(".material-search-field").focus();
     }
 
-    function activeRows() {
-        return Array.from(container.querySelectorAll(".material-line")).filter(function (row) {
-            return !row.hidden;
-        });
+    function getFormIndex(row) {
+        const field = row.querySelector('[name^="material_items-"]');
+        const match = field ? field.name.match(/^material_items-(\d+)-/) : null;
+        return match ? parseInt(match[1], 10) : null;
     }
 
     container.addEventListener("click", function (event) {
@@ -142,18 +158,23 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        event.preventDefault();
+        event.stopPropagation();
+
         const row = removeButton.closest(".material-line");
+        const formIndex = getFormIndex(row);
         const deleteInput = row.querySelector('input[name$="-DELETE"]');
 
-        if (deleteInput) {
+        // Django must receive DELETE for database-backed initial forms. Extra
+        // forms (including rows added in this browser session) have no saved
+        // object, so remove them from the DOM instead of leaving hidden ghosts.
+        if (deleteInput && formIndex !== null && formIndex < parseInt(initialForms.value, 10)) {
             deleteInput.checked = true;
+            row.hidden = true;
+            return;
         }
 
-        row.hidden = true;
-
-        if (!activeRows().length) {
-            addMaterialRow();
-        }
+        row.remove();
     });
 
     document.addEventListener("click", function (event) {
