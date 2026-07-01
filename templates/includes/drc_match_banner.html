@@ -1,0 +1,17 @@
+{% load i18n static %}
+
+<section class="drc-match-banner" role="status" aria-labelledby="drc-match-banner-title">
+    <div class="drc-match-banner__content">
+        <div class="drc-match-banner__logo-card">
+            <img
+                src="{% static 'images/microcom_logo.png' %}"
+                alt="{% trans 'Microcom logo' %}"
+                class="drc-match-banner__logo"
+            >
+        </div>
+        <span class="drc-match-banner__ball" aria-hidden="true">⚽</span>
+        <h1 class="drc-match-banner__message" id="drc-match-banner-title">
+            {% trans "All behind the Leopards — DR Congo vs England" %}
+        </h1>
+    </div>
+</section>
