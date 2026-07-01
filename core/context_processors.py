@@ -1,7 +1,7 @@
 from django.conf import settings
 
 
-def independence_banner(request):
+def drc_match_banner(request):
     return {
-        "show_independence_banner": settings.SHOW_INDEPENDENCE_BANNER,
+        "show_drc_match_banner": settings.SHOW_DRC_MATCH_BANNER,
     }

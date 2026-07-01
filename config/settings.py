@@ -17,8 +17,8 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-SHOW_INDEPENDENCE_BANNER = config(
-    "SHOW_INDEPENDENCE_BANNER",
+SHOW_DRC_MATCH_BANNER = config(
+    "SHOW_DRC_MATCH_BANNER",
     default=False,
     cast=bool,
 )
@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
 
@@ -86,7 +87,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 'requests_app.context_processors.pending_approval_count',
-                'core.context_processors.independence_banner',
+                'core.context_processors.drc_match_banner',
             ],
         },
     },
@@ -171,6 +172,9 @@ LOCALE_PATHS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+WHITENOISE_MIMETYPES = {
+    ".jfif": "image/jpeg",
+}
 
 
 # AUTH REDIRECTS

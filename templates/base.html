@@ -310,156 +310,201 @@
             gap: 16px;
         }
 
-        .independence-ribbon {
-            min-height: 46px;
-            padding: 10px 24px;
-            background: #0077c8;
+        {% if show_drc_match_banner %}
+        .drc-match-ribbon {
+            position: relative;
+            overflow: hidden;
+            min-height: 38px;
             border-top: 3px solid #f7d116;
-            border-bottom: 3px solid #f7d116;
+            border-bottom: 3px solid #ce1021;
+            background: #0077c8;
             color: white;
+        }
+
+        .drc-match-ribbon__track {
+            width: max-content;
+            min-width: 100%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 12px;
-            text-align: center;
-            font-size: 14px;
+            padding: 8px 0;
+            animation: drc-match-ticker 26s linear infinite;
+            will-change: transform;
+        }
+
+        .drc-match-ribbon__message {
+            padding: 0 44px;
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: 0.1px;
+            letter-spacing: 0.15px;
+            white-space: nowrap;
         }
 
-        .independence-ribbon__accent {
-            width: 18px;
-            height: 5px;
-            border-radius: 999px;
-            background: #ce1021;
-            box-shadow: 0 8px 0 #f7d116;
-            flex: 0 0 auto;
+        .drc-match-ribbon__message::before {
+            content: "\26BD";
+            margin-right: 12px;
+            color: #f7d116;
         }
 
-        .independence-banner {
+        .drc-match-banner {
             position: relative;
             isolation: isolate;
             overflow: hidden;
             margin-bottom: 26px;
-            min-height: 290px;
+            min-height: 168px;
             border-radius: 16px;
-            background: #082f62;
-            box-shadow: 0 14px 34px rgba(13, 45, 79, 0.24);
+            background: #005a9c;
             color: white;
-            animation: independence-fade-in 600ms ease-out both;
+            box-shadow: 0 14px 32px rgba(0, 70, 135, 0.24);
+            animation: drc-match-banner-enter 650ms ease-out both;
         }
 
-        .independence-banner::before {
+        .drc-match-banner::before {
             content: "";
             position: absolute;
             z-index: -2;
-            inset: -12% -10%;
-            background: url("{% static 'images/drc_flag.jpg' %}") center / cover no-repeat;
-            transform: translate3d(-4%, 0, 0) scale(1.04);
-            animation: independence-flag-drift 34s ease-in-out infinite alternate;
-            will-change: transform;
+            inset: -45% -8%;
+            background:
+                linear-gradient(
+                    128deg,
+                    #0077c8 0 42%,
+                    #f7d116 42% 48%,
+                    #ce1021 48% 60%,
+                    #f7d116 60% 66%,
+                    #0077c8 66% 100%
+                );
+            animation: drc-match-colors-drift 18s ease-in-out infinite alternate;
         }
 
-        .independence-banner::after {
+        .drc-match-banner::after {
             content: "";
             position: absolute;
             z-index: -1;
             inset: 0;
-            background:
-                linear-gradient(
-                    115deg,
-                    rgba(2, 27, 67, 0.76),
-                    rgba(0, 47, 108, 0.58) 50%,
-                    rgba(2, 27, 67, 0.78)
-                );
+            background: linear-gradient(90deg, rgba(0, 39, 88, 0.82), rgba(0, 64, 128, 0.52));
         }
 
-        .independence-banner__content {
-            position: relative;
-            z-index: 1;
-            min-height: 290px;
-            padding: 32px 36px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .independence-banner__logo-card {
-            width: 180px;
-            min-height: 118px;
-            padding: 20px 24px;
-            border: 1px solid rgba(255, 255, 255, 0.65);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.94);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        .drc-match-banner__content {
+            min-height: 168px;
+            padding: 30px 34px;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .independence-banner__logo {
-            display: block;
-            max-width: 100%;
-            max-height: 82px;
-            object-fit: contain;
-        }
-
-        .independence-banner__copy {
-            max-width: 760px;
+            gap: 22px;
             text-align: center;
         }
 
-        .independence-banner__copy h1 {
-            margin-bottom: 10px;
-            font-size: clamp(27px, 3.8vw, 42px);
-            line-height: 1.15;
-            text-shadow: 0 3px 16px rgba(0, 0, 0, 0.42);
+        .drc-match-banner__ball {
+            width: 54px;
+            height: 54px;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            border: 3px solid #f7d116;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.96);
+            color: #123d6b;
+            font-size: 29px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
         }
 
-        .independence-banner__copy p {
+        .drc-match-banner__message {
             margin: 0;
-            color: #f8fafc;
-            font-size: 18px;
-            font-weight: 600;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
+            max-width: 760px;
+            font-size: clamp(23px, 3vw, 34px);
+            line-height: 1.2;
+            text-shadow: 0 3px 14px rgba(0, 0, 0, 0.38);
         }
 
-        @keyframes independence-flag-drift {
-            0% {
-                transform: translate3d(-4%, -1%, 0) scale(1.04);
-            }
-            50% {
-                transform: translate3d(0, 1%, 0) scale(1.08);
-            }
-            100% {
-                transform: translate3d(4%, -1%, 0) scale(1.05);
-            }
+        .drc-match-banner__logo-card {
+            width: 118px;
+            min-height: 82px;
+            padding: 14px 16px;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.62);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
         }
 
-        @keyframes independence-fade-in {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .drc-match-banner__logo {
+            display: block;
+            max-width: 100%;
+            max-height: 58px;
+            object-fit: contain;
+        }
+
+        .drc-match-mascot {
+            position: fixed;
+            z-index: 40;
+            right: 14px;
+            bottom: 14px;
+            width: 116px;
+            pointer-events: none;
+            animation: drc-match-mascot-float 4.6s ease-in-out infinite;
+        }
+
+        .drc-match-mascot__image {
+            display: block;
+            width: 100%;
+            border: 3px solid #f7d116;
+            border-radius: 18px;
+            background: #eef1f4;
+            box-shadow: 0 10px 24px rgba(15, 45, 80, 0.28);
+        }
+
+        .drc-match-mascot__football {
+            position: absolute;
+            right: -4px;
+            bottom: -6px;
+            width: 31px;
+            height: 31px;
+            display: grid;
+            place-items: center;
+            border: 2px solid #ce1021;
+            border-radius: 50%;
+            background: white;
+            font-size: 19px;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.24);
+            animation: drc-match-football-spin 7s linear infinite;
+        }
+
+        @keyframes drc-match-ticker {
+            from { transform: translateX(0); }
+            to { transform: translateX(-33.333%); }
+        }
+
+        @keyframes drc-match-banner-enter {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes drc-match-colors-drift {
+            from { transform: translate3d(-2%, 0, 0) scale(1.03); }
+            to { transform: translate3d(2%, 1%, 0) scale(1.07); }
+        }
+
+        @keyframes drc-match-mascot-float {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+
+        @keyframes drc-match-football-spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .independence-banner {
+            .drc-match-ribbon__track,
+            .drc-match-banner,
+            .drc-match-banner::before,
+            .drc-match-mascot,
+            .drc-match-mascot__football {
                 animation: none;
             }
 
-            .independence-banner::before {
-                animation: none;
-                transform: scale(1.06);
-            }
         }
+        {% endif %}
 
         @media (max-width: 700px) {
             .detail-grid {
@@ -477,26 +522,48 @@
                 align-items: flex-start;
             }
 
-            .independence-banner__content {
-                min-height: 270px;
-                padding: 26px 20px;
-                gap: 18px;
+            {% if show_drc_match_banner %}
+            .drc-match-banner__content {
+                padding: 24px 20px;
             }
 
-            .independence-banner__logo-card {
-                width: 150px;
-                min-height: 100px;
-                padding: 16px 20px;
+            .drc-match-banner__logo-card {
+                width: 92px;
+                min-height: 66px;
+                padding: 10px 12px;
             }
 
-            .independence-banner__logo {
-                max-height: 68px;
+            .drc-match-banner__logo {
+                max-height: 44px;
             }
 
-            .independence-banner__copy p {
-                font-size: 16px;
+            .drc-match-banner__ball {
+                width: 46px;
+                height: 46px;
+                font-size: 24px;
+            }
+
+            .drc-match-mascot {
+                width: 84px;
+                right: 8px;
+                bottom: 8px;
+            }
+
+            .drc-match-ribbon__message {
+                padding: 0 28px;
+            }
+            {% endif %}
+        }
+
+        {% if show_drc_match_banner %}
+        @media print {
+            .drc-match-banner,
+            .drc-match-ribbon,
+            .drc-match-mascot {
+                display: none !important;
             }
         }
+        {% endif %}
     </style>
 </head>
 
@@ -552,8 +619,8 @@
         </div>
     </div>
 
-    {% if show_independence_banner %}
-        {% include "includes/independence_ribbon.html" %}
+    {% if show_drc_match_banner %}
+        {% include "includes/drc_match_ribbon.html" %}
     {% endif %}
 
     <div class="page">
@@ -569,6 +636,11 @@
             {% block content %}{% endblock %}
         </div>
     </div>
+
+    {% if show_drc_match_banner %}
+        {% include "includes/drc_match_mascot.html" %}
+    {% endif %}
+
     <script>
         setInterval(function () {
             fetch("{% url 'notification_count' %}")

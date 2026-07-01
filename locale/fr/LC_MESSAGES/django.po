@@ -1017,11 +1017,11 @@ msgstr "Note de sortie matériel mise à jour."
 msgid "Material issue note saved successfully."
 msgstr "Note de sortie matériel enregistrée avec succès."
 
-msgid "Happy Congolese Independence Day — June 30, 2026"
-msgstr "Bonne fête de l’Indépendance de la RDC — 30 juin 2026"
-
-msgid "Microcom Approval & Workflow System"
-msgstr "Système d’approbation et de workflow Microcom"
-
 msgid "Microcom logo"
 msgstr "Logo Microcom"
+
+msgid "All behind the Leopards — DR Congo vs England"
+msgstr "Tous derrière les Léopards — RDC vs Angleterre"
+
+msgid "Leopard mascot supporting DR Congo"
+msgstr "Mascotte léopard soutenant la RDC"
