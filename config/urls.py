@@ -109,7 +109,7 @@ urlpatterns = [
             template_name="auth/password_reset.html",
             form_class=CustomPasswordResetForm,
             extra_email_context={
-                "domain": "192.168.88.140",
+                "domain": "10.100.100.150",
                 "protocol": "http",
                 "site_name": "Microcom Approval System",
             },
