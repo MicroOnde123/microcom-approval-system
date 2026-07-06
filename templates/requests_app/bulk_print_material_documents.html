@@ -160,7 +160,14 @@
             }
 
             .print-sheet.two-copies {
-                min-height: 0;
+                display: grid;
+                grid-template-rows: minmax(0, 48%) minmax(0, 4%) minmax(0, 48%);
+                width: 198mm;
+                height: 285mm;
+                min-height: 285mm;
+                overflow: hidden;
+                break-inside: avoid;
+                page-break-inside: avoid;
             }
 
             .print-sheet:last-of-type {
@@ -176,14 +183,18 @@
             }
 
             .two-copies .document {
+                width: 100%;
+                height: 100%;
                 min-height: 0;
-                break-inside: avoid;
-                page-break-inside: avoid;
+                padding: 2.5mm;
+                overflow: hidden;
             }
 
             .cut-line {
                 display: block;
-                height: 3mm;
+                align-self: center;
+                width: 100%;
+                height: 0;
                 border-top: 1px dashed #111827;
                 margin: 0;
             }
@@ -234,6 +245,40 @@
                 margin-bottom: 2mm;
                 font-size: 9px;
                 line-height: 1.2;
+            }
+
+            .two-copies .company-header {
+                padding-bottom: 1mm;
+                margin-bottom: 1mm;
+            }
+
+            .two-copies .main-title {
+                margin: 1mm 0;
+                font-size: 13px;
+            }
+
+            .two-copies .section-title,
+            .two-copies table,
+            .two-copies .notes-box {
+                margin-bottom: 1mm;
+            }
+
+            .two-copies .section-title {
+                margin-top: 1mm;
+            }
+
+            .two-copies th,
+            .two-copies td {
+                padding: 0.6mm;
+                font-size: 8px;
+                line-height: 1.1;
+            }
+
+            .two-copies .notes-box {
+                min-height: 8mm;
+                padding: 1mm;
+                font-size: 8px;
+                line-height: 1.1;
             }
         }
     </style>

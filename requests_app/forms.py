@@ -143,9 +143,6 @@ class RequestForm(forms.ModelForm):
                 # Departure and return times are optional for leave permissions.
                 required_fields = ["destination", "exit_reason"]
 
-                if permission_subgroup == "BY_CAR":
-                    required_fields.extend(["arrival_time", "driver_name"])
-
                 for field in required_fields:
                     if not cleaned_data.get(field):
                         self.add_error(field, _("This field is required."))

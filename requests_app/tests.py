@@ -645,6 +645,24 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertContains(response, 'class="print-sheet two-copies"')
         self.assert_material_slip_count(response, 2)
 
+    def test_one_item_two_copy_print_uses_one_fixed_a4_grid(self):
+        request_obj = self.make_material_request(item_count=1, number_suffix="001")
+        self.client.force_login(self.submitter)
+
+        response = self.client.get(
+            f"{reverse('approved_document', args=[request_obj.id])}?copies=2",
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertContains(response, 'class="print-sheet two-copies"')
+        self.assert_material_slip_count(response, 2)
+        self.assertContains(
+            response,
+            "grid-template-rows: minmax(0, 48%) minmax(0, 4%) minmax(0, 48%);",
+        )
+        self.assertContains(response, "height: 285mm;")
+        self.assertContains(response, 'class="cut-line"', count=1)
+
     def test_bulk_material_print_forces_one_copy_only_for_oversized_requests(self):
         small_request = self.make_material_request(item_count=2, number_suffix="002")
         large_request = self.make_material_request(item_count=7, number_suffix="107")
@@ -1205,11 +1223,33 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
 class OptionalPermissionTimeTests(TestCase):
     def setUp(self):
+        self.department = Department.objects.create(name="Permissions", code="PERM")
+        User = get_user_model()
+        self.requester = User.objects.create_user(
+            username="optional-time-requester",
+            password="pass12345",
+            department=self.department,
+        )
+        self.approver = User.objects.create_user(
+            username="optional-time-approver",
+            password="pass12345",
+        )
         self.request_type = RequestType.objects.create(
             name="General Permission",
             code="OPTIONAL-TIMES",
             is_active=True,
             is_permission_request=True,
+        )
+        workflow = ApprovalWorkflow.objects.create(
+            name="Permission approval",
+            request_type=self.request_type,
+            department=self.department,
+            is_active=True,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=workflow,
+            step_order=1,
+            approver_user=self.approver,
         )
 
     def permission_form(self, **times):
@@ -1235,3 +1275,73 @@ class OptionalPermissionTimeTests(TestCase):
     def test_both_leave_times_are_optional(self):
         form = self.permission_form()
         self.assertTrue(form.is_valid(), form.errors)
+
+    def test_by_car_arrival_time_and_driver_are_optional(self):
+        form = self.permission_form(permission_subgroup="BY_CAR")
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertNotIn("arrival_time", form.errors)
+        self.assertNotIn("driver_name", form.errors)
+
+    def test_by_car_request_submits_with_all_travel_fields_blank(self):
+        self.client.force_login(self.requester)
+        get_response = self.client.get(
+            reverse("create_request"), HTTP_HOST="127.0.0.1"
+        )
+        data = {
+            "submission_token": get_response.context["submission_token"],
+            "request_type": self.request_type.id,
+            "date_needed": timezone.localdate().isoformat(),
+            "permission_group": "LEAVE_PERMISSION",
+            "permission_subgroup": "BY_CAR",
+            "destination": "Office",
+            "exit_reason": "Appointment",
+        }
+
+        response = self.client.post(
+            reverse("create_request"), data=data, HTTP_HOST="127.0.0.1"
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        request_obj = Request.objects.get(submitted_by=self.requester)
+        self.assertIsNone(request_obj.metadata_json["departure_time"])
+        self.assertIsNone(request_obj.metadata_json["return_time"])
+        self.assertIsNone(request_obj.metadata_json["arrival_time"])
+        self.assertFalse(request_obj.metadata_json["driver_name"])
+        self.assertEqual(request_obj.approvals.count(), 1)
+
+    def test_by_foot_request_submits_with_departure_and_return_blank(self):
+        self.client.force_login(self.requester)
+        get_response = self.client.get(
+            reverse("create_request"), HTTP_HOST="127.0.0.1"
+        )
+        data = {
+            "submission_token": get_response.context["submission_token"],
+            "request_type": self.request_type.id,
+            "date_needed": timezone.localdate().isoformat(),
+            "permission_group": "LEAVE_PERMISSION",
+            "permission_subgroup": "BY_FOOT",
+            "destination": "Office",
+            "exit_reason": "Appointment",
+        }
+
+        response = self.client.post(
+            reverse("create_request"), data=data, HTTP_HOST="127.0.0.1"
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        request_obj = Request.objects.get(submitted_by=self.requester)
+        self.assertIsNone(request_obj.metadata_json["departure_time"])
+        self.assertIsNone(request_obj.metadata_json["return_time"])
+        self.assertEqual(request_obj.approvals.count(), 1)
+
+    def test_travel_fields_are_not_html_required(self):
+        form = self.permission_form(permission_subgroup="BY_CAR")
+        for field_name in (
+            "departure_time",
+            "return_time",
+            "arrival_time",
+            "driver_name",
+        ):
+            with self.subTest(field=field_name):
+                self.assertFalse(form.fields[field_name].required)
+                self.assertNotIn("required", str(form[field_name]))
