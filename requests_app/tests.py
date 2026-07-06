@@ -17,6 +17,7 @@ from requests_app.models import (
     RequestMaterialItem,
     RequestType,
 )
+from requests_app.forms import RequestForm
 from requests_app.services import submit_request
 from workflows.models import ApprovalWorkflow, ApprovalWorkflowStep
 
@@ -985,6 +986,11 @@ class ReturnedMaterialRequestEditTests(TestCase):
             "date_needed": timezone.localdate().isoformat(),
         }
 
+    def submission_token(self, url):
+        response = self.client.get(url, HTTP_HOST="127.0.0.1")
+        self.assertEqual(response.status_code, 200)
+        return response.context["submission_token"]
+
     def test_edit_page_uses_shared_searchable_material_picker(self):
         response = self.client.get(
             self.edit_url(),
@@ -1025,6 +1031,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
     def test_create_accepts_form_index_gap_left_by_removed_unsaved_rows(self):
         data = self.request_data()
+        data["submission_token"] = self.submission_token(reverse("create_request"))
         data.update(
             {
                 "material_items-TOTAL_FORMS": "3",
@@ -1050,6 +1057,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
     def test_resubmit_can_remove_existing_item_and_add_new_item(self):
         data = self.request_data()
+        data["submission_token"] = self.submission_token(self.edit_url())
         data.update(
             {
                 "material_items-TOTAL_FORMS": "3",
@@ -1096,6 +1104,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
     def test_resubmit_rejects_quantity_above_available_stock(self):
         data = self.request_data()
+        data["submission_token"] = self.submission_token(self.edit_url())
         data.update(
             {
                 "material_items-TOTAL_FORMS": "2",
@@ -1126,3 +1135,103 @@ class ReturnedMaterialRequestEditTests(TestCase):
         self.assertEqual(self.request_obj.status, "RETURNED")
         self.assertEqual(self.existing_item.quantity, 2)
         self.assertEqual(self.request_obj.approvals.get().status, "RETURNED")
+
+    def test_reused_create_token_does_not_duplicate_request_items_or_approvals(self):
+        data = self.request_data()
+        data.update(
+            {
+                "submission_token": self.submission_token(reverse("create_request")),
+                "material_items-TOTAL_FORMS": "1",
+                "material_items-INITIAL_FORMS": "0",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-0-material": self.new_material.id,
+                "material_items-0-quantity": "2",
+            }
+        )
+
+        first_response = self.client.post(
+            reverse("create_request"), data=data, HTTP_HOST="127.0.0.1"
+        )
+        created = Request.objects.exclude(id=self.request_obj.id).get()
+        second_response = self.client.post(
+            reverse("create_request"), data=data, HTTP_HOST="127.0.0.1"
+        )
+
+        self.assertRedirects(first_response, reverse("dashboard"))
+        self.assertRedirects(
+            second_response,
+            reverse("request_detail", args=[created.id]),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(Request.objects.exclude(id=self.request_obj.id).count(), 1)
+        self.assertEqual(created.material_items.count(), 1)
+        self.assertEqual(created.approvals.count(), 1)
+
+    def test_reused_resubmit_token_only_resubmits_once(self):
+        data = self.request_data()
+        data.update(
+            {
+                "submission_token": self.submission_token(self.edit_url()),
+                "material_items-TOTAL_FORMS": "1",
+                "material_items-INITIAL_FORMS": "1",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-0-id": self.existing_item.id,
+                "material_items-0-material": self.existing_material.id,
+                "material_items-0-quantity": "2",
+            }
+        )
+
+        self.client.post(self.edit_url(), data=data, HTTP_HOST="127.0.0.1")
+        duplicate_response = self.client.post(
+            self.edit_url(), data=data, HTTP_HOST="127.0.0.1"
+        )
+
+        self.assertRedirects(
+            duplicate_response,
+            reverse("request_detail", args=[self.request_obj.id]),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(self.request_obj.approvals.count(), 1)
+        self.assertEqual(self.request_obj.material_items.count(), 1)
+        self.assertEqual(
+            RequestAuditLog.objects.filter(
+                request=self.request_obj, action="RESUBMITTED"
+            ).count(),
+            1,
+        )
+
+
+class OptionalPermissionTimeTests(TestCase):
+    def setUp(self):
+        self.request_type = RequestType.objects.create(
+            name="General Permission",
+            code="OPTIONAL-TIMES",
+            is_active=True,
+            is_permission_request=True,
+        )
+
+    def permission_form(self, **times):
+        data = {
+            "request_type": self.request_type.id,
+            "date_needed": timezone.localdate().isoformat(),
+            "permission_group": "LEAVE_PERMISSION",
+            "permission_subgroup": "BY_FOOT",
+            "destination": "Office",
+            "exit_reason": "Appointment",
+        }
+        data.update(times)
+        return RequestForm(data=data)
+
+    def test_departure_time_is_optional(self):
+        form = self.permission_form(return_time="14:00")
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_return_time_is_optional(self):
+        form = self.permission_form(departure_time="10:00")
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_both_leave_times_are_optional(self):
+        form = self.permission_form()
+        self.assertTrue(form.is_valid(), form.errors)

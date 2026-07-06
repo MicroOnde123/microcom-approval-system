@@ -1,4 +1,6 @@
 import csv
+import time
+import uuid
 from django.http import HttpResponse
 from urllib.parse import urlencode
 
@@ -31,6 +33,56 @@ MATERIAL_TWO_COPY_WARNING = (
     "This request has too many material items for two-copy printing. "
     "Please print one copy."
 )
+SUBMISSION_TOKEN_SESSION_KEY = "request_submission_tokens"
+SUBMISSION_TOKEN_MAX_AGE = 24 * 60 * 60
+SUBMISSION_TOKEN_LIMIT = 20
+
+
+def _submission_tokens(request):
+    now = int(time.time())
+    tokens = request.session.get(SUBMISSION_TOKEN_SESSION_KEY, {})
+    tokens = {
+        token: data
+        for token, data in tokens.items()
+        if now - data.get("created_at", 0) <= SUBMISSION_TOKEN_MAX_AGE
+    }
+    return dict(
+        sorted(
+            tokens.items(),
+            key=lambda item: item[1].get("created_at", 0),
+            reverse=True,
+        )[:SUBMISSION_TOKEN_LIMIT]
+    )
+
+
+def issue_submission_token(request, action):
+    tokens = _submission_tokens(request)
+    token = str(uuid.uuid4())
+    tokens[token] = {
+        "action": action,
+        "status": "pending",
+        "created_at": int(time.time()),
+    }
+    request.session[SUBMISSION_TOKEN_SESSION_KEY] = tokens
+    request.session.modified = True
+    return token
+
+
+def submission_token_result(request, action):
+    token = request.POST.get("submission_token", "")
+    data = _submission_tokens(request).get(token)
+    if not data or data.get("action") != action:
+        return "invalid", None, token
+    return data.get("status", "invalid"), data.get("request_id"), token
+
+
+def mark_submission_token_used(request, token, request_id):
+    tokens = _submission_tokens(request)
+    if token in tokens:
+        tokens[token]["status"] = "used"
+        tokens[token]["request_id"] = request_id
+        request.session[SUBMISSION_TOKEN_SESSION_KEY] = tokens
+        request.session.modified = True
 
 
 def safe_next_url(raw_url, default_url):
@@ -125,6 +177,16 @@ def create_request(request):
         return redirect("dashboard")
 
     if request.method == "POST":
+        token_status, existing_request_id, submission_token = submission_token_result(
+            request, "create"
+        )
+        if token_status == "used" and existing_request_id:
+            messages.info(request, _("This request was already submitted."))
+            return redirect("request_detail", request_id=existing_request_id)
+        if token_status != "pending":
+            messages.error(request, _("This form has expired. Please submit it again."))
+            return redirect("create_request")
+
         form = RequestForm(request.POST, request.FILES)
         formset = RequestMaterialItemFormSet(
             request.POST,
@@ -149,6 +211,7 @@ def create_request(request):
                             "form": form,
                             "formset": formset,
                             "request_type_behavior": request_type_behavior_context(form),
+                            "submission_token": submission_token,
                         },
                     )
 
@@ -163,6 +226,7 @@ def create_request(request):
                             "form": form,
                             "formset": formset,
                             "request_type_behavior": request_type_behavior_context(form),
+                            "submission_token": submission_token,
                         },
                     )
 
@@ -190,15 +254,18 @@ def create_request(request):
                         "form": form,
                         "formset": formset,
                         "request_type_behavior": request_type_behavior_context(form),
+                        "submission_token": submission_token,
                     },
                 )
 
+            mark_submission_token_used(request, submission_token, req.id)
             messages.success(request, "Request submitted successfully.")
             return redirect("dashboard")
 
     else:
         form = RequestForm()
         formset = RequestMaterialItemFormSet(prefix=MATERIAL_FORMSET_PREFIX)
+        submission_token = issue_submission_token(request, "create")
 
     return render(
         request,
@@ -207,6 +274,7 @@ def create_request(request):
             "form": form,
             "formset": formset,
             "request_type_behavior": request_type_behavior_context(form),
+            "submission_token": submission_token,
         },
     )
 
@@ -450,6 +518,18 @@ def update_material_issue_note(request, request_id):
 def edit_request(request, request_id):
     request_obj = get_object_or_404(Request, id=request_id, submitted_by=request.user)
 
+    submission_action = f"edit:{request_obj.id}"
+    if request.method == "POST":
+        token_status, existing_request_id, submission_token = submission_token_result(
+            request, submission_action
+        )
+        if token_status == "used" and existing_request_id:
+            messages.info(request, _("This request was already submitted."))
+            return redirect("request_detail", request_id=existing_request_id)
+        if token_status != "pending":
+            messages.error(request, _("This form has expired. Please submit it again."))
+            return redirect("edit_request", request_id=request_obj.id)
+
     if request_obj.status != "RETURNED":
         messages.error(request, "Only returned requests can be edited.")
         return redirect("request_detail", request_id=request_obj.id)
@@ -481,6 +561,7 @@ def edit_request(request, request_id):
                             "request_obj": request_obj,
                             "request_type_behavior": request_type_behavior_context(form),
                             "back_url": reverse("request_detail", args=[request_obj.id]),
+                            "submission_token": submission_token,
                         },
                     )
 
@@ -501,6 +582,7 @@ def edit_request(request, request_id):
                             "request_obj": request_obj,
                             "request_type_behavior": request_type_behavior_context(form),
                             "back_url": reverse("request_detail", args=[request_obj.id]),
+                            "submission_token": submission_token,
                         },
                     )
             else:
@@ -519,6 +601,7 @@ def edit_request(request, request_id):
             save_attachments(request, req)
             resubmit_request(req, request.user)
 
+            mark_submission_token_used(request, submission_token, req.id)
             messages.success(request, "Request updated and resubmitted successfully.")
             return redirect("request_detail", request_id=req.id)
 
@@ -534,6 +617,7 @@ def edit_request(request, request_id):
             instance=request_obj,
             prefix=MATERIAL_FORMSET_PREFIX,
         )
+        submission_token = issue_submission_token(request, submission_action)
 
     return render(
         request,
@@ -544,6 +628,7 @@ def edit_request(request, request_id):
             "request_obj": request_obj,
             "request_type_behavior": request_type_behavior_context(form),
             "back_url": reverse("request_detail", args=[request_obj.id]),
+            "submission_token": submission_token,
         },
     )
 

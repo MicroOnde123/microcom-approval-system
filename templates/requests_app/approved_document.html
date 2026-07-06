@@ -147,13 +147,13 @@
 
         @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 6mm;
         }
 
         @media print {
             html,
             body {
-                width: 194mm;
+                width: 198mm;
                 margin: 0;
                 padding: 0;
             }
@@ -167,8 +167,8 @@
             }
 
             .print-sheet {
-                width: 194mm;
-                min-height: 281mm;
+                width: 198mm;
+                min-height: 0;
                 max-width: none;
                 margin: 0;
                 page-break-after: auto;
@@ -176,27 +176,25 @@
             }
 
             .print-sheet.two-copies {
-                min-height: 281mm;
-                display: flex;
-                flex-direction: column;
+                min-height: 0;
             }
 
             .document {
                 padding: 4mm;
-                min-height: 281mm;
+                min-height: 0;
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
 
             .two-copies .document {
-                min-height: 136mm;
-                height: 136mm;
-                overflow: hidden;
+                min-height: 0;
+                break-inside: avoid;
+                page-break-inside: avoid;
             }
 
             .cut-line {
                 display: block;
-                height: 9mm;
+                height: 3mm;
                 border-top: 1px dashed #111827;
                 margin: 0;
             }

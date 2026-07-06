@@ -140,10 +140,8 @@ class RequestForm(forms.ModelForm):
                 if not permission_subgroup:
                     self.add_error("permission_subgroup", _("Permission type is required."))
 
-                required_fields = ["destination", "exit_reason", "departure_time"]
-
-                if permission_subgroup == "BY_FOOT":
-                    required_fields.append("return_time")
+                # Departure and return times are optional for leave permissions.
+                required_fields = ["destination", "exit_reason"]
 
                 if permission_subgroup == "BY_CAR":
                     required_fields.extend(["arrival_time", "driver_name"])

@@ -1,0 +1,28 @@
+{% load i18n %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("request-submission-form");
+    const submitButton = document.getElementById("request-submit-button");
+    if (!form || !submitButton) return;
+
+    const originalText = submitButton.textContent;
+    let submitting = false;
+
+    function resetSubmission() {
+        submitting = false;
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+    }
+
+    form.addEventListener("invalid", resetSubmission, true);
+    form.addEventListener("submit", function (event) {
+        if (submitting) {
+            event.preventDefault();
+            return;
+        }
+        submitting = true;
+        submitButton.disabled = true;
+        submitButton.textContent = "{% trans 'Submitting...' %}";
+    });
+});
+</script>

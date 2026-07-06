@@ -55,9 +55,10 @@
 </div>
 {% endif %}
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" id="request-submission-form">
 
     {% csrf_token %}
+    <input type="hidden" name="submission_token" value="{{ submission_token }}">
 
     <div class="form-section">
 
@@ -289,7 +290,7 @@
 
     <div style="margin-top: 20px;">
 
-        <button type="submit" class="btn">
+        <button type="submit" class="btn" id="request-submit-button">
             {% trans "Save and Resubmit" %}
         </button>
 
@@ -454,5 +455,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% include "requests_app/includes/material_formset_script.html" %}
+{% include "requests_app/includes/submission_guard_script.html" %}
 
 {% endblock %}
