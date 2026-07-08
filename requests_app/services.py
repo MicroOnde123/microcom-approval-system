@@ -37,16 +37,20 @@ def get_applicable_workflow(request):
         is_active=True,
     )
 
-    if request.request_for_department:
-        workflows = workflows.filter(
-            department=request.request_for_department
-        ) | workflows.filter(department__isnull=True)
-
     if request.amount is not None:
         workflows = workflows.filter(min_amount__lte=request.amount) | workflows.filter(min_amount__isnull=True)
         workflows = workflows.filter(max_amount__gte=request.amount) | workflows.filter(max_amount__isnull=True)
 
-    workflow = workflows.order_by("department", "min_amount").first()
+    workflow = None
+    if request.request_for_department:
+        workflow = workflows.filter(
+            department=request.request_for_department
+        ).order_by("min_amount").first()
+
+    if not workflow:
+        workflow = workflows.filter(
+            department__isnull=True
+        ).order_by("min_amount").first()
 
     if not workflow:
         raise ValidationError("No applicable workflow found for this request.")

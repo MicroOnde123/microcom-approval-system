@@ -94,19 +94,22 @@ class RequestDepartmentOwnershipTests(TestCase):
             **kwargs,
         )
 
-    def post_create(self, user, owner_department):
+    def post_create(self, user, owner_department, request_type=None, amount=None):
         self.client.force_login(user)
         response = self.client.get(reverse("create_request"), HTTP_HOST="127.0.0.1")
         token = response.context["submission_token"]
+        data = {
+            "submission_token": token,
+            "request_type": (request_type or self.request_type).pk,
+            "request_for_department": owner_department.pk,
+            "description": "Created for another department",
+            "date_needed": timezone.localdate().isoformat(),
+        }
+        if amount is not None:
+            data["amount"] = amount
         return self.client.post(
             reverse("create_request"),
-            {
-                "submission_token": token,
-                "request_type": self.request_type.pk,
-                "request_for_department": owner_department.pk,
-                "description": "Created for another department",
-                "date_needed": timezone.localdate().isoformat(),
-            },
+            data,
             HTTP_HOST="127.0.0.1",
         )
 
@@ -152,6 +155,98 @@ class RequestDepartmentOwnershipTests(TestCase):
         self.assertEqual(request_obj.department, self.admin_department)
         self.assertEqual(request_obj.request_for_department, self.fiber_department)
         self.assertEqual(request_obj.approvals.get().workflow_step.workflow, self.fiber_workflow)
+
+    def test_admin_submits_for_it_and_it_workflow_is_selected(self):
+        User = get_user_model()
+        it_department = Department.objects.create(name="IT", code="IT-OWN")
+        it_approver = User.objects.create_user(
+            username="it-department-approver",
+            password="test-password",
+            department=it_department,
+        )
+        it_workflow = ApprovalWorkflow.objects.create(
+            name="IT ownership workflow",
+            request_type=self.request_type,
+            department=it_department,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=it_workflow,
+            step_order=1,
+            approver_user=it_approver,
+        )
+
+        response = self.post_create(self.admin, it_department)
+
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.admin)
+        self.assertEqual(request_obj.department, self.admin_department)
+        self.assertEqual(request_obj.request_for_department, it_department)
+        self.assertEqual(request_obj.approvals.get().workflow_step.workflow, it_workflow)
+
+    def test_global_workflow_is_selected_when_department_workflow_is_missing(self):
+        global_type = RequestType.objects.create(
+            name="Global-only Request",
+            code="GLOBAL-ONLY",
+        )
+        global_workflow = ApprovalWorkflow.objects.create(
+            name="Global fallback workflow",
+            request_type=global_type,
+            department=None,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=global_workflow,
+            step_order=1,
+            approver_user=self.approver,
+        )
+
+        response = self.post_create(
+            self.admin,
+            self.fiber_department,
+            request_type=global_type,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.admin)
+        self.assertEqual(request_obj.approvals.get().workflow_step.workflow, global_workflow)
+
+    def test_department_workflow_wins_when_global_workflow_also_exists(self):
+        global_workflow = ApprovalWorkflow.objects.create(
+            name="Global fallback workflow",
+            request_type=self.request_type,
+            department=None,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=global_workflow,
+            step_order=1,
+            approver_user=self.approver,
+        )
+
+        response = self.post_create(self.admin, self.fiber_department)
+
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.admin)
+        self.assertEqual(request_obj.approvals.get().workflow_step.workflow, self.fiber_workflow)
+
+    def test_amount_limits_are_applied_before_global_fallback(self):
+        self.fiber_workflow.min_amount = 100
+        self.fiber_workflow.save(update_fields=["min_amount"])
+        global_workflow = ApprovalWorkflow.objects.create(
+            name="Amount-compatible global workflow",
+            request_type=self.request_type,
+            department=None,
+            max_amount=99,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=global_workflow,
+            step_order=1,
+            approver_user=self.approver,
+        )
+
+        response = self.post_create(self.admin, self.fiber_department, amount="50.00")
+
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.admin)
+        self.assertEqual(request_obj.approvals.get().workflow_step.workflow, global_workflow)
 
     def test_two_ownership_departments_choose_their_matching_workflows(self):
         User = get_user_model()
