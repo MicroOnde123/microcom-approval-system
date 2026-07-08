@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import Request, RequestMaterialItem
 from inventory.models import Material
+from accounts.models import Department
 
 
 class RequestForm(forms.ModelForm):
@@ -74,6 +75,7 @@ class RequestForm(forms.ModelForm):
         model = Request
         fields = [
             "request_type",
+            "request_for_department",
             "description",
             "amount",
             "date_needed",
@@ -83,10 +85,23 @@ class RequestForm(forms.ModelForm):
         }
         help_texts = {
             "description": _("Explain why this request is needed."),
+            "request_for_department": _(
+                "By default, this request is assigned to your department. "
+                "If you are submitting on behalf of another department, select "
+                "the correct department before submitting."
+            ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.user = user
+        department_field = self.fields["request_for_department"]
+        department_field.label = _("Request For Department")
+        department_field.queryset = Department.objects.order_by("name")
+
+        if user and not self.instance.pk:
+            department_field.initial = user.department
 
         self.fields["date_needed"].initial = timezone.localdate()
 

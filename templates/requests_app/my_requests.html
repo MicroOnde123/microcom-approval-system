@@ -21,6 +21,20 @@
     </div>
 </div>
 
+<form method="get" style="margin-bottom: 20px;">
+    <label for="my-request-department">{% trans "Request For Department" %}</label>
+    <select id="my-request-department" name="department">
+        <option value="">{% trans "All Departments" %}</option>
+        {% for department in departments %}
+            {% with department_id=department.id|stringformat:"s" %}
+            <option value="{{ department.id }}" {% if selected_department == department_id %}selected{% endif %}>{{ department.name }}</option>
+            {% endwith %}
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn">{% trans "Filter" %}</button>
+    <a href="{% url 'my_requests' %}" class="btn btn-secondary">{% trans "Clear" %}</a>
+</form>
+
 <div class="table-wrap">
     <table>
 
@@ -29,6 +43,7 @@
                 <th>{% trans "Number" %}</th>
                 <th>{% trans "Title" %}</th>
                 <th>{% trans "Type" %}</th>
+                <th>{% trans "Request For Department" %}</th>
                 <th>{% trans "Status" %}</th>
                 <th>{% trans "Submitted" %}</th>
             </tr>
@@ -54,6 +69,8 @@
                     {{ r.request_type }}
                 </td>
 
+                <td>{{ r.request_for_department }}</td>
+
                 <td>
                     <span class="status-badge status-{{ r.status }}">
                         {{ r.status }}
@@ -69,7 +86,7 @@
             {% empty %}
 
             <tr>
-                <td colspan="5">
+                <td colspan="6">
                     {% trans "No requests yet." %}
                 </td>
             </tr>

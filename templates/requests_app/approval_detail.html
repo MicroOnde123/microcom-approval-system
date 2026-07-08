@@ -24,6 +24,10 @@
     {{ request_obj.description }}
 </p>
 
+<p><strong>{% trans "Submitted By" %}:</strong> {{ request_obj.submitted_by }}</p>
+<p><strong>{% trans "Submitted From Department" %}:</strong> {{ request_obj.department }}</p>
+<p><strong>{% trans "Request For Department" %}:</strong> {{ request_obj.request_for_department }}</p>
+
 <form method="post">
 
     {% csrf_token %}

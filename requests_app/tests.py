@@ -18,7 +18,7 @@ from requests_app.models import (
     RequestType,
 )
 from requests_app.forms import RequestForm
-from requests_app.services import submit_request
+from requests_app.services import approve_step, submit_request
 from workflows.models import ApprovalWorkflow, ApprovalWorkflowStep
 
 
@@ -26,6 +26,347 @@ TWO_COPY_WARNING = (
     "This request has too many material items for two-copy printing. "
     "Please print one copy."
 )
+
+
+class RequestDepartmentOwnershipTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.admin_department = Department.objects.create(name="Administration", code="ADMIN-OWN")
+        self.fiber_department = Department.objects.create(name="Fiber", code="FIBER-OWN")
+        self.user = User.objects.create_user(
+            username="department-user",
+            password="test-password",
+            full_name="Department User",
+            department=self.admin_department,
+        )
+        self.admin = User.objects.create_user(
+            username="department-admin",
+            password="test-password",
+            full_name="Department Admin",
+            department=self.admin_department,
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.approver = User.objects.create_user(
+            username="department-approver",
+            password="test-password",
+            full_name="Department Approver",
+            department=self.admin_department,
+        )
+        self.request_type = RequestType.objects.create(
+            name="Ownership Request",
+            code="OWNERSHIP",
+        )
+        self.workflow = ApprovalWorkflow.objects.create(
+            name="Administration ownership workflow",
+            request_type=self.request_type,
+            department=self.admin_department,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=self.workflow,
+            step_order=1,
+            approver_user=self.approver,
+        )
+        self.fiber_approver = User.objects.create_user(
+            username="fiber-department-approver",
+            password="test-password",
+            department=self.fiber_department,
+        )
+        self.fiber_workflow = ApprovalWorkflow.objects.create(
+            name="Fiber ownership workflow",
+            request_type=self.request_type,
+            department=self.fiber_department,
+        )
+        ApprovalWorkflowStep.objects.create(
+            workflow=self.fiber_workflow,
+            step_order=1,
+            approver_user=self.fiber_approver,
+        )
+
+    def create_request(self, owner_department=None, **kwargs):
+        return Request.objects.create(
+            request_number=kwargs.pop("request_number", "REQ-OWN-1"),
+            request_type=self.request_type,
+            submitted_by=kwargs.pop("submitted_by", self.user),
+            department=kwargs.pop("department", self.admin_department),
+            request_for_department=owner_department or self.admin_department,
+            description="Department ownership test",
+            **kwargs,
+        )
+
+    def post_create(self, user, owner_department):
+        self.client.force_login(user)
+        response = self.client.get(reverse("create_request"), HTTP_HOST="127.0.0.1")
+        token = response.context["submission_token"]
+        return self.client.post(
+            reverse("create_request"),
+            {
+                "submission_token": token,
+                "request_type": self.request_type.pk,
+                "request_for_department": owner_department.pk,
+                "description": "Created for another department",
+                "date_needed": timezone.localdate().isoformat(),
+            },
+            HTTP_HOST="127.0.0.1",
+        )
+
+    def test_normal_user_can_select_another_department(self):
+        form = RequestForm(user=self.user)
+        self.assertQuerySetEqual(
+            form.fields["request_for_department"].queryset,
+            [self.admin_department, self.fiber_department],
+        )
+        self.assertEqual(form["request_for_department"].value(), self.admin_department.pk)
+        response = self.post_create(self.user, self.fiber_department)
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.user)
+        self.assertEqual(request_obj.request_for_department, self.fiber_department)
+        self.assertEqual(request_obj.approvals.get().approver_user, self.fiber_approver)
+
+    def test_missing_or_invalid_department_is_rejected(self):
+        valid_data = {
+            "request_type": self.request_type.pk,
+            "description": "Department validation test",
+        }
+        missing_form = RequestForm(data=valid_data, user=self.user)
+        self.assertFalse(missing_form.is_valid())
+        self.assertIn("request_for_department", missing_form.errors)
+
+        invalid_form = RequestForm(
+            data={**valid_data, "request_for_department": 999999},
+            user=self.user,
+        )
+        self.assertFalse(invalid_form.is_valid())
+        self.assertIn("request_for_department", invalid_form.errors)
+
+    def test_normal_user_creates_for_own_department(self):
+        response = self.post_create(self.user, self.admin_department)
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.user)
+        self.assertEqual(request_obj.request_for_department, self.admin_department)
+
+    def test_admin_creates_for_another_department(self):
+        response = self.post_create(self.admin, self.fiber_department)
+        self.assertEqual(response.status_code, 302)
+        request_obj = Request.objects.get(submitted_by=self.admin)
+        self.assertEqual(request_obj.department, self.admin_department)
+        self.assertEqual(request_obj.request_for_department, self.fiber_department)
+        self.assertEqual(request_obj.approvals.get().workflow_step.workflow, self.fiber_workflow)
+
+    def test_two_ownership_departments_choose_their_matching_workflows(self):
+        User = get_user_model()
+        fiber_submitter = User.objects.create_user(
+            username="fiber-submitter",
+            password="test-password",
+            department=self.fiber_department,
+        )
+        administration_request = self.create_request(
+            self.fiber_department,
+            request_number="REQ-ROUTE-ADMIN",
+        )
+        fiber_request = self.create_request(
+            self.admin_department,
+            request_number="REQ-ROUTE-FIBER",
+            submitted_by=fiber_submitter,
+            department=self.fiber_department,
+        )
+
+        submit_request(administration_request)
+        submit_request(fiber_request)
+
+        self.assertEqual(administration_request.approvals.get().approver_user, self.fiber_approver)
+        self.assertEqual(fiber_request.approvals.get().approver_user, self.approver)
+
+    def test_department_filters_use_request_owner(self):
+        owned_by_fiber = self.create_request(self.fiber_department)
+        owned_by_fiber.current_step_order = 1
+        owned_by_fiber.save(update_fields=["current_step_order"])
+        RequestApproval.objects.create(
+            request=owned_by_fiber,
+            workflow_step=self.workflow.steps.get(),
+            step_order=1,
+            approver_user=self.approver,
+        )
+        self.client.force_login(self.approver)
+        response = self.client.get(
+            reverse("pending_approvals"),
+            {"department": self.fiber_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(response, owned_by_fiber.request_number)
+        response = self.client.get(
+            reverse("pending_approvals"),
+            {"department": self.admin_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertNotContains(response, owned_by_fiber.request_number)
+
+    def test_reports_exports_and_print_include_both_departments(self):
+        category = MaterialCategory.objects.create(name="Ownership Materials")
+        material = Material.objects.create(
+            name="Fiber Cable",
+            code="FIBER-CABLE-OWN",
+            category=category,
+            unit="roll",
+            stock_quantity=10,
+        )
+        request_obj = self.create_request(
+            self.fiber_department,
+            status="APPROVED",
+            finalized_at=timezone.now(),
+        )
+        RequestMaterialItem.objects.create(request=request_obj, material=material, quantity=1)
+
+        self.client.force_login(self.admin)
+        csv_response = self.client.get(
+            reverse("export_material_report_csv"),
+            {"department": self.fiber_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        content = csv_response.content.decode("utf-8")
+        self.assertIn("Request For Department", content)
+        self.assertIn("Administration", content)
+        self.assertIn("Fiber", content)
+
+        print_response = self.client.get(
+            reverse("approved_document", args=[request_obj.pk]),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(print_response, "Request For Department")
+        self.assertContains(print_response, "Fiber")
+
+        excel_response = self.client.get(
+            reverse("export_material_report_excel"),
+            {"department": self.fiber_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        sheet = load_workbook(BytesIO(excel_response.content)).active
+        self.assertEqual(sheet["D4"].value, "Request For Department")
+        self.assertEqual(sheet["D5"].value, "Fiber")
+
+        bulk_response = self.client.post(
+            reverse("bulk_print_material_documents"),
+            {"selected_requests": [request_obj.pk]},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(bulk_response, "Request For Department")
+        self.assertContains(bulk_response, "Fiber")
+
+    def test_all_list_filters_use_request_for_department(self):
+        fiber_request = self.create_request(
+            self.fiber_department,
+            request_number="REQ-FILTER-FIBER",
+        )
+        admin_request = self.create_request(
+            self.admin_department,
+            request_number="REQ-FILTER-ADMIN",
+        )
+
+        self.client.force_login(self.user)
+        my_response = self.client.get(
+            reverse("my_requests"),
+            {"department": self.fiber_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(my_response, fiber_request.request_number)
+        self.assertNotContains(my_response, admin_request.request_number)
+
+        acted_approval = RequestApproval.objects.create(
+            request=fiber_request,
+            workflow_step=self.workflow.steps.get(),
+            step_order=1,
+            approver_user=self.approver,
+            acted_by=self.approver,
+            acted_at=timezone.now(),
+            status="APPROVED",
+        )
+        RequestApproval.objects.create(
+            request=admin_request,
+            workflow_step=self.workflow.steps.get(),
+            step_order=1,
+            approver_user=self.approver,
+            acted_by=self.approver,
+            acted_at=timezone.now(),
+            status="APPROVED",
+        )
+        self.client.force_login(self.approver)
+        history_response = self.client.get(
+            reverse("approval_history"),
+            {"department": self.fiber_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(history_response, acted_approval.request.request_number)
+        self.assertNotContains(history_response, admin_request.request_number)
+
+        category = MaterialCategory.objects.create(
+            name="Filter Materials",
+            code="FILTER-MATERIALS",
+        )
+        material = Material.objects.create(
+            name="Filter Cable",
+            code="FILTER-CABLE",
+            category=category,
+            unit="roll",
+            stock_quantity=10,
+        )
+        fiber_request.status = "APPROVED"
+        fiber_request.save(update_fields=["status"])
+        admin_request.status = "APPROVED"
+        admin_request.save(update_fields=["status"])
+        RequestMaterialItem.objects.create(request=fiber_request, material=material, quantity=1)
+        RequestMaterialItem.objects.create(request=admin_request, material=material, quantity=1)
+        self.client.force_login(self.admin)
+        report_response = self.client.get(
+            reverse("material_reports"),
+            {"department": self.fiber_department.pk},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertContains(report_response, fiber_request.request_number)
+        self.assertNotContains(report_response, admin_request.request_number)
+
+    def test_material_approval_still_deducts_stock(self):
+        self.request_type.requires_materials = True
+        self.request_type.save(update_fields=["requires_materials"])
+        category = MaterialCategory.objects.create(
+            name="Stock Safety Materials",
+            code="STOCK-SAFETY",
+        )
+        material = Material.objects.create(
+            name="Stock Safety Cable",
+            code="STOCK-SAFETY-CABLE",
+            category=category,
+            unit="roll",
+            stock_quantity=10,
+        )
+        request_obj = self.create_request(request_number="REQ-STOCK-SAFETY")
+        RequestMaterialItem.objects.create(
+            request=request_obj,
+            material=material,
+            quantity=2,
+        )
+        submit_request(request_obj)
+
+        approve_step(request_obj.approvals.get(), self.approver)
+
+        material.refresh_from_db()
+        request_obj.refresh_from_db()
+        self.assertEqual(material.stock_quantity, 8)
+        self.assertTrue(request_obj.stock_deducted)
+
+    def test_historical_style_request_defaults_owner_and_opens(self):
+        request_obj = self.create_request()
+        request_obj.request_for_department = None
+        request_obj.save()
+        self.assertEqual(request_obj.request_for_department, self.admin_department)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse("request_detail", args=[request_obj.pk]),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Submitted By")
+        self.assertContains(response, "Submitted From Department")
+        self.assertContains(response, "Request For Department")
 
 
 class AlternateApproverWorkflowTests(TestCase):
@@ -570,11 +911,12 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertEqual(sheet["A1"].value, "Microcom Material Report")
         self.assertEqual(sheet["A2"].value, "Generated At")
         self.assertEqual(
-            [sheet.cell(row=4, column=column).value for column in range(1, 15)],
+            [sheet.cell(row=4, column=column).value for column in range(1, 16)],
             [
                 "Request Number",
                 "Requester",
                 "Department",
+                "Request For Department",
                 "Date Needed",
                 "Approved Date",
                 "Material",
@@ -600,11 +942,12 @@ class MaterialPrintCopyLimitTests(TestCase):
         self.assertEqual(sheet["A1"].value, "Rapport de matériel Microcom")
         self.assertEqual(sheet["A2"].value, "Généré le")
         self.assertEqual(
-            [sheet.cell(row=4, column=column).value for column in range(1, 15)],
+            [sheet.cell(row=4, column=column).value for column in range(1, 16)],
             [
                 "Numéro de demande",
                 "Demandeur",
                 "Département",
+                "Département concerné",
                 "Date requise",
                 "Date d’approbation",
                 "Matériel",
@@ -907,8 +1250,8 @@ class MaterialIssueNoteTests(TestCase):
             HTTP_HOST="127.0.0.1",
         )
         sheet = load_workbook(BytesIO(excel_response.content)).active
-        self.assertEqual(sheet["M4"].value, "Material Issue Note")
-        self.assertEqual(sheet["M5"].value, "SN-OLD")
+        self.assertEqual(sheet["N4"].value, "Material Issue Note")
+        self.assertEqual(sheet["N5"].value, "SN-OLD")
 
 
 class ReturnedMaterialRequestEditTests(TestCase):
@@ -1000,6 +1343,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
     def request_data(self):
         return {
             "request_type": self.request_type.id,
+            "request_for_department": self.department.id,
             "description": "Corrected network installation",
             "date_needed": timezone.localdate().isoformat(),
         }
@@ -1255,6 +1599,7 @@ class OptionalPermissionTimeTests(TestCase):
     def permission_form(self, **times):
         data = {
             "request_type": self.request_type.id,
+            "request_for_department": self.department.id,
             "date_needed": timezone.localdate().isoformat(),
             "permission_group": "LEAVE_PERMISSION",
             "permission_subgroup": "BY_FOOT",
@@ -1290,6 +1635,7 @@ class OptionalPermissionTimeTests(TestCase):
         data = {
             "submission_token": get_response.context["submission_token"],
             "request_type": self.request_type.id,
+            "request_for_department": self.department.id,
             "date_needed": timezone.localdate().isoformat(),
             "permission_group": "LEAVE_PERMISSION",
             "permission_subgroup": "BY_CAR",
@@ -1317,6 +1663,7 @@ class OptionalPermissionTimeTests(TestCase):
         data = {
             "submission_token": get_response.context["submission_token"],
             "request_type": self.request_type.id,
+            "request_for_department": self.department.id,
             "date_needed": timezone.localdate().isoformat(),
             "permission_group": "LEAVE_PERMISSION",
             "permission_subgroup": "BY_FOOT",

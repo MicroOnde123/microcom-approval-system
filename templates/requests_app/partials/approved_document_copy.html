@@ -36,6 +36,10 @@
             <td>{{ request_obj.department }}</td>
         </tr>
         <tr>
+            <th>{% trans "Request For Department" %}</th>
+            <td colspan="3">{{ request_obj.request_for_department }}</td>
+        </tr>
+        <tr>
             <th>{% trans "Submitted At" %}</th>
             <td>{{ request_obj.submitted_at|date:"Y-m-d H:i" }}</td>
             <th>{% trans "Date Needed" %}</th>

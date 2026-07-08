@@ -24,6 +24,7 @@ from django.utils.translation import get_language, gettext as _
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from accounts.models import Department
 
 
 
@@ -187,7 +188,7 @@ def create_request(request):
             messages.error(request, _("This form has expired. Please submit it again."))
             return redirect("create_request")
 
-        form = RequestForm(request.POST, request.FILES)
+        form = RequestForm(request.POST, request.FILES, user=request.user)
         formset = RequestMaterialItemFormSet(
             request.POST,
             prefix=MATERIAL_FORMSET_PREFIX,
@@ -263,7 +264,7 @@ def create_request(request):
             return redirect("dashboard")
 
     else:
-        form = RequestForm()
+        form = RequestForm(user=request.user)
         formset = RequestMaterialItemFormSet(prefix=MATERIAL_FORMSET_PREFIX)
         submission_token = issue_submission_token(request, "create")
 
@@ -288,7 +289,14 @@ def is_stock_manager(user):
 @login_required
 def my_requests(request):
     qs = Request.objects.filter(submitted_by=request.user).order_by("-submitted_at")
-    return render(request, "requests_app/my_requests.html", {"requests": qs})
+    department = request.GET.get("department", "").strip()
+    if department:
+        qs = qs.filter(request_for_department_id=department)
+    return render(request, "requests_app/my_requests.html", {
+        "requests": qs.select_related("request_for_department"),
+        "departments": Department.objects.order_by("name"),
+        "selected_department": department,
+    })
 
 
 @login_required
@@ -301,12 +309,14 @@ def pending_approvals(request):
     ).select_related(
         "request",
         "request__request_type",
+        "request__request_for_department",
     ).order_by("-request__submitted_at", "-created_at")
 
     date_from = request.GET.get("date_from", "").strip()
     date_to = request.GET.get("date_to", "").strip()
     request_type = request.GET.get("request_type", "").strip()
     q = request.GET.get("q", "").strip()
+    department = request.GET.get("department", "").strip()
 
     if date_from:
         approvals = approvals.filter(request__date_needed__gte=date_from)
@@ -316,6 +326,9 @@ def pending_approvals(request):
 
     if request_type:
         approvals = approvals.filter(request__request_type_id=request_type)
+
+    if department:
+        approvals = approvals.filter(request__request_for_department_id=department)
 
     if q:
         approvals = approvals.filter(
@@ -342,6 +355,8 @@ def pending_approvals(request):
             "selected_request_type": request_type,
             "today": today,
             "q": q,
+            "departments": Department.objects.order_by("name"),
+            "selected_department": department,
             "current_list_url": current_path_with_query(request),
         },
     )
@@ -535,7 +550,7 @@ def edit_request(request, request_id):
         return redirect("request_detail", request_id=request_obj.id)
 
     if request.method == "POST":
-        form = RequestForm(request.POST, request.FILES, instance=request_obj)
+        form = RequestForm(request.POST, request.FILES, instance=request_obj, user=request.user)
 
         if form.is_valid():
             req = form.save(commit=False)
@@ -612,7 +627,7 @@ def edit_request(request, request_id):
         )
 
     else:
-        form = RequestForm(instance=request_obj)
+        form = RequestForm(instance=request_obj, user=request.user)
         formset = RequestMaterialItemFormSet(
             instance=request_obj,
             prefix=MATERIAL_FORMSET_PREFIX,
@@ -763,15 +778,25 @@ def approval_history(request):
     ).select_related(
         "request",
         "request__request_type",
+        "request__request_for_department",
         "acted_by",
         "approver_user",
         "alternate_approver_user",
     ).order_by("-acted_at")
 
+    department = request.GET.get("department", "").strip()
+    if department:
+        approvals = approvals.filter(request__request_for_department_id=department)
+
     return render(
         request,
         "requests_app/approval_history.html",
-        {"approvals": approvals, "current_list_url": current_path_with_query(request)},
+        {
+            "approvals": approvals,
+            "departments": Department.objects.order_by("name"),
+            "selected_department": department,
+            "current_list_url": current_path_with_query(request),
+        },
     )
     
 def get_filtered_material_report_requests(request):
@@ -785,6 +810,7 @@ def get_filtered_material_report_requests(request):
     ).select_related(
         "submitted_by",
         "department",
+        "request_for_department",
         "request_type",
     )
 
@@ -809,7 +835,7 @@ def get_filtered_material_report_requests(request):
         requests = requests.filter(date_needed__lte=date_to)
 
     if department:
-        requests = requests.filter(department_id=department)
+        requests = requests.filter(request_for_department_id=department)
 
     return requests.order_by("-finalized_at", "-submitted_at")
 
@@ -829,6 +855,7 @@ def material_reports(request):
     ).select_related(
         "submitted_by",
         "department",
+        "request_for_department",
         "request_type",
     )
 
@@ -853,14 +880,9 @@ def material_reports(request):
         requests = requests.filter(date_needed__lte=date_to)
 
     if department:
-        requests = requests.filter(department_id=department)
+        requests = requests.filter(request_for_department_id=department)
 
-    departments = Request.objects.exclude(
-        department__isnull=True
-    ).values_list(
-        "department__id",
-        "department__name",
-    ).distinct()
+    departments = Department.objects.order_by("name").values_list("id", "name")
 
     requests = requests.order_by("-finalized_at", "-submitted_at")
 
@@ -894,6 +916,7 @@ def export_material_report_csv(request):
     ).select_related(
         "submitted_by",
         "department",
+        "request_for_department",
         "request_type",
     )
 
@@ -918,7 +941,7 @@ def export_material_report_csv(request):
         requests = requests.filter(date_needed__lte=date_to)
 
     if department:
-        requests = requests.filter(department_id=department)
+        requests = requests.filter(request_for_department_id=department)
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="material_report.csv"'
@@ -929,6 +952,7 @@ def export_material_report_csv(request):
         _("Request Number"),
         _("Requester"),
         _("Department"),
+        _("Request For Department"),
         _("Date Needed"),
         _("Approved Date"),
         _("Material"),
@@ -954,6 +978,7 @@ def export_material_report_csv(request):
                 req.request_number,
                 req.submitted_by.full_name or req.submitted_by.username,
                 req.department.name if req.department else "",
+                req.request_for_department.name,
                 req.date_needed,
                 req.finalized_at.strftime("%Y-%m-%d %H:%M") if req.finalized_at else "",
                 item.material.name,
@@ -1001,6 +1026,7 @@ def bulk_print_material_documents(request):
     ).select_related(
         "submitted_by",
         "department",
+        "request_for_department",
     ).order_by("-finalized_at", "-submitted_at")
 
     two_copy_warning = ""
@@ -1145,6 +1171,7 @@ def export_material_report_excel(request):
         _("Request Number"),
         _("Requester"),
         _("Department"),
+        _("Request For Department"),
         _("Date Needed"),
         _("Approved Date"),
         _("Material"),
@@ -1158,7 +1185,7 @@ def export_material_report_excel(request):
         _("Approvers"),
     ]
 
-    sheet.merge_cells("A1:N1")
+    sheet.merge_cells("A1:O1")
     sheet["A1"] = _("Microcom Material Report")
     sheet["A1"].font = Font(bold=True, size=14)
     sheet["A1"].alignment = Alignment(horizontal="center")
@@ -1188,6 +1215,7 @@ def export_material_report_excel(request):
                 req.request_number,
                 req.submitted_by.full_name or req.submitted_by.username,
                 req.department.name if req.department else "",
+                req.request_for_department.name,
                 req.date_needed,
                 req.finalized_at.strftime("%Y-%m-%d %H:%M") if req.finalized_at else "",
                 item.material.name,
@@ -1215,23 +1243,24 @@ def export_material_report_excel(request):
             cell.alignment = Alignment(vertical="top", wrap_text=True)
 
     sheet.freeze_panes = "A5"
-    sheet.auto_filter.ref = f"A{start_row}:N{sheet.max_row}"
+    sheet.auto_filter.ref = f"A{start_row}:O{sheet.max_row}"
 
     widths = {
         "A": 18,
         "B": 24,
         "C": 20,
-        "D": 15,
-        "E": 20,
-        "F": 30,
-        "G": 18,
-        "H": 22,
-        "I": 12,
+        "D": 24,
+        "E": 15,
+        "F": 20,
+        "G": 30,
+        "H": 18,
+        "I": 22,
         "J": 12,
-        "K": 16,
-        "L": 45,
+        "K": 12,
+        "L": 16,
         "M": 45,
-        "N": 35,
+        "N": 45,
+        "O": 35,
     }
 
     for col, width in widths.items():

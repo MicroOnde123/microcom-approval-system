@@ -1033,3 +1033,11 @@ msgstr "Cette demande a déjà été soumise."
 
 msgid "This form has expired. Please submit it again."
 msgstr "Ce formulaire a expiré. Veuillez le soumettre à nouveau."
+msgid "Request For Department"
+msgstr "Département concerné"
+
+msgid "Submitted From Department"
+msgstr "Département d'origine"
+
+msgid "By default, this request is assigned to your department. If you are submitting on behalf of another department, select the correct department before submitting."
+msgstr "Par défaut, cette demande est attribuée à votre département. Si vous soumettez la demande pour un autre département, sélectionnez le département concerné avant de l’envoyer."

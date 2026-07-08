@@ -80,6 +80,18 @@
             </select>
         </div>
 
+        <div>
+            <label>{% trans "Request For Department" %}</label>
+            <select name="department">
+                <option value="">{% trans "All Departments" %}</option>
+                {% for department in departments %}
+                    {% with department_id=department.id|stringformat:"s" %}
+                    <option value="{{ department.id }}" {% if selected_department == department_id %}selected{% endif %}>{{ department.name }}</option>
+                    {% endwith %}
+                {% endfor %}
+            </select>
+        </div>
+
     </div>
 
     <div style="margin-top: 12px;">
@@ -106,6 +118,7 @@
                 <th>{% trans "Description" %}</th>
                 <th>{% trans "Type" %}</th>
                 <th>{% trans "Submitted By" %}</th>
+                <th>{% trans "Request For Department" %}</th>
                 <th>{% trans "Date Needed" %}</th>
                 <th>{% trans "Step" %}</th>
                 <th>{% trans "Action" %}</th>
@@ -133,6 +146,8 @@
                 <td>
                     {{ approval.request.submitted_by }}
                 </td>
+
+                <td>{{ approval.request.request_for_department }}</td>
 
                 <td>
 

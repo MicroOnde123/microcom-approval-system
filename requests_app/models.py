@@ -39,6 +39,13 @@ class Request(models.Model):
         on_delete=models.PROTECT,
     )
 
+    request_for_department = models.ForeignKey(
+        "accounts.Department",
+        on_delete=models.PROTECT,
+        related_name="owned_requests",
+        db_index=True,
+    )
+
     description = models.TextField()
     amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     date_needed = models.DateField(null=True, blank=True)
@@ -70,6 +77,11 @@ class Request(models.Model):
     )
 
     material_issue_note = models.TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.request_for_department_id and self.department_id:
+            self.request_for_department_id = self.department_id
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.request_number

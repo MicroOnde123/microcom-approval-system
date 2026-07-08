@@ -37,8 +37,10 @@ def get_applicable_workflow(request):
         is_active=True,
     )
 
-    if request.department:
-        workflows = workflows.filter(department=request.department) | workflows.filter(department__isnull=True)
+    if request.request_for_department:
+        workflows = workflows.filter(
+            department=request.request_for_department
+        ) | workflows.filter(department__isnull=True)
 
     if request.amount is not None:
         workflows = workflows.filter(min_amount__lte=request.amount) | workflows.filter(min_amount__isnull=True)
@@ -62,10 +64,10 @@ def create_approval_steps(request, workflow):
         approver = step.approver_user
 
         if not approver and step.approver_role:
-            if not request.department:
-                raise ValidationError("Request has no department assigned.")
+            if not request.request_for_department:
+                raise ValidationError("Request has no owning department assigned.")
 
-            approver = request.department.user_set.filter(
+            approver = request.request_for_department.user_set.filter(
                 role=step.approver_role,
                 is_active=True,
             ).first()

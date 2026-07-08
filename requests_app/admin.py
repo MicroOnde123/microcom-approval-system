@@ -62,6 +62,7 @@ class RequestAdmin(admin.ModelAdmin):
         "request_type",
         "submitted_by",
         "department",
+        "request_for_department",
         "status",
         "stock_deducted",
         "date_needed",
@@ -72,6 +73,7 @@ class RequestAdmin(admin.ModelAdmin):
     list_filter = (
         "request_type",
         "department",
+        "request_for_department",
         "status",
         "stock_deducted",
         "date_needed",

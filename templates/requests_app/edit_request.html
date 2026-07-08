@@ -70,6 +70,17 @@
 
     </div>
 
+    <div class="form-section">
+        <label for="{{ form.request_for_department.id_for_label }}">{% trans "Request For Department" %}</label>
+        {{ form.request_for_department }}
+        {% if form.request_for_department.help_text %}
+        <div class="muted">{{ form.request_for_department.help_text }}</div>
+        {% endif %}
+        {% if form.request_for_department.errors %}
+        <div class="field-error">{{ form.request_for_department.errors }}</div>
+        {% endif %}
+    </div>
+
     <div class="form-section" id="section-permission" style="display:none;">
 
         <div class="permission-box">
