@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Edit Returned Request" %}{% endblock %}
+{% block title %}
+    {% if request_obj.status == "DRAFT" %}
+        {% trans "Edit Draft Request" %}
+    {% else %}
+        {% trans "Edit Returned Request" %}
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 
@@ -9,10 +15,20 @@
 
     <div>
 
-        <h1>{% trans "Edit Returned Request" %}</h1>
+        <h1>
+            {% if request_obj.status == "DRAFT" %}
+                {% trans "Edit Draft Request" %}
+            {% else %}
+                {% trans "Edit Returned Request" %}
+            {% endif %}
+        </h1>
 
         <p class="muted">
-            {% trans "Correct the request and resubmit it for approval." %}
+            {% if request_obj.status == "DRAFT" %}
+                {% trans "Continue preparing this draft before submitting it for approval." %}
+            {% else %}
+                {% trans "Correct the request and resubmit it for approval." %}
+            {% endif %}
         </p>
 
     </div>
@@ -32,7 +48,15 @@
 
     <p>
         <strong>{% trans "Status:" %}</strong>
-        {{ request_obj.status }}
+        <span class="status-badge status-{{ request_obj.status }}">
+            {% if request_obj.status == "DRAFT" %}
+                {% trans "Draft" %}
+            {% elif request_obj.status == "CANCELLED" %}
+                {% trans "Cancelled" %}
+            {% else %}
+                {{ request_obj.status }}
+            {% endif %}
+        </span>
     </p>
 
 </div>
@@ -299,14 +323,51 @@
 
     </div>
 
-    <div style="margin-top: 20px;">
-
-        <button type="submit" class="btn" id="request-submit-button">
-            {% trans "Save and Resubmit" %}
-        </button>
-
+    <div class="draft-help">
+        <details>
+            <summary>{% trans "What is a Draft?" %}</summary>
+            <div class="draft-help-body">
+                <p>{% trans "A draft allows you to save your request and continue working on it later." %}</p>
+                <p>{% trans "Draft requests:" %}</p>
+                <ul>
+                    <li>{% trans "Are visible only to you." %}</li>
+                    <li>{% trans "Are not sent for approval." %}</li>
+                    <li>{% trans "Do not notify approvers." %}</li>
+                    <li>{% trans "Do not reserve or issue material." %}</li>
+                    <li>{% trans "Can be edited at any time." %}</li>
+                    <li>{% trans "Can later be submitted for approval." %}</li>
+                </ul>
+                <p>{% trans "Use Draft when information is incomplete or you are still preparing the request." %}</p>
+            </div>
+        </details>
     </div>
 
+    <div class="submit-row">
+        {% if request_obj.status == "DRAFT" %}
+            <button type="submit" name="action" value="save_draft" class="btn btn-secondary">
+                {% trans "Save Draft" %}
+            </button>
+            <button type="submit" name="action" value="submit" class="btn" id="request-submit-button">
+                {% trans "Submit Request" %}
+            </button>
+        {% else %}
+            <button type="submit" name="action" value="save_changes" class="btn btn-secondary">
+                {% trans "Save Changes" %}
+            </button>
+            <button type="submit" name="action" value="resubmit" class="btn" id="request-submit-button">
+                {% trans "Resubmit Request" %}
+            </button>
+        {% endif %}
+    </div>
+
+</form>
+
+<form method="post" action="{% url 'cancel_request' request_obj.id %}" class="cancel-request-form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ back_url }}">
+    <button type="submit" class="btn btn-secondary" onclick="return confirm('{% trans "Are you sure you want to cancel this request? This action cannot be undone." %}');">
+        {% trans "Cancel Request" %}
+    </button>
 </form>
 
 <style>
@@ -353,6 +414,38 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
+    }
+
+    .submit-row,
+    .cancel-request-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .draft-help {
+        margin-top: 20px;
+        border: 1px solid #dbeafe;
+        background: #eff6ff;
+        border-radius: 8px;
+        padding: 12px 14px;
+    }
+
+    .draft-help summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: #1d4ed8;
+    }
+
+    .draft-help-body {
+        margin-top: 10px;
+        color: #1f2937;
+        line-height: 1.5;
+    }
+
+    .draft-help-body ul {
+        margin: 8px 0 8px 20px;
     }
 
     @media (max-width: 800px) {

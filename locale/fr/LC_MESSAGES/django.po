@@ -17,6 +17,112 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+# Draft, cancellation, and returned-request workflow strings.
+msgid "Save as Draft"
+msgstr "Enregistrer comme brouillon"
+
+msgid "Save Draft"
+msgstr "Enregistrer le brouillon"
+
+msgid "Save Changes"
+msgstr "Enregistrer les modifications"
+
+msgid "Resubmit Request"
+msgstr "Soumettre à nouveau la demande"
+
+msgid "Cancel Request"
+msgstr "Annuler la demande"
+
+msgid "Draft"
+msgstr "Brouillon"
+
+msgid "Cancelled"
+msgstr "Annulée"
+
+msgid "What is a Draft?"
+msgstr "Qu'est-ce qu'un brouillon ?"
+
+msgid "A draft allows you to save your request and continue working on it later."
+msgstr "Un brouillon vous permet d'enregistrer votre demande et de la compléter plus tard."
+
+msgid "Draft requests:"
+msgstr "Les brouillons :"
+
+msgid "Are visible only to you."
+msgstr "Sont visibles uniquement par vous."
+
+msgid "Are not sent for approval."
+msgstr "Ne sont pas envoyés pour approbation."
+
+msgid "Do not notify approvers."
+msgstr "N'envoient aucune notification aux approbateurs."
+
+msgid "Do not reserve or issue material."
+msgstr "Ne réservent ni ne distribuent de matériel."
+
+msgid "Can be edited at any time."
+msgstr "Peuvent être modifiés à tout moment."
+
+msgid "Can later be submitted for approval."
+msgstr "Peuvent être soumis ultérieurement pour approbation."
+
+msgid "Use Draft when information is incomplete or you are still preparing the request."
+msgstr "Utilisez un brouillon lorsque les informations ne sont pas encore complètes ou lorsque la demande est encore en préparation."
+
+msgid "This request is currently saved as a Draft and has not been submitted for approval."
+msgstr "Cette demande est actuellement enregistrée comme brouillon et n'a pas encore été soumise pour approbation."
+
+msgid "Are you sure you want to cancel this request? This action cannot be undone."
+msgstr "Êtes-vous sûr de vouloir annuler cette demande ? Cette action est définitive."
+
+msgid "Edit Draft Request"
+msgstr "Modifier le brouillon"
+
+msgid "Continue preparing this draft before submitting it for approval."
+msgstr "Continuez à préparer ce brouillon avant de le soumettre pour approbation."
+
+msgid "Edit Draft"
+msgstr "Modifier le brouillon"
+
+msgid "This request was already saved."
+msgstr "Cette demande a déjà été enregistrée."
+
+msgid "Draft saved successfully."
+msgstr "Brouillon enregistré avec succès."
+
+msgid "Changes saved successfully."
+msgstr "Modifications enregistrées avec succès."
+
+msgid "Request submitted successfully."
+msgstr "Demande soumise avec succès."
+
+msgid "Request updated and resubmitted successfully."
+msgstr "Demande mise à jour et soumise à nouveau avec succès."
+
+msgid "Duplicate material rows are not allowed."
+msgstr "Les lignes de matériel en double ne sont pas autorisées."
+
+msgid "At least one material is required for material requests."
+msgstr "Au moins un matériel est requis pour les demandes de matériel."
+
+msgid "No approval workflow is configured for this request type."
+msgstr "Aucun circuit d'approbation n'est configuré pour ce type de demande."
+
+msgid "Only draft or returned requests can be edited."
+msgstr "Seuls les brouillons ou les demandes retournées peuvent être modifiés."
+
+msgid "You are not allowed to cancel this request."
+msgstr "Vous n'êtes pas autorisé à annuler cette demande."
+
+msgid "This request cannot be cancelled."
+msgstr "Cette demande ne peut pas etre annulee."
+
+msgid "Request cancelled by user."
+msgstr "Demande annulée par l'utilisateur."
+
+msgid "Request cancelled successfully."
+msgstr "Demande annulée avec succès."
+
 #: .\config\settings.py:147
 msgid "English"
 msgstr "Anglais"

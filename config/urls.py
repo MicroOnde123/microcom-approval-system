@@ -14,6 +14,7 @@ from requests_app.views import (
     request_detail,
     update_material_issue_note,
     edit_request,
+    cancel_request,
     approved_document,
     approval_history,
     permission_document,
@@ -47,6 +48,7 @@ urlpatterns = [
         name="update_material_issue_note",
     ),
     path("requests/<int:request_id>/edit/", edit_request, name="edit_request"),
+    path("requests/<int:request_id>/cancel/", cancel_request, name="cancel_request"),
     
 
     # APPROVALS

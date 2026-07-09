@@ -1,9 +1,11 @@
 import csv
 import time
 import uuid
+from decimal import Decimal, InvalidOperation
 from django.http import HttpResponse
 from urllib.parse import urlencode
 
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -25,6 +27,7 @@ from django.utils.translation import get_language, gettext as _
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from accounts.models import Department
+from inventory.models import Material
 
 
 
@@ -171,6 +174,91 @@ def build_permission_metadata(form):
         "external_persons": cleaned.get("external_persons"),
     }
 
+
+def request_form_context(form, formset, submission_token, **extra):
+    context = {
+        "form": form,
+        "formset": formset,
+        "request_type_behavior": request_type_behavior_context(form),
+        "submission_token": submission_token,
+    }
+    context.update(extra)
+    return context
+
+
+def submitted_material_count(formset):
+    count = 0
+    material_ids = []
+
+    for form in formset.forms:
+        if not hasattr(form, "cleaned_data"):
+            continue
+
+        cleaned = form.cleaned_data
+        if not cleaned or cleaned.get("DELETE"):
+            continue
+
+        material = cleaned.get("material")
+        quantity = cleaned.get("quantity")
+        if material and quantity:
+            count += 1
+            material_ids.append(material.id)
+
+    return count, len(material_ids) != len(set(material_ids))
+
+
+def save_complete_draft_material_rows(req, post_data):
+    prefix = MATERIAL_FORMSET_PREFIX
+    total = int(post_data.get(f"{prefix}-TOTAL_FORMS") or 0)
+    initial = int(post_data.get(f"{prefix}-INITIAL_FORMS") or 0)
+    seen_material_ids = set()
+
+    for index in range(total):
+        material_id = post_data.get(f"{prefix}-{index}-material")
+        quantity_value = post_data.get(f"{prefix}-{index}-quantity")
+        note = post_data.get(f"{prefix}-{index}-note", "")
+        delete_requested = post_data.get(f"{prefix}-{index}-DELETE")
+        item_id = post_data.get(f"{prefix}-{index}-id")
+        existing_item = None
+
+        if item_id:
+            existing_item = req.material_items.filter(id=item_id).first()
+
+        if delete_requested and existing_item:
+            existing_item.delete()
+            continue
+
+        if not material_id or not quantity_value:
+            continue
+
+        try:
+            material = Material.objects.get(id=material_id, is_active=True)
+            quantity = Decimal(quantity_value)
+        except (Material.DoesNotExist, InvalidOperation):
+            continue
+
+        if quantity <= 0 or material.id in seen_material_ids:
+            continue
+
+        seen_material_ids.add(material.id)
+
+        if existing_item and index < initial:
+            existing_item.material = material
+            existing_item.quantity = quantity
+            existing_item.note = note
+            existing_item.save()
+        else:
+            RequestMaterialItem.objects.create(
+                request=req,
+                material=material,
+                quantity=quantity,
+                note=note,
+            )
+
+
+def save_valid_material_formset(formset):
+    formset.save()
+
 @login_required
 def create_request(request):
     if not request.user.department:
@@ -178,17 +266,24 @@ def create_request(request):
         return redirect("dashboard")
 
     if request.method == "POST":
+        action = request.POST.get("action", "submit")
+        is_draft_action = action == "save_draft"
         token_status, existing_request_id, submission_token = submission_token_result(
             request, "create"
         )
         if token_status == "used" and existing_request_id:
-            messages.info(request, _("This request was already submitted."))
+            messages.info(request, _("This request was already saved."))
             return redirect("request_detail", request_id=existing_request_id)
         if token_status != "pending":
             messages.error(request, _("This form has expired. Please submit it again."))
             return redirect("create_request")
 
-        form = RequestForm(request.POST, request.FILES, user=request.user)
+        form = RequestForm(
+            request.POST,
+            request.FILES,
+            user=request.user,
+            draft=is_draft_action,
+        )
         formset = RequestMaterialItemFormSet(
             request.POST,
             prefix=MATERIAL_FORMSET_PREFIX,
@@ -200,46 +295,50 @@ def create_request(request):
             req.submitted_by = request.user
             req.department = request.user.department
             req.metadata_json = build_permission_metadata(form)
+            req.status = "DRAFT" if is_draft_action else "PENDING"
 
             material_request = requires_materials(req)
+
+            if is_draft_action:
+                req.save()
+                if material_request:
+                    save_complete_draft_material_rows(req, request.POST)
+                save_attachments(request, req)
+                mark_submission_token_used(request, submission_token, req.id)
+                messages.success(request, _("Draft saved successfully."))
+                return redirect("request_detail", request_id=req.id)
 
             if material_request:
                 if not formset.is_valid():
                     return render(
                         request,
                         "requests_app/create_request.html",
-                        {
-                            "form": form,
-                            "formset": formset,
-                            "request_type_behavior": request_type_behavior_context(form),
-                            "submission_token": submission_token,
-                        },
+                        request_form_context(form, formset, submission_token),
                     )
 
-                items = formset.save(commit=False)
+                material_count, has_duplicates = submitted_material_count(formset)
 
-                if not items:
-                    messages.error(request, "At least one material is required for material requests.")
+                if has_duplicates:
+                    messages.error(request, _("Duplicate material rows are not allowed."))
                     return render(
                         request,
                         "requests_app/create_request.html",
-                        {
-                            "form": form,
-                            "formset": formset,
-                            "request_type_behavior": request_type_behavior_context(form),
-                            "submission_token": submission_token,
-                        },
+                        request_form_context(form, formset, submission_token),
+                    )
+
+                if material_count <= 0:
+                    messages.error(request, _("At least one material is required for material requests."))
+                    return render(
+                        request,
+                        "requests_app/create_request.html",
+                        request_form_context(form, formset, submission_token),
                     )
 
             req.save()
 
             if material_request:
-                for item in items:
-                    item.request = req
-                    item.save()
-
-                for obj in formset.deleted_objects:
-                    obj.delete()
+                formset.instance = req
+                save_valid_material_formset(formset)
 
             save_attachments(request, req)
 
@@ -247,20 +346,15 @@ def create_request(request):
                 submit_request(req)
             except Exception:
                 req.delete()
-                messages.error(request, "No approval workflow is configured for this request type.")
+                messages.error(request, _("No approval workflow is configured for this request type."))
                 return render(
                     request,
                     "requests_app/create_request.html",
-                    {
-                        "form": form,
-                        "formset": formset,
-                        "request_type_behavior": request_type_behavior_context(form),
-                        "submission_token": submission_token,
-                    },
+                    request_form_context(form, formset, submission_token),
                 )
 
             mark_submission_token_used(request, submission_token, req.id)
-            messages.success(request, "Request submitted successfully.")
+            messages.success(request, _("Request submitted successfully."))
             return redirect("dashboard")
 
     else:
@@ -271,12 +365,7 @@ def create_request(request):
     return render(
         request,
         "requests_app/create_request.html",
-        {
-            "form": form,
-            "formset": formset,
-            "request_type_behavior": request_type_behavior_context(form),
-            "submission_token": submission_token,
-        },
+        request_form_context(form, formset, submission_token),
     )
 
 def is_stock_manager(user):
@@ -306,6 +395,7 @@ def pending_approvals(request):
         | models.Q(alternate_approver_user=request.user),
         status="PENDING",
         request__current_step_order=models.F("step_order"),
+        request__status__in=["PENDING", "IN_REVIEW"],
     ).select_related(
         "request",
         "request__request_type",
@@ -384,6 +474,7 @@ def approval_detail(request, approval_id):
     if request.method != "POST" and (
         approval.status != "PENDING"
         or approval.request.current_step_order != approval.step_order
+        or approval.request.status not in ["PENDING", "IN_REVIEW"]
     ):
         messages.error(request, "This approval is no longer active.")
         return redirect(back_url)
@@ -465,6 +556,12 @@ def request_detail(request, request_id):
             step_order=request_obj.current_step_order,
         ).first()
 
+    can_cancel_request = (
+        request_obj.status in ["DRAFT", "RETURNED", "PENDING", "IN_REVIEW"]
+        and (is_submitter or request.user.is_superuser)
+    )
+    can_edit_request = is_submitter and request_obj.status in ["DRAFT", "RETURNED"]
+
     return render(
         request,
         "requests_app/request_detail.html",
@@ -472,6 +569,8 @@ def request_detail(request, request_id):
             "request_obj": request_obj,
             "back_url": back_url,
             "active_approval_for_user": active_approval_for_user,
+            "can_cancel_request": can_cancel_request,
+            "can_edit_request": can_edit_request,
             "can_edit_material_issue_note": (
                 request_obj.status == "APPROVED"
                 and requires_materials(request_obj)
@@ -533,24 +632,34 @@ def update_material_issue_note(request, request_id):
 def edit_request(request, request_id):
     request_obj = get_object_or_404(Request, id=request_id, submitted_by=request.user)
 
+    if request_obj.status not in ["DRAFT", "RETURNED"]:
+        messages.error(request, _("Only draft or returned requests can be edited."))
+        return redirect("request_detail", request_id=request_obj.id)
+
     submission_action = f"edit:{request_obj.id}"
     if request.method == "POST":
+        action = request.POST.get("action", "resubmit")
+        if action not in {"save_draft", "submit", "save_changes", "resubmit"}:
+            action = "resubmit"
+        is_draft_save = action in {"save_draft", "save_changes"}
+        is_submit_action = action in {"submit", "resubmit"}
         token_status, existing_request_id, submission_token = submission_token_result(
             request, submission_action
         )
         if token_status == "used" and existing_request_id:
-            messages.info(request, _("This request was already submitted."))
+            messages.info(request, _("This request was already saved."))
             return redirect("request_detail", request_id=existing_request_id)
         if token_status != "pending":
             messages.error(request, _("This form has expired. Please submit it again."))
             return redirect("edit_request", request_id=request_obj.id)
 
-    if request_obj.status != "RETURNED":
-        messages.error(request, "Only returned requests can be edited.")
-        return redirect("request_detail", request_id=request_obj.id)
-
-    if request.method == "POST":
-        form = RequestForm(request.POST, request.FILES, instance=request_obj, user=request.user)
+        form = RequestForm(
+            request.POST,
+            request.FILES,
+            instance=request_obj,
+            user=request.user,
+            draft=is_draft_save,
+        )
 
         if form.is_valid():
             req = form.save(commit=False)
@@ -565,40 +674,63 @@ def edit_request(request, request_id):
                 prefix=MATERIAL_FORMSET_PREFIX,
             )
 
-            if material_request:
+            if is_draft_save:
+                req.save()
+                if material_request:
+                    save_complete_draft_material_rows(req, request.POST)
+                else:
+                    req.material_items.all().delete()
+
+                save_attachments(request, req)
+                mark_submission_token_used(request, submission_token, req.id)
+                if request_obj.status == "DRAFT":
+                    messages.success(request, _("Draft saved successfully."))
+                else:
+                    messages.success(request, _("Changes saved successfully."))
+                return redirect("request_detail", request_id=req.id)
+
+            if is_submit_action and material_request:
                 if not formset.is_valid():
                     return render(
                         request,
                         "requests_app/edit_request.html",
-                        {
-                            "form": form,
-                            "formset": formset,
-                            "request_obj": request_obj,
-                            "request_type_behavior": request_type_behavior_context(form),
-                            "back_url": reverse("request_detail", args=[request_obj.id]),
-                            "submission_token": submission_token,
-                        },
+                        request_form_context(
+                            form,
+                            formset,
+                            submission_token,
+                            request_obj=request_obj,
+                            back_url=reverse("request_detail", args=[request_obj.id]),
+                        ),
                     )
 
-                items = formset.save(commit=False)
+                material_count, has_duplicates = submitted_material_count(formset)
 
-                existing_items_count = req.material_items.count()
-                deleted_items_count = len(formset.deleted_objects)
-                remaining_existing_count = existing_items_count - deleted_items_count
-
-                if not items and remaining_existing_count <= 0:
-                    messages.error(request, "At least one material is required for material requests.")
+                if has_duplicates:
+                    messages.error(request, _("Duplicate material rows are not allowed."))
                     return render(
                         request,
                         "requests_app/edit_request.html",
-                        {
-                            "form": form,
-                            "formset": formset,
-                            "request_obj": request_obj,
-                            "request_type_behavior": request_type_behavior_context(form),
-                            "back_url": reverse("request_detail", args=[request_obj.id]),
-                            "submission_token": submission_token,
-                        },
+                        request_form_context(
+                            form,
+                            formset,
+                            submission_token,
+                            request_obj=request_obj,
+                            back_url=reverse("request_detail", args=[request_obj.id]),
+                        ),
+                    )
+
+                if material_count <= 0:
+                    messages.error(request, _("At least one material is required for material requests."))
+                    return render(
+                        request,
+                        "requests_app/edit_request.html",
+                        request_form_context(
+                            form,
+                            formset,
+                            submission_token,
+                            request_obj=request_obj,
+                            back_url=reverse("request_detail", args=[request_obj.id]),
+                        ),
                     )
             else:
                 formset = RequestMaterialItemFormSet(
@@ -609,15 +741,39 @@ def edit_request(request, request_id):
             req.save()
 
             if material_request:
-                formset.save()
+                save_valid_material_formset(formset)
             else:
                 req.material_items.all().delete()
 
             save_attachments(request, req)
-            resubmit_request(req, request.user)
+
+            try:
+                if request_obj.status == "DRAFT":
+                    req.status = "PENDING"
+                    req.current_step_order = None
+                    req.finalized_at = None
+                    req.save()
+                    submit_request(req)
+                    success_message = _("Request submitted successfully.")
+                else:
+                    resubmit_request(req, request.user)
+                    success_message = _("Request updated and resubmitted successfully.")
+            except ValidationError as exc:
+                messages.error(request, exc.messages[0] if hasattr(exc, "messages") else str(exc))
+                return render(
+                    request,
+                    "requests_app/edit_request.html",
+                    request_form_context(
+                        form,
+                        formset,
+                        submission_token,
+                        request_obj=request_obj,
+                        back_url=reverse("request_detail", args=[request_obj.id]),
+                    ),
+                )
 
             mark_submission_token_used(request, submission_token, req.id)
-            messages.success(request, "Request updated and resubmitted successfully.")
+            messages.success(request, success_message)
             return redirect("request_detail", request_id=req.id)
 
         formset = RequestMaterialItemFormSet(
@@ -637,15 +793,51 @@ def edit_request(request, request_id):
     return render(
         request,
         "requests_app/edit_request.html",
-        {
-            "form": form,
-            "formset": formset,
-            "request_obj": request_obj,
-            "request_type_behavior": request_type_behavior_context(form),
-            "back_url": reverse("request_detail", args=[request_obj.id]),
-            "submission_token": submission_token,
-        },
+        request_form_context(
+            form,
+            formset,
+            submission_token,
+            request_obj=request_obj,
+            back_url=reverse("request_detail", args=[request_obj.id]),
+        ),
     )
+
+
+@login_required
+@require_POST
+def cancel_request(request, request_id):
+    request_obj = get_object_or_404(Request, id=request_id)
+    detail_url = reverse("request_detail", args=[request_obj.id])
+    back_url = safe_next_url(request.POST.get("next"), detail_url)
+
+    if not (request_obj.submitted_by == request.user or request.user.is_superuser):
+        return HttpResponseForbidden(_("You are not allowed to cancel this request."))
+
+    if request_obj.status not in ["DRAFT", "RETURNED", "PENDING", "IN_REVIEW"]:
+        messages.error(request, _("This request cannot be cancelled."))
+        return redirect(back_url)
+
+    with transaction.atomic():
+        request_obj = Request.objects.select_for_update().get(id=request_obj.id)
+
+        if request_obj.status not in ["DRAFT", "RETURNED", "PENDING", "IN_REVIEW"]:
+            messages.error(request, _("This request cannot be cancelled."))
+            return redirect(back_url)
+
+        request_obj.status = "CANCELLED"
+        request_obj.current_step_order = None
+        request_obj.finalized_at = timezone.now()
+        request_obj.save(update_fields=["status", "current_step_order", "finalized_at"])
+
+        RequestAuditLog.objects.create(
+            request=request_obj,
+            action="CANCELLED",
+            performed_by=request.user,
+            comment=_("Request cancelled by user."),
+        )
+
+    messages.success(request, _("Request cancelled successfully."))
+    return redirect(back_url)
 
 
 @login_required
@@ -764,6 +956,8 @@ def approval_history(request):
         | models.Q(acted_by__isnull=True, approver_user=request.user),
     ).exclude(
         status="PENDING"
+    ).exclude(
+        request__status__in=["DRAFT", "CANCELLED"]
     ).annotate(
         request_action_rank=models.Window(
             expression=RowNumber(),
@@ -1141,6 +1335,7 @@ def notification_count(request):
         | models.Q(alternate_approver_user=request.user),
         status="PENDING",
         request__current_step_order=models.F("step_order"),
+        request__status__in=["PENDING", "IN_REVIEW"],
     ).count()
 
     returned_count = Request.objects.filter(

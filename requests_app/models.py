@@ -23,6 +23,7 @@ class Request(models.Model):
         ("APPROVED", "Approved"),
         ("REJECTED", "Rejected"),
         ("RETURNED", "Returned"),
+        ("CANCELLED", "Cancelled"),
     ]
 
     request_number = models.CharField(max_length=50, unique=True)

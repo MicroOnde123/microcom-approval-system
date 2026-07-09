@@ -73,7 +73,13 @@
 
                 <td>
                     <span class="status-badge status-{{ r.status }}">
-                        {{ r.status }}
+                        {% if r.status == "DRAFT" %}
+                            {% trans "Draft" %}
+                        {% elif r.status == "CANCELLED" %}
+                            {% trans "Cancelled" %}
+                        {% else %}
+                            {{ r.status }}
+                        {% endif %}
                     </span>
                 </td>
 

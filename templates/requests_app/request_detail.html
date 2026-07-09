@@ -37,11 +37,41 @@
     </div>
 </div>
 
-{% if request_obj.status == "RETURNED" and request.user == request_obj.submitted_by %}
-<div style="margin-bottom: 20px;">
+{% if request_obj.status == "DRAFT" %}
+<div class="message info" style="margin-bottom: 20px;">
+    {% trans "This request is currently saved as a Draft and has not been submitted for approval." %}
+</div>
+{% endif %}
+
+{% if can_edit_request %}
+<div class="actions-inline" style="margin-bottom: 20px;">
     <a href="{% url 'edit_request' request_obj.id %}" class="btn">
-        {% trans "Edit and Resubmit" %}
+        {% if request_obj.status == "DRAFT" %}
+            {% trans "Edit Draft" %}
+        {% else %}
+            {% trans "Edit and Resubmit" %}
+        {% endif %}
     </a>
+
+    {% if can_cancel_request %}
+    <form method="post" action="{% url 'cancel_request' request_obj.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="btn btn-secondary" onclick="return confirm('{% trans "Are you sure you want to cancel this request? This action cannot be undone." %}');">
+            {% trans "Cancel Request" %}
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% elif can_cancel_request %}
+<div class="actions-inline" style="margin-bottom: 20px;">
+    <form method="post" action="{% url 'cancel_request' request_obj.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="btn btn-secondary" onclick="return confirm('{% trans "Are you sure you want to cancel this request? This action cannot be undone." %}');">
+            {% trans "Cancel Request" %}
+        </button>
+    </form>
 </div>
 {% endif %}
 
@@ -54,7 +84,15 @@
 
     <div class="detail-item">
         <strong>{% trans "Status" %}</strong>
-        <span class="status-badge status-{{ request_obj.status }}">{{ request_obj.status }}</span>
+        <span class="status-badge status-{{ request_obj.status }}">
+            {% if request_obj.status == "DRAFT" %}
+                {% trans "Draft" %}
+            {% elif request_obj.status == "CANCELLED" %}
+                {% trans "Cancelled" %}
+            {% else %}
+                {{ request_obj.status }}
+            {% endif %}
+        </span>
     </div>
 
     <div class="detail-item">

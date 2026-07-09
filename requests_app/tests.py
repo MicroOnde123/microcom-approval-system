@@ -1514,6 +1514,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
     def test_resubmit_can_remove_existing_item_and_add_new_item(self):
         data = self.request_data()
+        data["action"] = "resubmit"
         data["submission_token"] = self.submission_token(self.edit_url())
         data.update(
             {
@@ -1559,8 +1560,68 @@ class ReturnedMaterialRequestEditTests(TestCase):
         self.assertEqual(self.new_material.stock_quantity, 8)
         self.assertFalse(self.request_obj.stock_deducted)
 
+    def test_resubmit_rejects_removing_all_material_items(self):
+        data = self.request_data()
+        data["action"] = "resubmit"
+        data["submission_token"] = self.submission_token(self.edit_url())
+        data.update(
+            {
+                "material_items-TOTAL_FORMS": "1",
+                "material_items-INITIAL_FORMS": "1",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-0-id": self.existing_item.id,
+                "material_items-0-material": self.existing_material.id,
+                "material_items-0-quantity": "2",
+                "material_items-0-DELETE": "on",
+            }
+        )
+
+        response = self.client.post(
+            self.edit_url(),
+            data=data,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "At least one material is required")
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.status, "RETURNED")
+        self.assertEqual(self.request_obj.material_items.count(), 1)
+
+    def test_resubmit_rejects_duplicate_material_rows(self):
+        data = self.request_data()
+        data["action"] = "resubmit"
+        data["submission_token"] = self.submission_token(self.edit_url())
+        data.update(
+            {
+                "material_items-TOTAL_FORMS": "2",
+                "material_items-INITIAL_FORMS": "1",
+                "material_items-MIN_NUM_FORMS": "0",
+                "material_items-MAX_NUM_FORMS": "1000",
+                "material_items-0-id": self.existing_item.id,
+                "material_items-0-material": self.existing_material.id,
+                "material_items-0-quantity": "2",
+                "material_items-1-material": self.existing_material.id,
+                "material_items-1-quantity": "1",
+            }
+        )
+
+        response = self.client.post(
+            self.edit_url(),
+            data=data,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Duplicate material rows are not allowed.")
+        self.request_obj.refresh_from_db()
+        self.assertEqual(self.request_obj.status, "RETURNED")
+        self.assertEqual(self.request_obj.material_items.count(), 1)
+
     def test_resubmit_rejects_quantity_above_available_stock(self):
         data = self.request_data()
+        data["action"] = "resubmit"
         data["submission_token"] = self.submission_token(self.edit_url())
         data.update(
             {
@@ -1595,6 +1656,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
     def test_reused_create_token_does_not_duplicate_request_items_or_approvals(self):
         data = self.request_data()
+        data["action"] = "submit"
         data.update(
             {
                 "submission_token": self.submission_token(reverse("create_request")),
@@ -1627,6 +1689,7 @@ class ReturnedMaterialRequestEditTests(TestCase):
 
     def test_reused_resubmit_token_only_resubmits_once(self):
         data = self.request_data()
+        data["action"] = "resubmit"
         data.update(
             {
                 "submission_token": self.submission_token(self.edit_url()),
@@ -1658,6 +1721,222 @@ class ReturnedMaterialRequestEditTests(TestCase):
             ).count(),
             1,
         )
+
+    def test_user_can_save_draft_without_approval_steps(self):
+        data = {
+            "action": "save_draft",
+            "submission_token": self.submission_token(reverse("create_request")),
+            "request_type": self.request_type.id,
+            "request_for_department": self.department.id,
+            "description": "",
+            "date_needed": "",
+            "material_items-TOTAL_FORMS": "2",
+            "material_items-INITIAL_FORMS": "0",
+            "material_items-MIN_NUM_FORMS": "0",
+            "material_items-MAX_NUM_FORMS": "1000",
+            "material_items-0-material": self.existing_material.id,
+            "material_items-0-quantity": "",
+        }
+
+        response = self.client.post(
+            reverse("create_request"),
+            data=data,
+            HTTP_HOST="127.0.0.1",
+        )
+
+        draft = Request.objects.exclude(id=self.request_obj.id).get()
+        self.assertRedirects(
+            response,
+            reverse("request_detail", args=[draft.id]),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(draft.status, "DRAFT")
+        self.assertEqual(draft.approvals.count(), 0)
+        self.assertEqual(draft.material_items.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+
+        self.client.force_login(self.approver)
+        pending_response = self.client.get(
+            reverse("pending_approvals"),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertNotContains(pending_response, draft.request_number)
+
+        self.client.force_login(self.requester)
+        my_response = self.client.get(reverse("my_requests"), HTTP_HOST="127.0.0.1")
+        self.assertContains(my_response, draft.request_number)
+        self.assertContains(my_response, "Draft")
+
+    def test_user_can_edit_and_submit_draft_later(self):
+        draft = Request.objects.create(
+            request_number="REQ-DRAFT-SUBMIT",
+            request_type=self.request_type,
+            submitted_by=self.requester,
+            department=self.department,
+            request_for_department=self.department,
+            description="Draft material request",
+            status="DRAFT",
+        )
+        edit_url = reverse("edit_request", args=[draft.id])
+        data = {
+            **self.request_data(),
+            "action": "submit",
+            "submission_token": self.submission_token(edit_url),
+            "material_items-TOTAL_FORMS": "1",
+            "material_items-INITIAL_FORMS": "0",
+            "material_items-MIN_NUM_FORMS": "0",
+            "material_items-MAX_NUM_FORMS": "1000",
+            "material_items-0-material": self.new_material.id,
+            "material_items-0-quantity": "2",
+        }
+
+        response = self.client.post(edit_url, data=data, HTTP_HOST="127.0.0.1")
+
+        self.assertRedirects(
+            response,
+            reverse("request_detail", args=[draft.id]),
+            fetch_redirect_response=False,
+        )
+        draft.refresh_from_db()
+        self.assertEqual(draft.status, "IN_REVIEW")
+        self.assertEqual(draft.approvals.count(), 1)
+        self.assertEqual(draft.material_items.count(), 1)
+
+    def test_requester_can_cancel_open_request_and_blocks_direct_approval(self):
+        request_obj = Request.objects.create(
+            request_number="REQ-CANCEL-OPEN",
+            request_type=self.request_type,
+            submitted_by=self.requester,
+            department=self.department,
+            request_for_department=self.department,
+            description="Open request to cancel",
+            status="PENDING",
+        )
+        RequestMaterialItem.objects.create(
+            request=request_obj,
+            material=self.existing_material,
+            quantity=2,
+        )
+        submit_request(request_obj)
+        approval = request_obj.approvals.get(status="PENDING")
+        self.client.force_login(self.requester)
+
+        response = self.client.post(
+            reverse("cancel_request", args=[request_obj.id]),
+            data={"next": reverse("request_detail", args=[request_obj.id])},
+            HTTP_HOST="127.0.0.1",
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("request_detail", args=[request_obj.id]),
+            fetch_redirect_response=False,
+        )
+        request_obj.refresh_from_db()
+        self.assertEqual(request_obj.status, "CANCELLED")
+        self.assertIsNone(request_obj.current_step_order)
+        self.assertTrue(
+            RequestAuditLog.objects.filter(
+                request=request_obj,
+                action="CANCELLED",
+                performed_by=self.requester,
+            ).exists()
+        )
+        self.existing_material.refresh_from_db()
+        self.assertEqual(self.existing_material.stock_quantity, 10)
+
+        self.client.force_login(self.approver)
+        approval_response = self.client.post(
+            reverse("approval_detail", args=[approval.id]),
+            data={"action": "APPROVE", "comment": ""},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertEqual(approval_response.status_code, 302)
+        request_obj.refresh_from_db()
+        self.assertEqual(request_obj.status, "CANCELLED")
+        approval.refresh_from_db()
+        self.assertEqual(approval.status, "PENDING")
+
+        pending_response = self.client.get(
+            reverse("pending_approvals"),
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertNotContains(pending_response, request_obj.request_number)
+
+    def test_requester_cannot_cancel_approved_request(self):
+        request_obj = Request.objects.create(
+            request_number="REQ-CANCEL-APPROVED",
+            request_type=self.request_type,
+            submitted_by=self.requester,
+            department=self.department,
+            request_for_department=self.department,
+            description="Approved request to cancel",
+            status="PENDING",
+        )
+        RequestMaterialItem.objects.create(
+            request=request_obj,
+            material=self.existing_material,
+            quantity=2,
+        )
+        submit_request(request_obj)
+        approval = request_obj.approvals.get(status="PENDING")
+        approve_step(approval, self.approver)
+        request_obj.refresh_from_db()
+        self.client.force_login(self.requester)
+
+        self.client.post(
+            reverse("cancel_request", args=[request_obj.id]),
+            data={"next": reverse("request_detail", args=[request_obj.id])},
+            HTTP_HOST="127.0.0.1",
+        )
+
+        request_obj.refresh_from_db()
+        self.assertEqual(request_obj.status, "APPROVED")
+
+    def test_non_owner_cannot_cancel_but_superuser_can(self):
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username="cancel_other",
+            password="pass12345",
+            full_name="Cancel Other",
+            department=self.department,
+        )
+        admin = User.objects.create_user(
+            username="cancel_admin",
+            password="pass12345",
+            full_name="Cancel Admin",
+            department=self.department,
+            is_superuser=True,
+            is_staff=True,
+        )
+        draft = Request.objects.create(
+            request_number="REQ-DRAFT-CANCEL",
+            request_type=self.request_type,
+            submitted_by=self.requester,
+            department=self.department,
+            request_for_department=self.department,
+            description="Draft to cancel",
+            status="DRAFT",
+        )
+
+        self.client.force_login(other_user)
+        forbidden = self.client.post(
+            reverse("cancel_request", args=[draft.id]),
+            data={"next": reverse("request_detail", args=[draft.id])},
+            HTTP_HOST="127.0.0.1",
+        )
+        self.assertEqual(forbidden.status_code, 403)
+        draft.refresh_from_db()
+        self.assertEqual(draft.status, "DRAFT")
+
+        self.client.force_login(admin)
+        self.client.post(
+            reverse("cancel_request", args=[draft.id]),
+            data={"next": reverse("request_detail", args=[draft.id])},
+            HTTP_HOST="127.0.0.1",
+        )
+        draft.refresh_from_db()
+        self.assertEqual(draft.status, "CANCELLED")
 
 
 class OptionalPermissionTimeTests(TestCase):

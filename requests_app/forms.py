@@ -92,10 +92,11 @@ class RequestForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, draft=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.user = user
+        self.draft = draft
         department_field = self.fields["request_for_department"]
         department_field.label = _("Request For Department")
         department_field.queryset = Department.objects.order_by("name")
@@ -135,6 +136,9 @@ class RequestForm(forms.ModelForm):
         amount = cleaned_data.get("amount")
 
         if not request_type:
+            return cleaned_data
+
+        if self.draft:
             return cleaned_data
 
         if request_type.requires_amount and not amount:

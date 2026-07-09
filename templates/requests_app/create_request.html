@@ -207,8 +207,28 @@
         <input type="file" name="attachments" multiple>
     </div>
 
+    <div class="draft-help">
+        <details>
+            <summary>{% trans "What is a Draft?" %}</summary>
+            <div class="draft-help-body">
+                <p>{% trans "A draft allows you to save your request and continue working on it later." %}</p>
+                <p>{% trans "Draft requests:" %}</p>
+                <ul>
+                    <li>{% trans "Are visible only to you." %}</li>
+                    <li>{% trans "Are not sent for approval." %}</li>
+                    <li>{% trans "Do not notify approvers." %}</li>
+                    <li>{% trans "Do not reserve or issue material." %}</li>
+                    <li>{% trans "Can be edited at any time." %}</li>
+                    <li>{% trans "Can later be submitted for approval." %}</li>
+                </ul>
+                <p>{% trans "Use Draft when information is incomplete or you are still preparing the request." %}</p>
+            </div>
+        </details>
+    </div>
+
     <div class="submit-row">
-        <button type="submit" class="btn" id="request-submit-button">{% trans "Submit Request" %}</button>
+        <button type="submit" name="action" value="save_draft" class="btn btn-secondary">{% trans "Save as Draft" %}</button>
+        <button type="submit" name="action" value="submit" class="btn" id="request-submit-button">{% trans "Submit Request" %}</button>
     </div>
 </form>
 
@@ -260,6 +280,34 @@
 
     .submit-row {
         margin-top: 25px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .draft-help {
+        margin-top: 20px;
+        border: 1px solid #dbeafe;
+        background: #eff6ff;
+        border-radius: 8px;
+        padding: 12px 14px;
+    }
+
+    .draft-help summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: #1d4ed8;
+    }
+
+    .draft-help-body {
+        margin-top: 10px;
+        color: #1f2937;
+        line-height: 1.5;
+    }
+
+    .draft-help-body ul {
+        margin: 8px 0 8px 20px;
     }
 
     @media (max-width: 800px) {
