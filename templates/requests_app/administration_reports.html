@@ -5,7 +5,7 @@
 <div class="page-header">
 <div>
 <h1>{% trans "Administration Report" %}</h1>
-<p class="muted">{% trans "Approved General Requests for Administration." %}</p>
+<p class="muted">{% trans "Central register of approved General Authorization requests." %}</p>
 </div>
 <a href="{% url 'dashboard' %}" class="btn btn-secondary">{% trans "Back to Dashboard" %}</a>
 </div>
@@ -28,8 +28,13 @@
 </select>
 </div>
 <div>
-<label>{% trans "Request For Department" %}</label>
-<input value="{% trans 'Administration' %}" disabled>
+<label for="report-destination">{% trans "Request For Department" %}</label>
+<select id="report-destination" name="request_for_department">
+<option value="">{% trans "All Departments" %}</option>
+{% for id,name in destination_departments %}
+<option value="{{ id }}" {% if request_for_department == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+{% endfor %}
+</select>
 </div>
 <div>
 <label for="report-from">{% trans "Date From" %}</label>

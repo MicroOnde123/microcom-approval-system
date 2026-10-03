@@ -1487,11 +1487,7 @@ def administration_report_scope():
     from django.conf import settings
     return Request.objects.filter(
         status="APPROVED",
-        request_for_department__code=settings.ADMINISTRATION_REPORT_DEPARTMENT_CODE,
         request_type__code=settings.ADMINISTRATION_REPORT_REQUEST_TYPE_CODE,
-        request_type__requires_materials=False,
-        request_type__is_permission_request=False,
-        material_items__isnull=True,
     ).select_related("submitted_by", "department", "request_for_department", "request_type")
 
 
@@ -1508,14 +1504,16 @@ def administration_reports(request):
     scope = administration_report_scope()
     rows = scope
     filters = {key: request.GET.get(key, "").strip() for key in
-               ("q", "department", "requester", "date_from", "date_to")}
+               ("q", "department", "request_for_department", "requester", "date_from", "date_to")}
     if filters["q"]:
         query = models.Q()
         for field in ("request_number", "description", "submitted_by__username",
                       "submitted_by__full_name", "submitted_by__first_name", "submitted_by__last_name"):
             query |= models.Q(**{field + "__icontains": filters["q"]})
         rows = rows.filter(query)
-    for key, field in (("department", "department_id"), ("requester", "submitted_by_id")):
+    for key, field in (("department", "department_id"),
+                       ("request_for_department", "request_for_department_id"),
+                       ("requester", "submitted_by_id")):
         if filters[key]:
             if filters[key].isascii() and filters[key].isdigit() and len(filters[key]) < 19:
                 rows = rows.filter(**{field: int(filters[key])})
@@ -1534,6 +1532,7 @@ def administration_reports(request):
     return render(request, "requests_app/administration_reports.html", {
         **filters, "requests": page, "page_obj": page,
         "departments": scope.order_by("department__name").values_list("department_id", "department__name").distinct(),
+        "destination_departments": scope.order_by("request_for_department__name").values_list("request_for_department_id", "request_for_department__name").distinct(),
         "requesters": scope.order_by("submitted_by__username").values_list("submitted_by_id", "submitted_by__full_name", "submitted_by__username").distinct(),
         "current_list_url": current_path_with_query(request),
         "active_querystring": params.urlencode(),

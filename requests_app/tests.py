@@ -2111,7 +2111,6 @@ class AdministrationReportTests(TestCase):
     def test_scope_and_statuses(self):
         excluded = [self.create_request(status=status) for status in
                     ("DRAFT", "PENDING", "IN_REVIEW", "RETURNED", "REJECTED", "CANCELLED")]
-        excluded.append(self.create_request(department=self.administration, request_for_department=self.technique))
         for code, flags in (("MATERIAL", {"requires_materials": True}), ("PERMISSION", {"is_permission_request": True}), ("PAYMENT", {"requires_amount": True})):
             excluded.append(self.create_request(request_type=RequestType.objects.create(code=code, name=code, **flags)))
         response = self.report()
@@ -2119,8 +2118,8 @@ class AdministrationReportTests(TestCase):
         for obj in excluded:
             with self.subTest(request=obj.request_number):
                 self.assertEqual(self.client.get(reverse("administration_report_document", args=[obj.pk])).status_code, 404)
-        # Query parameters cannot widen the fixed destination/type scope.
-        self.assertEqual(list(self.report(request_for_department=self.technique.pk, request_type="PAYMENT").context["requests"]), [self.approved])
+        # Query parameters cannot widen the approved request-type scope.
+        self.assertEqual(list(self.report(request_type="PAYMENT", status="DRAFT").context["requests"]), [self.approved])
 
     def test_document_and_copy_links_reuse_existing_renderer(self):
         url = reverse("administration_report_document", args=[self.approved.pk])
@@ -2164,9 +2163,10 @@ class AdministrationReportTests(TestCase):
     def test_pagination_preserves_filters(self):
         for i in range(26):
             self.create_request(description="Office renovation")
-        response = self.report(q="Office", department=self.technique.pk)
+        response = self.report(q="Office", department=self.technique.pk, request_for_department=self.administration.pk)
         self.assertEqual(len(response.context["requests"]), 25)
         self.assertContains(response, "q=Office&amp;department=" + str(self.technique.pk))
+        self.assertContains(response, "request_for_department=" + str(self.administration.pk))
         self.assertEqual(len(self.report(q="Office", page=2).context["requests"]), 2)
 
     def test_french(self):
@@ -2176,18 +2176,36 @@ class AdministrationReportTests(TestCase):
         self.assertContains(response, "Aucune demande Administration approuv\u00e9e trouv\u00e9e.")
 
 
-    def test_configured_codes_and_behavior_flags_fail_closed(self):
+    def test_configured_request_type_fails_closed(self):
         from django.test import override_settings
-        with override_settings(ADMINISTRATION_REPORT_DEPARTMENT_CODE="missing"):
+        with override_settings(ADMINISTRATION_REPORT_REQUEST_TYPE_CODE="missing"):
             self.assertEqual(list(self.report().context["requests"]), [])
             self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 404)
-        for flag in ("requires_materials", "is_permission_request"):
-            setattr(self.general, flag, True)
-            self.general.save()
-            self.assertEqual(list(self.report().context["requests"]), [])
-            self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 404)
-            setattr(self.general, flag, False)
+
+    def test_all_departments_and_document_access(self):
+        finance = Department.objects.create(code="FIN", name="Finance")
+        qualified = [self.approved]
+        for source, destination in ((self.technique, self.technique), (self.administration, self.technique), (finance, finance)):
+            qualified.append(self.create_request(department=source, request_for_department=destination))
+        self.assertCountEqual(list(self.report().context["requests"]), qualified)
+        for obj in qualified:
+            for copies in ("1", "2"):
+                with self.subTest(request=obj.pk, copies=copies):
+                    response = self.client.get(reverse("administration_report_document", args=[obj.pk]), {"copies": copies})
+                    self.assertEqual(response.status_code, 200)
+                    self.assertContains(response, "window.print()")
+                    self.assertTemplateUsed(response, "requests_app/approved_document.html")
+        self.assertCountEqual(list(self.report(request_for_department=self.technique.pk).context["requests"]), qualified[1:3])
+        self.assertEqual(list(self.report(department=finance.pk, request_for_department=finance.pk).context["requests"]), [qualified[3]])
+        self.assertEqual(list(self.report(department=self.administration.pk, request_for_department=self.administration.pk).context["requests"]), [])
+        self.assertEqual(list(self.report(request_for_department="bad").context["requests"]), [])
+
+    def test_membership_depends_only_on_status_and_type_code(self):
+        self.general.requires_materials = True
+        self.general.is_permission_request = True
         self.general.save()
+        self.assertEqual(list(self.report().context["requests"]), [self.approved])
+        self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 200)
 
     def test_anonymous_access_requires_login(self):
         self.client.logout()

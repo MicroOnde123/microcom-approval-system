@@ -224,6 +224,5 @@ CSRF_TRUSTED_ORIGINS = [
     "http://192.168.88.140:8000",
     "http://10.100.100.150:8000"]
 
-# Stable configured codes; report and document access share this scope.
-ADMINISTRATION_REPORT_DEPARTMENT_CODE = config("ADMINISTRATION_REPORT_DEPARTMENT_CODE", default="ADMIN")
+# Configured request type; report and document access share this scope.
 ADMINISTRATION_REPORT_REQUEST_TYPE_CODE = config("ADMINISTRATION_REPORT_REQUEST_TYPE_CODE", default="AUTORISATION_GENERAL")

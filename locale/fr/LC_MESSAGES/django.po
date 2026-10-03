@@ -1154,8 +1154,8 @@ msgstr "Rapport Administration"
 msgid "Can view administration reports"
 msgstr "Peut consulter les rapports Administration"
 
-msgid "Approved General Requests for Administration."
-msgstr "Demandes générales approuvées destinées à l’Administration."
+msgid "Central register of approved General Authorization requests."
+msgstr "Registre central des demandes d'Autorisation Générale approuvées."
 
 msgid "All Requesters"
 msgstr "Tous les demandeurs"
