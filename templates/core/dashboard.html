@@ -3,7 +3,7 @@
 
 {% block title %}{% trans "Dashboard" %}{% endblock %}
 
-{% block page_layout %}app-container--wide{% endblock %}
+{% block page_layout %}app-container--compact{% endblock %}
 
 {% block content %}
 {% if show_drc_match_banner %}
@@ -21,7 +21,7 @@
     </div>
 </div>
 
-<div class="detail-grid dashboard-grid">
+<div class="detail-grid">
     <div class="detail-item">
         <strong>{% trans "Create Request" %}</strong>
         {% trans "Start a new material, payment, or general permission request." %}

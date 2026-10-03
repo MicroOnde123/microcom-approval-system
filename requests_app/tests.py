@@ -2211,3 +2211,33 @@ class AdministrationReportTests(TestCase):
         self.client.logout()
         self.assertEqual(self.report().status_code, 302)
         self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 302)
+
+
+    def test_newest_submission_first_with_filters(self):
+        from datetime import timedelta
+        now = timezone.now()
+        # Insert newest before middle; approval times intentionally disagree.
+        newest = self.create_request(description="Ordering check", finalized_at=now - timedelta(days=3))
+        middle = self.create_request(description="Ordering check", finalized_at=now - timedelta(days=2))
+        oldest = self.approved
+        Request.objects.filter(pk=oldest.pk).update(submitted_at=now - timedelta(days=3), description="Ordering check", finalized_at=now)
+        Request.objects.filter(pk=middle.pk).update(submitted_at=now - timedelta(days=2))
+        Request.objects.filter(pk=newest.pk).update(submitted_at=now - timedelta(days=1))
+        expected = [newest.pk, middle.pk, oldest.pk]
+        for filters in ({}, {"q": "Ordering check"}, {"department": self.technique.pk},
+                        {"request_for_department": self.administration.pk}, {"requester": self.submitter.pk}):
+            with self.subTest(filters=filters):
+                response = self.report(**filters)
+                self.assertEqual([obj.pk for obj in response.context["requests"]], expected)
+
+    def test_submission_order_ties_and_pagination(self):
+        from datetime import timedelta
+        now = timezone.now()
+        Request.objects.filter(pk=self.approved.pk).update(submitted_at=now - timedelta(days=1))
+        tied = [self.create_request() for _ in range(26)]
+        Request.objects.filter(pk__in=[obj.pk for obj in tied]).update(submitted_at=now)
+        expected = sorted([obj.pk for obj in tied], reverse=True) + [self.approved.pk]
+        first = self.report(department=self.technique.pk)
+        second = self.report(department=self.technique.pk, page=2)
+        self.assertEqual([obj.pk for obj in first.context["requests"]], expected[:25])
+        self.assertEqual([obj.pk for obj in second.context["requests"]], expected[25:])

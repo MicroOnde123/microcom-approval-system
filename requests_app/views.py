@@ -1528,7 +1528,7 @@ def administration_reports(request):
             rows = rows.filter(**{lookup: value}) if value else rows.none()
     params = request.GET.copy()
     params.pop("page", None)
-    page = Paginator(rows.order_by("-finalized_at", "-submitted_at", "-pk"), 25).get_page(request.GET.get("page"))
+    page = Paginator(rows.order_by("-submitted_at", "-pk"), 25).get_page(request.GET.get("page"))
     return render(request, "requests_app/administration_reports.html", {
         **filters, "requests": page, "page_obj": page,
         "departments": scope.order_by("department__name").values_list("department_id", "department__name").distinct(),
