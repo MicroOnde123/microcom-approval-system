@@ -3,6 +3,8 @@
 
 {% block title %}{% trans "Pending Approvals" %}{% endblock %}
 
+{% block page_layout %}app-container--wide{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div>
@@ -108,20 +110,20 @@
 
 </form>
 
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0">
 
-    <table>
+    <table class="data-table">
 
         <thead>
             <tr>
-                <th>{% trans "Request Number" %}</th>
-                <th>{% trans "Description" %}</th>
-                <th>{% trans "Type" %}</th>
-                <th>{% trans "Submitted By" %}</th>
-                <th>{% trans "Request For Department" %}</th>
-                <th>{% trans "Date Needed" %}</th>
+                <th class="table-id">{% trans "Request Number" %}</th>
+                <th class="table-description">{% trans "Description" %}</th>
+                <th class="table-type">{% trans "Type" %}</th>
+                <th class="table-person">{% trans "Submitted By" %}</th>
+                <th class="table-department">{% trans "Request For Department" %}</th>
+                <th class="table-date">{% trans "Date Needed" %}</th>
                 <th>{% trans "Step" %}</th>
-                <th>{% trans "Action" %}</th>
+                <th class="table-actions">{% trans "Action" %}</th>
             </tr>
         </thead>
 
@@ -131,25 +133,25 @@
 
             <tr>
 
-                <td>
+                <td class="table-id">
                     {{ approval.request.request_number }}
                 </td>
 
-                <td>
+                <td class="table-description">
                     {{ approval.request.description|truncatechars:60 }}
                 </td>
 
-                <td>
+                <td class="table-type">
                     {{ approval.request.request_type }}
                 </td>
 
-                <td>
+                <td class="table-person">
                     {{ approval.request.submitted_by }}
                 </td>
 
-                <td>{{ approval.request.request_for_department }}</td>
+                <td class="table-department">{{ approval.request.request_for_department }}</td>
 
-                <td>
+                <td class="table-date">
 
                     {{ approval.request.date_needed }}
 
@@ -187,7 +189,7 @@
                     {% trans "Step" %} {{ approval.step_order }}
                 </td>
 
-                <td>
+                <td class="table-actions">
 
                     <div class="actions-inline">
 

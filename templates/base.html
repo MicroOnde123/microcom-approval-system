@@ -566,6 +566,7 @@
         }
         {% endif %}
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-layout.css' %}">
 </head>
 
 <body>
@@ -627,7 +628,7 @@
         {% include "includes/drc_match_ribbon.html" %}
     {% endif %}
 
-    <div class="page">
+    <div class="page app-container {% block page_layout %}app-container--standard{% endblock %}">
         <div class="card">
             {% if messages %}
             <div class="messages">

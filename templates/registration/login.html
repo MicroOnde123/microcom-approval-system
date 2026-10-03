@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 <!DOCTYPE html>
 <html lang="{% get_current_language as LANGUAGE_CODE %}{{ LANGUAGE_CODE }}">
 
@@ -89,11 +89,12 @@
         }
     </style>
 
+    <link rel="stylesheet" href="{% static 'css/app-layout.css' %}">
 </head>
 
 <body>
 
-    <div class="container">
+    <div class="container auth-container">
 
         <h2>{% trans "Microcom Approval System" %}</h2>
 

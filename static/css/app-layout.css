@@ -1,0 +1,89 @@
+/* Screen layout only. Standalone A4 document templates do not load this file. */
+@media screen {
+    .app-container {
+        width: 100%;
+        margin: 24px auto;
+        padding-inline: clamp(12px, 2vw, 40px);
+    }
+
+    .app-container--wide { max-width: none; }
+    .app-container--standard { max-width: 90rem; }
+    .app-container--reading { max-width: 64rem; }
+
+    .app-container > .card {
+        min-width: 0;
+        padding: clamp(16px, 1.5vw, 28px);
+    }
+
+    .navbar {
+        flex-wrap: wrap;
+        padding-inline: clamp(12px, 2vw, 40px);
+    }
+
+    .nav-left { flex: 1 1 48rem; min-width: 0; }
+    .nav-right { flex: 0 1 auto; min-width: 0; }
+    .brand { white-space: normal; }
+    .nav-left a, .logout-btn, .language-switcher { flex-shrink: 0; }
+
+    .form-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    }
+
+    .form-grid > *, .detail-grid > *, .page-header > *,
+    .material-line > *, .materials-header > * { min-width: 0; }
+
+    .reading-form { max-width: 48rem; }
+    .navbar :focus-visible { outline-color: white; }
+
+    .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+    .detail-item, .message, .helptext { overflow-wrap: anywhere; }
+    .app-container input, .app-container select, .app-container textarea { min-width: 0; max-width: 100%; }
+    input[type="checkbox"], input[type="radio"] { width: auto; }
+
+    .table-wrap {
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+    }
+
+    .table-wrap:focus-visible, a:focus-visible, button:focus-visible,
+    input:focus-visible, select:focus-visible, textarea:focus-visible {
+        outline: 3px solid #2563eb;
+        outline-offset: 3px;
+    }
+
+    .data-table { table-layout: auto; }
+    .data-table th, .data-table td { padding: 12px 8px; }
+    .data-table .table-id { white-space: nowrap; }
+    .data-table .table-person, .data-table .table-department { min-width: 7rem; }
+    .data-table .table-type { min-width: 10rem; }
+    .data-table td.table-type { white-space: nowrap; }
+    .data-table .table-description {
+        min-width: 15rem;
+        width: 28%;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+    .data-table .table-date { min-width: 8rem; }
+    .data-table td.table-date, .status-badge { white-space: nowrap; }
+    .data-table .table-actions { min-width: 10.5rem; }
+    .data-table .table-actions .actions-inline { align-items: flex-start; }
+    .data-table .btn { white-space: nowrap; }
+
+    .auth-container {
+        box-sizing: border-box;
+        width: min(26.25rem, calc(100% - 24px));
+        margin: clamp(24px, 10vh, 100px) auto;
+        padding: clamp(20px, 5vw, 30px);
+        overflow-wrap: anywhere;
+    }
+    .auth-container input { min-width: 0; max-width: 100%; }
+}
+
+@media screen and (max-width: 700px) {
+    .app-container { margin-block: 16px; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .nav-left, .nav-right { flex-basis: auto; width: 100%; }
+    .data-table th, .data-table td { padding-block: 10px; }
+}

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% trans "Administration Report" %}{% endblock %}
+{% block page_layout %}app-container--wide{% endblock %}
+
 {% block content %}
 <div class="page-header">
 <div>
@@ -49,35 +51,35 @@
 <button class="btn">{% trans "Filter" %}</button> <a class="btn btn-secondary" href="{% url 'administration_reports' %}">{% trans "Clear Filters" %}</a>
 </div>
 </form>
-<div class="table-wrap">
-<table>
+<div class="table-wrap" tabindex="0">
+<table class="data-table">
 <thead>
 <tr>
-<th>{% trans "Request Number" %}</th>
-<th>{% trans "Requester" %}</th>
-<th>{% trans "Submitted From Department" %}</th>
-<th>{% trans "Request For Department" %}</th>
-<th>{% trans "Request Type" %}</th>
-<th>{% trans "Description" %}</th>
-<th>{% trans "Date Submitted" %}</th>
-<th>{% trans "Approved Date" %}</th>
-<th>{% trans "Status" %}</th>
-<th>{% trans "Actions" %}</th>
+<th class="table-id">{% trans "Request Number" %}</th>
+<th class="table-person">{% trans "Requester" %}</th>
+<th class="table-department">{% trans "Submitted From Department" %}</th>
+<th class="table-department">{% trans "Request For Department" %}</th>
+<th class="table-type">{% trans "Request Type" %}</th>
+<th class="table-description">{% trans "Description" %}</th>
+<th class="table-date">{% trans "Date Submitted" %}</th>
+<th class="table-date">{% trans "Approved Date" %}</th>
+<th class="table-status">{% trans "Status" %}</th>
+<th class="table-actions">{% trans "Actions" %}</th>
 </tr>
 </thead>
 <tbody>{% for req in requests %}<tr>
-<td>{{ req.request_number }}</td>
-<td>{{ req.submitted_by.full_name|default:req.submitted_by.username }}</td>
-<td>{{ req.department }}</td>
-<td>{{ req.request_for_department }}</td>
-<td>{{ req.request_type }}</td>
-<td>{{ req.description|truncatechars:160 }}</td>
-<td>{{ req.submitted_at|date:"Y-m-d H:i" }}</td>
-<td>{{ req.finalized_at|date:"Y-m-d H:i"|default:"-" }}</td>
-<td>
+<td class="table-id">{{ req.request_number }}</td>
+<td class="table-person">{{ req.submitted_by.full_name|default:req.submitted_by.username }}</td>
+<td class="table-department">{{ req.department }}</td>
+<td class="table-department">{{ req.request_for_department }}</td>
+<td class="table-type">{{ req.request_type }}</td>
+<td class="table-description">{{ req.description|truncatechars:160 }}</td>
+<td class="table-date">{{ req.submitted_at|date:"Y-m-d H:i" }}</td>
+<td class="table-date">{{ req.finalized_at|date:"Y-m-d H:i"|default:"-" }}</td>
+<td class="table-status">
 <span class="status-badge status-APPROVED">{% trans "Approved" %}</span>
 </td>
-<td>
+<td class="table-actions">
 <div class="actions-inline">
 <a class="btn btn-secondary" target="_blank" href="{% url 'administration_report_document' req.id %}?next={{ current_list_url|urlencode }}">{% trans "View Document" %}</a>
 <a class="btn" target="_blank" href="{% url 'administration_report_document' req.id %}?copies=1&amp;next={{ current_list_url|urlencode }}">{% trans "Print" %}</a>

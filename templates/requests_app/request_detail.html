@@ -248,9 +248,9 @@
     {% trans "Materials" %}
 </h3>
 
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0">
 
-    <table>
+    <table class="data-table">
 
         <thead>
             <tr>
@@ -258,7 +258,7 @@
                 <th>{% trans "Category" %}</th>
                 <th>{% trans "Quantity" %}</th>
                 <th>{% trans "Available Stock" %}</th>
-                <th>{% trans "Note" %}</th>
+                <th class="table-description">{% trans "Note" %}</th>
             </tr>
         </thead>
 
@@ -284,7 +284,7 @@
                     {{ item.material.stock_quantity }} {{ item.material.unit }}
                 </td>
 
-                <td>
+                <td class="table-description">
                     {{ item.note|default:"-" }}
                 </td>
 
@@ -340,16 +340,16 @@
     {% trans "Attachments" %}
 </h3>
 
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0">
 
-    <table>
+    <table class="data-table">
 
         <thead>
             <tr>
-                <th>{% trans "File Name" %}</th>
-                <th>{% trans "Uploaded By" %}</th>
-                <th>{% trans "Uploaded At" %}</th>
-                <th>{% trans "Actions" %}</th>
+                <th class="table-description">{% trans "File Name" %}</th>
+                <th class="table-person">{% trans "Uploaded By" %}</th>
+                <th class="table-date">{% trans "Uploaded At" %}</th>
+                <th class="table-actions">{% trans "Actions" %}</th>
             </tr>
         </thead>
 
@@ -359,19 +359,19 @@
 
             <tr>
 
-                <td>
+                <td class="table-description">
                     {{ attachment.original_name }}
                 </td>
 
-                <td>
+                <td class="table-person">
                     {{ attachment.uploaded_by }}
                 </td>
 
-                <td>
+                <td class="table-date">
                     {{ attachment.created_at|date:"Y-m-d H:i" }}
                 </td>
 
-                <td>
+                <td class="table-actions">
 
                     <div class="actions-inline">
 
@@ -409,17 +409,17 @@
     {% trans "Approval Timeline" %}
 </h3>
 
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0">
 
-    <table>
+    <table class="data-table">
 
         <thead>
             <tr>
                 <th>{% trans "Step" %}</th>
-                <th>{% trans "Approver" %}</th>
-                <th>{% trans "Status" %}</th>
-                <th>{% trans "Comment" %}</th>
-                <th>{% trans "Acted At" %}</th>
+                <th class="table-person">{% trans "Approver" %}</th>
+                <th class="table-status">{% trans "Status" %}</th>
+                <th class="table-description">{% trans "Comment" %}</th>
+                <th class="table-date">{% trans "Acted At" %}</th>
             </tr>
         </thead>
 
@@ -433,21 +433,21 @@
                     {{ approval.step_order }}
                 </td>
 
-                <td>
+                <td class="table-person">
                     {{ approval.display_approver_name }}
                 </td>
 
-                <td>
+                <td class="table-status">
                     <span class="status-badge status-{{ approval.status }}">
                         {{ approval.status }}
                     </span>
                 </td>
 
-                <td>
+                <td class="table-description">
                     {{ approval.comment|default:"-" }}
                 </td>
 
-                <td>
+                <td class="table-date">
 
                     {% if approval.acted_at %}
 
@@ -483,16 +483,16 @@
     {% trans "Audit Log" %}
 </h3>
 
-<div class="table-wrap">
+<div class="table-wrap" tabindex="0">
 
-    <table>
+    <table class="data-table">
 
         <thead>
             <tr>
-                <th>{% trans "Action" %}</th>
-                <th>{% trans "Performed By" %}</th>
-                <th>{% trans "Comment" %}</th>
-                <th>{% trans "Date" %}</th>
+                <th class="table-actions">{% trans "Action" %}</th>
+                <th class="table-person">{% trans "Performed By" %}</th>
+                <th class="table-description">{% trans "Comment" %}</th>
+                <th class="table-date">{% trans "Date" %}</th>
             </tr>
         </thead>
 
@@ -502,19 +502,19 @@
 
             <tr>
 
-                <td>
+                <td class="table-actions">
                     {{ log.action }}
                 </td>
 
-                <td>
+                <td class="table-person">
                     {{ log.performed_by|default:"System" }}
                 </td>
 
-                <td>
+                <td class="table-description">
                     {{ log.comment|default:"-" }}
                 </td>
 
-                <td>
+                <td class="table-date">
                     {{ log.created_at|date:"Y-m-d H:i" }}
                 </td>
 
