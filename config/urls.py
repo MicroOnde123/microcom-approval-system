@@ -19,6 +19,8 @@ from requests_app.views import (
     approval_history,
     permission_document,
     material_reports,
+    administration_reports,
+    administration_report_document,
     bulk_print_material_documents,
     export_material_report_csv,
     notification_count, return_material_to_stock, export_material_report_excel,
@@ -68,6 +70,9 @@ urlpatterns = [
         permission_document,
         name="permission_document",
     ),
+
+    path("administration/reports/", administration_reports, name="administration_reports"),
+    path("administration/reports/<int:request_id>/document/", administration_report_document, name="administration_report_document"),
 
     # MATERIAL REPORTS
     path(

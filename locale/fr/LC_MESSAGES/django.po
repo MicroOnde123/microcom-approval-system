@@ -1147,3 +1147,39 @@ msgstr "Département d'origine"
 
 msgid "By default, this request is assigned to your department. If you are submitting on behalf of another department, select the correct department before submitting."
 msgstr "Par défaut, cette demande est attribuée à votre département. Si vous soumettez la demande pour un autre département, sélectionnez le département concerné avant de l’envoyer."
+
+msgid "Administration Report"
+msgstr "Rapport Administration"
+
+msgid "Can view administration reports"
+msgstr "Peut consulter les rapports Administration"
+
+msgid "Approved General Requests for Administration."
+msgstr "Demandes générales approuvées destinées à l’Administration."
+
+msgid "All Requesters"
+msgstr "Tous les demandeurs"
+
+msgid "View Document"
+msgstr "Voir le document"
+
+msgid "Clear Filters"
+msgstr "Effacer les filtres"
+
+msgid "No approved Administration requests found."
+msgstr "Aucune demande Administration approuvée trouvée."
+
+msgid "You are not allowed to access administration reports."
+msgstr "Vous n’êtes pas autorisé à consulter les rapports Administration."
+
+msgid "Administration"
+msgstr "Administration"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Date Submitted"
+msgstr "Date de soumission"

@@ -875,6 +875,13 @@ def approved_document(request, request_id):
         messages.error(request, "This request is not approved yet.")
         return redirect("request_detail", request_id=request_obj.id)
 
+    return render_approved_document(request, request_obj)
+
+
+def render_approved_document(request, request_obj, document_url=None, default_back_url=None):
+    copies = request.GET.get("copies", "1")
+    if copies not in {"1", "2"}:
+        copies = "1"
     two_copy_warning = ""
     if copies == "2" and request_obj.material_items.count() > MATERIAL_TWO_COPY_ITEM_LIMIT:
         copies = "1"
@@ -892,8 +899,9 @@ def approved_document(request, request_id):
             "approvals": approvals,
             "back_url": safe_next_url(
                 request.GET.get("next"),
-                reverse("request_detail", args=[request_obj.id]),
+                default_back_url or reverse("request_detail", args=[request_obj.id]),
             ),
+            "document_url": document_url or reverse("approved_document", args=[request_obj.id]),
             "copies": copies,
             "two_copy_warning": two_copy_warning,
         },
@@ -1473,3 +1481,73 @@ def export_material_report_excel(request):
 
     workbook.save(response)
     return response
+
+
+def administration_report_scope():
+    from django.conf import settings
+    return Request.objects.filter(
+        status="APPROVED",
+        request_for_department__code=settings.ADMINISTRATION_REPORT_DEPARTMENT_CODE,
+        request_type__code=settings.ADMINISTRATION_REPORT_REQUEST_TYPE_CODE,
+        request_type__requires_materials=False,
+        request_type__is_permission_request=False,
+        material_items__isnull=True,
+    ).select_related("submitted_by", "department", "request_for_department", "request_type")
+
+
+def can_view_administration_reports(user):
+    return user.is_authenticated and (user.is_superuser or user.can_view_administration_reports)
+
+
+@login_required
+def administration_reports(request):
+    from django.core.paginator import Paginator
+    from django.utils.dateparse import parse_date
+    if not can_view_administration_reports(request.user):
+        return HttpResponseForbidden(_("You are not allowed to access administration reports."))
+    scope = administration_report_scope()
+    rows = scope
+    filters = {key: request.GET.get(key, "").strip() for key in
+               ("q", "department", "requester", "date_from", "date_to")}
+    if filters["q"]:
+        query = models.Q()
+        for field in ("request_number", "description", "submitted_by__username",
+                      "submitted_by__full_name", "submitted_by__first_name", "submitted_by__last_name"):
+            query |= models.Q(**{field + "__icontains": filters["q"]})
+        rows = rows.filter(query)
+    for key, field in (("department", "department_id"), ("requester", "submitted_by_id")):
+        if filters[key]:
+            if filters[key].isascii() and filters[key].isdigit() and len(filters[key]) < 19:
+                rows = rows.filter(**{field: int(filters[key])})
+            else:
+                rows = rows.none()
+    for key, lookup in (("date_from", "submitted_at__date__gte"), ("date_to", "submitted_at__date__lte")):
+        if filters[key]:
+            try:
+                value = parse_date(filters[key])
+            except ValueError:
+                value = None
+            rows = rows.filter(**{lookup: value}) if value else rows.none()
+    params = request.GET.copy()
+    params.pop("page", None)
+    page = Paginator(rows.order_by("-finalized_at", "-submitted_at", "-pk"), 25).get_page(request.GET.get("page"))
+    return render(request, "requests_app/administration_reports.html", {
+        **filters, "requests": page, "page_obj": page,
+        "departments": scope.order_by("department__name").values_list("department_id", "department__name").distinct(),
+        "requesters": scope.order_by("submitted_by__username").values_list("submitted_by_id", "submitted_by__full_name", "submitted_by__username").distinct(),
+        "current_list_url": current_path_with_query(request),
+        "active_querystring": params.urlencode(),
+    })
+
+
+@login_required
+def administration_report_document(request, request_id):
+    if not can_view_administration_reports(request.user):
+        return HttpResponseForbidden(_("You are not allowed to access administration reports."))
+    request_obj = get_object_or_404(administration_report_scope().prefetch_related(
+        "material_items__material", "approvals__approver_user", "approvals__acted_by"), pk=request_id)
+    return render_approved_document(
+        request, request_obj,
+        document_url=reverse("administration_report_document", args=[request_obj.pk]),
+        default_back_url=reverse("administration_reports"),
+    )

@@ -2066,3 +2066,130 @@ class OptionalPermissionTimeTests(TestCase):
             with self.subTest(field=field_name):
                 self.assertFalse(form.fields[field_name].required)
                 self.assertNotIn("required", str(form[field_name]))
+
+
+class AdministrationReportTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.administration = Department.objects.create(code="ADMIN", name="Administration")
+        cls.technique = Department.objects.create(code="TECH", name="Technique")
+        cls.reporter = User.objects.create_user(username="report-reader", can_view_administration_reports=True)
+        cls.submitter = User.objects.create_user(username="alice", full_name="Alice Example", first_name="Alice", last_name="Example", department=cls.technique)
+        cls.general = RequestType.objects.create(code="AUTORISATION_GENERAL", name="Autorisation Générale")
+        cls.approved = Request.objects.create(request_number="ADMIN-001", request_type=cls.general, submitted_by=cls.submitter,
+            department=cls.technique, request_for_department=cls.administration, description="Office renovation", status="APPROVED", finalized_at=timezone.now())
+
+    def setUp(self):
+        self.client.force_login(self.reporter)
+
+    def report(self, **params):
+        return self.client.get(reverse("administration_reports"), params)
+
+    def create_request(self, **changes):
+        data = dict(request_number="OTHER-" + str(Request.objects.count()), request_type=self.general,
+                    submitted_by=self.submitter, department=self.technique, request_for_department=self.administration,
+                    description="Other request", status="APPROVED")
+        data.update(changes)
+        return Request.objects.create(**data)
+
+    def test_permission_and_navigation(self):
+        self.assertContains(self.report(), reverse("administration_reports"))
+        self.client.force_login(self.submitter)
+        self.assertEqual(self.report().status_code, 403)
+        self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 403)
+        self.assertNotContains(self.client.get(reverse("dashboard")), reverse("administration_reports"))
+        for flags in ({"is_staff": True}, {"department": self.administration}):
+            for key, value in flags.items():
+                setattr(self.submitter, key, value)
+            self.submitter.save()
+            self.assertEqual(self.report().status_code, 403)
+        self.submitter.is_superuser = True
+        self.submitter.save()
+        self.assertEqual(self.report().status_code, 200)
+
+    def test_scope_and_statuses(self):
+        excluded = [self.create_request(status=status) for status in
+                    ("DRAFT", "PENDING", "IN_REVIEW", "RETURNED", "REJECTED", "CANCELLED")]
+        excluded.append(self.create_request(department=self.administration, request_for_department=self.technique))
+        for code, flags in (("MATERIAL", {"requires_materials": True}), ("PERMISSION", {"is_permission_request": True}), ("PAYMENT", {"requires_amount": True})):
+            excluded.append(self.create_request(request_type=RequestType.objects.create(code=code, name=code, **flags)))
+        response = self.report()
+        self.assertEqual(list(response.context["requests"]), [self.approved])
+        for obj in excluded:
+            with self.subTest(request=obj.request_number):
+                self.assertEqual(self.client.get(reverse("administration_report_document", args=[obj.pk])).status_code, 404)
+        # Query parameters cannot widen the fixed destination/type scope.
+        self.assertEqual(list(self.report(request_for_department=self.technique.pk, request_type="PAYMENT").context["requests"]), [self.approved])
+
+    def test_document_and_copy_links_reuse_existing_renderer(self):
+        url = reverse("administration_report_document", args=[self.approved.pk])
+        for copies in ("1", "2", "invalid"):
+            response = self.client.get(url, {"copies": copies, "next": "//example.com"})
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, "requests_app/approved_document.html")
+            self.assertContains(response, url + "?copies=1")
+            self.assertContains(response, url + "?copies=2")
+            self.assertContains(response, "window.print()")
+            self.assertEqual(response.context["back_url"], reverse("administration_reports"))
+            self.assertNotContains(response, reverse("approved_document", args=[self.approved.pk]))
+
+    def test_normal_visibility_and_mutation_remain_denied(self):
+        self.assertNotContains(self.client.get(reverse("my_requests")), self.approved.request_number)
+        for name in ("request_detail", "approved_document"):
+            self.assertEqual(self.client.get(reverse(name, args=[self.approved.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse("edit_request", args=[self.approved.pk])).status_code, 404)
+        self.assertEqual(self.client.post(reverse("cancel_request", args=[self.approved.pk])).status_code, 403)
+        pending = self.create_request(status="PENDING")
+        workflow = ApprovalWorkflow.objects.create(name="Report security workflow", request_type=self.general, department=self.administration)
+        step = ApprovalWorkflowStep.objects.create(workflow=workflow, step_order=1, approver_user=self.submitter)
+        approval = RequestApproval.objects.create(request=pending, workflow_step=step, step_order=1, approver_user=self.submitter, status="PENDING")
+        for action in ("approve", "reject", "return"):
+            response = self.client.post(reverse("approval_detail", args=[approval.pk]), {"action": action, "comment": "Denied"})
+            self.assertEqual(response.status_code, 404)
+        pending.refresh_from_db()
+        self.assertEqual(pending.status, "PENDING")
+        self.approved.refresh_from_db()
+        self.assertEqual(self.approved.status, "APPROVED")
+
+    def test_search_and_filters(self):
+        for query in ("admin-001", "alice", "example", "renovation"):
+            self.assertEqual(list(self.report(q=query).context["requests"]), [self.approved])
+        self.assertEqual(list(self.report(department=self.technique.pk, requester=self.submitter.pk).context["requests"]), [self.approved])
+        today = timezone.localdate().isoformat()
+        self.assertEqual(list(self.report(date_from=today, date_to=today).context["requests"]), [self.approved])
+        for params in ({"department": self.administration.pk}, {"date_from": "2999-01-01"}, {"date_to": "2000-01-01"}, {"date_from": "2026-02-31"}, {"department": "bad"}, {"requester": "bad"}, {"q": "missing"}):
+            self.assertContains(self.report(**params), "No approved Administration requests found.")
+
+    def test_pagination_preserves_filters(self):
+        for i in range(26):
+            self.create_request(description="Office renovation")
+        response = self.report(q="Office", department=self.technique.pk)
+        self.assertEqual(len(response.context["requests"]), 25)
+        self.assertContains(response, "q=Office&amp;department=" + str(self.technique.pk))
+        self.assertEqual(len(self.report(q="Office", page=2).context["requests"]), 2)
+
+    def test_french(self):
+        self.client.cookies["django_language"] = "fr"
+        response = self.report(q="missing")
+        self.assertContains(response, "Rapport Administration")
+        self.assertContains(response, "Aucune demande Administration approuv\u00e9e trouv\u00e9e.")
+
+
+    def test_configured_codes_and_behavior_flags_fail_closed(self):
+        from django.test import override_settings
+        with override_settings(ADMINISTRATION_REPORT_DEPARTMENT_CODE="missing"):
+            self.assertEqual(list(self.report().context["requests"]), [])
+            self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 404)
+        for flag in ("requires_materials", "is_permission_request"):
+            setattr(self.general, flag, True)
+            self.general.save()
+            self.assertEqual(list(self.report().context["requests"]), [])
+            self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 404)
+            setattr(self.general, flag, False)
+        self.general.save()
+
+    def test_anonymous_access_requires_login(self):
+        self.client.logout()
+        self.assertEqual(self.report().status_code, 302)
+        self.assertEqual(self.client.get(reverse("administration_report_document", args=[self.approved.pk])).status_code, 302)

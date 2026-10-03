@@ -320,8 +320,8 @@
 
 <body>
     <div class="top-actions">
-        <a class="btn" href="{% url 'approved_document' request_obj.id %}?copies=1&next={{ back_url|urlencode }}">{% trans "Print 1 copy" %}</a>
-        <a class="btn" href="{% url 'approved_document' request_obj.id %}?copies=2&next={{ back_url|urlencode }}">{% trans "Print 2 copies" %}</a>
+        <a class="btn" href="{{ document_url }}?copies=1&next={{ back_url|urlencode }}">{% trans "Print 1 copy" %}</a>
+        <a class="btn" href="{{ document_url }}?copies=2&next={{ back_url|urlencode }}">{% trans "Print 2 copies" %}</a>
         <button class="btn" onclick="window.print()">{% trans "Print / Save as PDF" %}</button>
         <a href="{{ back_url }}" class="btn">{% trans "Back" %}</a>
     </div>

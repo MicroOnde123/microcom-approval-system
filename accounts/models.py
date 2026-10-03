@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
 
 
@@ -45,6 +46,10 @@ class User(AbstractUser):
     can_manage_stock = models.BooleanField(
         default=False,
         verbose_name="Can Manage Stock Reports",
+    )
+
+    can_view_administration_reports = models.BooleanField(
+        default=False, verbose_name=_("Can view administration reports"),
     )
 
     def __str__(self):

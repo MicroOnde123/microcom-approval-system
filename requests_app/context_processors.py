@@ -15,6 +15,7 @@ def pending_approval_count(request):
             "pending_approval_count": 0,
             "returned_requests_count": 0,
             "can_manage_stock": False,
+            "can_view_administration_reports": False,
         }
 
     pending_count = RequestApproval.objects.filter(
@@ -33,4 +34,5 @@ def pending_approval_count(request):
         "pending_approval_count": pending_count,
         "returned_requests_count": returned_count,
         "can_manage_stock": is_stock_manager(request.user),
+        "can_view_administration_reports": request.user.is_superuser or request.user.can_view_administration_reports,
     }

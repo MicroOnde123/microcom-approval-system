@@ -593,6 +593,9 @@
 
             <a href="{% url 'approval_history' %}">{% trans "Approval History" %}</a>
 
+            {% if can_view_administration_reports %}
+            <a href="{% url 'administration_reports' %}">{% trans "Administration Report" %}</a>
+            {% endif %}
             {% if can_manage_stock %}
             <a href="{% url 'material_reports' %}">
                 {% trans "Material Reports" %}
