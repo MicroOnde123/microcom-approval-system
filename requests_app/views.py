@@ -1364,7 +1364,7 @@ def export_material_report_excel(request):
             _("You are not allowed to export material reports.")
         )
 
-    requests = get_filtered_material_report_requests(request)
+    requests = list(get_filtered_material_report_requests(request))
 
     workbook = Workbook()
     sheet = workbook.active
@@ -1479,6 +1479,8 @@ def export_material_report_excel(request):
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
+    from .stock_report_analytics import add_stock_report_analytics
+    add_stock_report_analytics(workbook, requests, request.GET)
     workbook.save(response)
     return response
 
