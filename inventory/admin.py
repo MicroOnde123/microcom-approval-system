@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from .models import MaterialCategory, Material, Succursale
+from core.document_config import Currency
 
 
 STOCK_CONFLICT = _("Stock has changed since this form was opened. Reload the page and review the current balance before saving.")
@@ -28,6 +29,8 @@ class MaterialAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if not self.is_bound and self.instance._state.adding and not self.initial.get("currency"):
+            self.initial["currency"] = Currency.USD
         if not self.is_bound and self.instance.pk:
             self.initial["original_stock"] = signing.dumps(
                 {"material": self.instance.pk, "stock": str(self.instance.stock_quantity)},
