@@ -16,6 +16,7 @@ from requests_app.views import (
     edit_request,
     cancel_request,
     approved_document,
+    material_document,
     approval_history,
     permission_document,
     material_reports,
@@ -27,6 +28,8 @@ from requests_app.views import (
 )
 
 urlpatterns = [
+    path("requests/<int:request_id>/material-documents/<str:kind>/", material_document, name="material_document"),
+    path("invoices/", include("invoicing.urls")),
     # LANGUAGE SWITCHER
     path("i18n/", include("django.conf.urls.i18n")),
 

@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Invoices" %}{% endblock %}
+{% block page_layout %}app-container--wide{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>{% trans "Invoices" %}</h1>
+<p class="muted">{% trans "Dates filter official invoice issue dates. Drafts have no issue date and are excluded by date filters." %}</p></div>
+<a href="{% url 'dashboard' %}" class="btn btn-secondary">{% trans "Back to Dashboard" %}</a></div>
+<form method="get" style="margin-bottom:20px;">
+{{ filter_form.non_field_errors }}
+<div class="form-grid">
+{% for field in filter_form %}<div>{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+</div>
+<div style="margin-top:12px;"><button type="submit" class="btn">{% trans "Filter" %}</button>
+<a href="{% url 'invoicing:list' %}" class="btn btn-secondary">{% trans "Clear" %}</a></div>
+</form>
+<form method="post" action="{% url 'invoicing:bulk_print' %}" target="_blank" rel="noopener">
+{% csrf_token %}
+{% for name,value in active_filters.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+<div class="actions-inline" style="margin-bottom:15px;"><button class="btn" type="submit">{% trans "Print Filtered Invoices" %}</button>
+<span class="muted">{% blocktrans with limit=invoice_print_limit|default:20 %}Apply both issue dates first. Print all matching finalized invoices across all pages, up to {{ limit }} invoices.{% endblocktrans %}</span></div>
+</form>
+<div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Document number" %}</th><th>{% trans "Request" %}</th><th>{% trans "Issue date" %}</th><th>{% trans "Status" %}</th><th>{% trans "Total" %}</th></tr></thead><tbody>
+{% for invoice in page_obj %}
+<tr>
+<td><a href="{% url 'invoicing:detail' invoice.pk %}">{% if invoice.status == 'DRAFT' %}{% blocktrans with draft_id=invoice.pk %}Draft #{{ draft_id }}{% endblocktrans %}{% else %}{{ invoice.number }}{% endif %}</a></td>
+<td>{{ invoice.request_reference_snapshot|default:invoice.request.request_number }}</td>
+<td>{{ invoice.issue_date|date:"Y-m-d"|default:"—" }}</td>
+<td>{{ invoice.get_status_display }}</td>
+<td>{% if invoice.status == 'DRAFT' %}
+    {% if invoice.list_line_count and invoice.list_priced_line_count == invoice.list_line_count %}
+        {{ invoice.list_provisional_total|floatformat:"2" }} {{ invoice.currency }} — {% trans "Provisional" %}
+    {% else %}{% trans "Incomplete pricing" %}{% endif %}
+{% else %}{{ invoice.total|default_if_none:"—" }} {{ invoice.currency }}{% endif %}</td>
+</tr>
+{% empty %}<tr><td colspan="5">{% trans "No authorized invoices are available." %}</td></tr>{% endfor %}
+</tbody></table></div>
+<p>{% if page_obj.has_previous %}<a href="?{{ active_querystring }}&amp;page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %} {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} {% if page_obj.has_next %}<a href="?{{ active_querystring }}&amp;page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}</p>
+{% if candidate_requests %}<h2>{% trans "Requests available for invoice review" %}</h2><p class="muted">{% trans "Eligibility is checked before a draft is saved." %}</p><ul>{% for source in candidate_requests %}<li><a href="{% url 'invoicing:create' source.pk %}">{{ source.request_number }}</a></li>{% endfor %}</ul>{% endif %}
+{% endblock %}

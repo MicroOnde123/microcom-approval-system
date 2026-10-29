@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'workflows',
     'core',
     'inventory',
+    'invoicing',
 ]
 
 
@@ -226,3 +227,10 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Configured request type; report and document access share this scope.
 ADMINISTRATION_REPORT_REQUEST_TYPE_CODE = config("ADMINISTRATION_REPORT_REQUEST_TYPE_CODE", default="AUTORISATION_GENERAL")
+
+# Explicit private storage only: never served by MEDIA_URL or static-file routes.
+# An operator must supply an absolute, access-controlled directory before PDF use.
+INVOICE_DOCUMENT_ROOT = config("INVOICE_DOCUMENT_ROOT", default="")
+
+# Remains disabled until E-R2/E-R3 database validation and explicit activation.
+MATERIAL_RETURN_NOTE_UI_ENABLED = False

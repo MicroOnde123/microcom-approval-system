@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n return_note_navigation %}
 
 {% block title %}{% trans "Material Reports" %}{% endblock %}
 
@@ -69,6 +69,8 @@
         </a>
     </div>
 </form>
+
+<p class="muted">{% trans "Excel dates use Africa/Kinshasa. Date filters apply to Date Needed. Movements follow the selected approved requests; unlinked movements appear only without request filters." %}</p>
 
 <form method="post" action="{% url 'bulk_print_material_documents' %}">
     {% csrf_token %}
@@ -150,16 +152,21 @@
                     </td>
 
                     <td class="table-actions">
+                        {% return_note_links request.user req.id as return_note_nav %}
+                        {% include "invoicing/return_notes/links.html" %}
                         <div class="actions-inline">
                             <a href="{% url 'request_detail' req.id %}?next={{ current_list_url|urlencode }}"
                                 class="btn btn-secondary">
                                 {% trans "View" %}
                             </a>
 
-                            <a href="{% url 'approved_document' req.id %}?next={{ current_list_url|urlencode }}"
+                            {% if req.stock_deducted and req.request_type.requires_materials %}
+                            <a href="{% url 'material_document' req.id 'BC' %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">{% trans "Print BC — Material Order" %}</a>
+                            <a href="{% url 'material_document' req.id 'BS' %}?next={{ current_list_url|urlencode }}"
                                 class="btn" target="_blank">
-                                {% trans "Print" %}
+                                {% trans "Print BS — Material Exit Slip" %}
                             </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

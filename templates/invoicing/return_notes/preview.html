@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Preview material return note" %}{% endblock %}
+{% block content %}
+<div class="page-header"><h1>{% trans "Preview material return note" %}</h1><a class="btn btn-secondary" href="{% url 'invoicing:return_note_select' invoice.pk %}">{% trans "Change selection" %}</a></div>
+<p>{% trans "Original invoice" %}: {{ preview.original_invoice_snapshot.number }} — {{ preview.currency }}</p>
+<p class="message warning">{% trans "Review the complete returned quantities and frozen prices. No document number has been allocated." %}</p>
+<div class="table-wrap"><table><thead><tr><th>{% trans "Return movement" %}</th><th>{% trans "Material" %}</th><th>{% trans "Returned quantity" %}</th><th>{% trans "Original unit price" %}</th><th>{% trans "Returned value" %}</th></tr></thead><tbody>
+{% for line in preview.lines %}<tr><td>{{ line.return_movement_id }}</td><td>{{ line.material_code_snapshot }} — {{ line.description_snapshot }}</td><td>{{ line.quantity }} {{ line.unit_snapshot }}</td><td>{{ line.unit_price_snapshot }} {{ preview.currency }}</td><td>{{ line.line_total }} {{ preview.currency }}</td></tr>{% endfor %}
+</tbody></table></div>
+<dl><dt>{% trans "Returned value on this note" %}</dt><dd>{{ preview.total }} {{ preview.currency }}</dd><dt>{% trans "Cumulative returned value as of this note" %}</dt><dd>{{ preview.cumulative_returned_value }} {{ preview.currency }}</dd><dt>{% trans "Adjusted net material value as of this note" %}</dt><dd>{{ preview.adjusted_net_value }} {{ preview.currency }}</dd><dt>{% trans "Operation reason" %}</dt><dd>{{ reason|linebreaksbr }}</dd><dt>{% trans "Return note series" %}</dt><dd>{{ series }}</dd></dl>
+<form method="post" action="{% url 'invoicing:return_note_issue' invoice.pk %}">{% csrf_token %}{{ form.as_p }}<button class="btn" type="submit">{% trans "Issue material return note" %}</button></form>
+<p class="muted">{% trans "Your session may expire before the two-hour confirmation limit. If a response is lost, check the return-note history before starting again." %}</p>
+{% endblock %}

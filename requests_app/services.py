@@ -1,12 +1,12 @@
-from urllib import request
-
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
-from workflows.models import ApprovalWorkflow
-from requests_app.models import RequestApproval, RequestAuditLog, StockMovement
+from workflows.models import ApprovalWorkflow, validate_stock_review_steps
+from requests_app.models import RequestApproval, RequestAuditLog
+from .stock_services import deduct_material_stock, validate_material_quantities
 
 
 def send_notification_email(subject, message, recipients):
@@ -62,9 +62,14 @@ def create_approval_steps(request, workflow):
     if request.approvals.exists():
         raise ValidationError("Approval steps already exist for this request.")
 
+    steps = list(workflow.steps.all().order_by("step_order"))
+    validate_stock_review_steps(steps)
+    for step in steps:
+        if step.is_stock_review:
+            step.clean()
     approvals = []
 
-    for step in workflow.steps.all().order_by("step_order"):
+    for step in steps:
         approver = step.approver_user
 
         if not approver and step.approver_role:
@@ -85,6 +90,7 @@ def create_approval_steps(request, workflow):
             step_order=step.step_order,
             approver_user=approver,
             alternate_approver_user=step.alternate_approver_user,
+            requires_stock_classification=step.is_stock_review,
         )
 
         approvals.append(approval)
@@ -96,7 +102,8 @@ def create_approval_steps(request, workflow):
     return approvals
 
 
-def submit_request(request):
+def submit_request(request, *, notifications_on_commit=False):
+    validate_material_quantities(request)
     if request.approvals.exists():
         raise ValidationError("This request has already been submitted into a workflow.")
 
@@ -114,56 +121,24 @@ def submit_request(request):
         if first_step.alternate_approver_user and first_step.alternate_approver_user.email:
             recipients.append(first_step.alternate_approver_user.email)
 
-        send_notification_email(
-            subject="New Request Awaiting Your Approval",
-            message=f"Request {request.request_number} requires your approval.",
-            recipients=recipients,
-        )
+        def notify():
+            send_notification_email(
+                subject="New Request Awaiting Your Approval",
+                message=f"Request {request.request_number} requires your approval.",
+                recipients=recipients,
+            )
+        if notifications_on_commit:
+            transaction.on_commit(notify, robust=True)
+        else:
+            notify()
 
     log_action(request, "SUBMITTED", request.submitted_by)
 
     return approvals
 
 
-def deduct_material_stock(request, user=None):
-    if request.stock_deducted:
-        return
-
-    if not request.request_type or not request.request_type.requires_materials:
-        return
-
-    material_items = request.material_items.select_related("material").all()
-
-    for item in material_items:
-        material = item.material
-
-        if item.quantity > material.stock_quantity:
-            raise ValidationError(
-                f"Insufficient stock for {material.name}. "
-                f"Available: {material.stock_quantity} {material.unit}, "
-                f"requested: {item.quantity} {material.unit}."
-            )
-
-    for item in material_items:
-        material = item.material
-        material.stock_quantity -= item.quantity
-        material.save(update_fields=["stock_quantity"])
-
-        StockMovement.objects.create(
-            material=material,
-            request=request,
-            quantity=item.quantity,
-            movement_type="OUT",
-            performed_by=user,
-            note=f"Stock deducted after approval of request {request.request_number}.",
-        )
-
-    request.stock_deducted = True
-    request.save(update_fields=["stock_deducted"])
-
-
 @transaction.atomic
-def approve_step(approval, user, comment=""):
+def approve_step(approval, user, comment="", *, classification=None, succursale=None):
     approval = RequestApproval.objects.select_for_update().select_related(
         "request",
     ).get(pk=approval.pk)
@@ -172,7 +147,7 @@ def approve_step(approval, user, comment=""):
         raise ValidationError("This step has already been acted upon.")
 
     if user.id not in [approval.approver_user_id, approval.alternate_approver_user_id]:
-        raise ValidationError("You are not allowed to approve this step.")
+        raise ValidationError(_("You are not allowed to approve this step."))
 
     request = approval.request
 
@@ -180,7 +155,23 @@ def approve_step(approval, user, comment=""):
         raise ValidationError("This request is no longer open for approval.")
 
     if request.current_step_order != approval.step_order:
-        raise ValidationError("This is not the current approval step.")
+        raise ValidationError(_("This is not the current approval step."))
+
+    reviews = list(request.approvals.filter(requires_stock_classification=True))
+    if reviews:
+        first = request.approvals.order_by("step_order").first()
+        if len(reviews) != 1 or reviews[0].pk != first.pk:
+            raise ValidationError(_("The designated stock review must be the first configured approval step."))
+        if not approval.requires_stock_classification and reviews[0].status != "APPROVED":
+            raise ValidationError(_("The first stock review must be approved before later approval steps."))
+        if not approval.requires_stock_classification and request.classification not in request.Classification.values:
+            raise ValidationError(_("The first stock review must be approved before later approval steps."))
+
+    if approval.requires_stock_classification:
+        from .classification import confirm_classification
+        confirm_classification(request, user, classification, succursale)
+    elif classification is not None or succursale is not None:
+        raise ValidationError(_("Only the designated stock reviewer can classify this request."))
 
     approval.status = "APPROVED"
     approval.comment = comment
@@ -215,7 +206,7 @@ def approve_step(approval, user, comment=""):
         )
         return
 
-    deduct_material_stock(request)
+    deduct_material_stock(request, user=user)
 
     request.status = "APPROVED"
     request.finalized_at = timezone.now()

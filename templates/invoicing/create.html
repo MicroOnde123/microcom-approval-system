@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Create invoice draft" %}{% endblock %}
+{% block content %}<div class="page-header"><h1>{% trans "Create invoice draft" %}</h1></div>
+<p>{{ source_request.request_number }}</p><p>{% trans "Prices in another currency remain unknown. No currency conversion is performed." %}</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn" type="submit">{% trans "Create invoice draft" %}</button> <a class="btn btn-secondary" href="{% url 'invoicing:list' %}">{% trans "Back" %}</a></form>{% endblock %}

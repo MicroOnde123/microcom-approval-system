@@ -1,0 +1,6 @@
+{% load i18n %}{% if return_note_nav.unavailable %}<p class="muted">{% trans "Material return note valuation requires a finalized internal facture. Recording a physical return does not create a facture or a return note." %}</p>{% endif %}{% if return_note_nav.can_read %}
+<div class="actions-inline" aria-label="{% trans 'Material return notes' %}">
+<a class="btn btn-secondary" href="{% url 'invoicing:return_note_history' return_note_nav.invoice_id %}">{% trans "Material return note history" %}</a>
+{% if return_note_nav.can_issue %}<a class="btn" href="{% url 'invoicing:return_note_select' return_note_nav.invoice_id %}">{% trans "Issue material return note" %}</a>{% endif %}
+</div>
+{% endif %}

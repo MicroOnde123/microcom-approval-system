@@ -297,6 +297,9 @@ class RequestDepartmentOwnershipTests(TestCase):
         self.assertNotContains(response, owned_by_fiber.request_number)
 
     def test_reports_exports_and_print_include_both_departments(self):
+        # Bulk stock printing requires a material type and confirmed deduction.
+        self.request_type.requires_materials = True
+        self.request_type.save(update_fields=["requires_materials"])
         category = MaterialCategory.objects.create(name="Ownership Materials")
         material = Material.objects.create(
             name="Fiber Cable",
@@ -308,6 +311,7 @@ class RequestDepartmentOwnershipTests(TestCase):
         request_obj = self.create_request(
             self.fiber_department,
             status="APPROVED",
+            stock_deducted=True,
             finalized_at=timezone.now(),
         )
         RequestMaterialItem.objects.create(request=request_obj, material=material, quantity=1)
@@ -323,8 +327,9 @@ class RequestDepartmentOwnershipTests(TestCase):
         self.assertIn("Administration", content)
         self.assertIn("Fiber", content)
 
-        print_response = self.client.get(
-            reverse("approved_document", args=[request_obj.pk]),
+        print_response = self.client.post(
+            reverse("material_document", args=[request_obj.pk, "BS"]),
+            follow=True,
             HTTP_HOST="127.0.0.1",
         )
         self.assertContains(print_response, "Request For Department")
@@ -939,6 +944,7 @@ class MaterialPrintCopyLimitTests(TestCase):
             description="For installation",
             date_needed=timezone.now().date(),
             status="APPROVED",
+            stock_deducted=True,
             finalized_at=timezone.now(),
         )
 
@@ -1061,8 +1067,9 @@ class MaterialPrintCopyLimitTests(TestCase):
         request_obj = self.make_material_request(item_count=7, number_suffix="007")
         self.client.force_login(self.submitter)
 
-        response = self.client.get(
-            f"{reverse('approved_document', args=[request_obj.id])}?copies=2",
+        response = self.client.post(
+            f"{reverse('material_document', args=[request_obj.id, 'BS'])}?copies=2",
+            follow=True,
             HTTP_HOST="127.0.0.1",
         )
 
@@ -1074,8 +1081,9 @@ class MaterialPrintCopyLimitTests(TestCase):
         request_obj = self.make_material_request(item_count=6, number_suffix="006")
         self.client.force_login(self.submitter)
 
-        response = self.client.get(
-            f"{reverse('approved_document', args=[request_obj.id])}?copies=2",
+        response = self.client.post(
+            f"{reverse('material_document', args=[request_obj.id, 'BS'])}?copies=2",
+            follow=True,
             HTTP_HOST="127.0.0.1",
         )
 
@@ -1087,8 +1095,9 @@ class MaterialPrintCopyLimitTests(TestCase):
         request_obj = self.make_material_request(item_count=1, number_suffix="001")
         self.client.force_login(self.submitter)
 
-        response = self.client.get(
-            f"{reverse('approved_document', args=[request_obj.id])}?copies=2",
+        response = self.client.post(
+            f"{reverse('material_document', args=[request_obj.id, 'BS'])}?copies=2",
+            follow=True,
             HTTP_HOST="127.0.0.1",
         )
 
@@ -1181,6 +1190,7 @@ class MaterialIssueNoteTests(TestCase):
             department=cls.department,
             description="Install customer router",
             status="APPROVED",
+            stock_deducted=True,
             finalized_at=timezone.now(),
             material_issue_note="SN-OLD",
         )
@@ -1317,8 +1327,9 @@ class MaterialIssueNoteTests(TestCase):
 
     def test_note_appears_in_single_and_bulk_material_slips(self):
         self.client.force_login(self.stock_manager)
-        single_response = self.client.get(
-            reverse("approved_document", args=[self.request_obj.id]),
+        single_response = self.client.post(
+            reverse("material_document", args=[self.request_obj.id, "BS"]),
+            follow=True,
             HTTP_HOST="127.0.0.1",
         )
         self.assertContains(single_response, "Material Issue Note")
@@ -2076,7 +2087,7 @@ class AdministrationReportTests(TestCase):
         cls.technique = Department.objects.create(code="TECH", name="Technique")
         cls.reporter = User.objects.create_user(username="report-reader", can_view_administration_reports=True)
         cls.submitter = User.objects.create_user(username="alice", full_name="Alice Example", first_name="Alice", last_name="Example", department=cls.technique)
-        cls.general = RequestType.objects.create(code="AUTORISATION_GENERAL", name="Autorisation Générale")
+        cls.general = RequestType.objects.create(code="AUTORISATION_GENERAL", name="Autorisation GÃ©nÃ©rale")
         cls.approved = Request.objects.create(request_number="ADMIN-001", request_type=cls.general, submitted_by=cls.submitter,
             department=cls.technique, request_for_department=cls.administration, description="Office renovation", status="APPROVED", finalized_at=timezone.now())
 

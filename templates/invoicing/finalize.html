@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Finalize invoice" %}{% endblock %}
+{% block content %}<div class="page-header"><h1>{% trans "Finalize invoice" %}</h1></div><p>{{ invoice.request.request_number }} — {{ invoice.currency }}</p>
+<p class="message warning">{% trans "Finalization permanently freezes the prices, quantities, company details and document number." %}</p>
+<table><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th><th>{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td>{{ line.description_snapshot }}</td><td>{{ line.quantity }}</td><td>{{ line.unit_price|default_if_none:"—" }} {{ line.currency }}</td><td>{{ line.line_total|default_if_none:"—" }} {{ line.currency }}</td></tr>{% endfor %}</tbody></table>
+{% if not sequences_available %}<p class="message error">{% trans "An administrator must configure and verify the invoice sequence for this business year and series." %}</p>{% endif %}
+<form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit" class="btn">{% trans "Finalize invoice" %}</button> <a class="btn btn-secondary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back" %}</a></form>{% endblock %}

@@ -578,6 +578,7 @@
 
             <a href="{% url 'create_request' %}">{% trans "Create Request" %}</a>
 
+            {% if perms.invoicing.view_invoice %}<a href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% endif %}
             <a href="{% url 'my_requests' %}">
                 {% trans "My Requests" %}
                 <span class="nav-badge" id="returned-request-count">

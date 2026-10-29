@@ -28,6 +28,17 @@
 <p><strong>{% trans "Submitted From Department" %}:</strong> {{ request_obj.department }}</p>
 <p><strong>{% trans "Request For Department" %}:</strong> {{ request_obj.request_for_department }}</p>
 
+{% if approval.requires_stock_classification %}
+<p>{% trans "Confirm or replace the classification when approving this stock review. Rejection and return for correction do not require classification." %}</p>
+{% if request_obj.classification %}
+<p><strong>{% trans "Previous classification (confirmation required)" %}:</strong>
+    {{ request_obj.get_classification_display }}{% if request_obj.succursale %} — {{ request_obj.succursale }}{% endif %}</p>
+{% endif %}
+{% elif request_obj.classification %}
+<p><strong>{% trans "Stock classification" %}:</strong> {{ request_obj.get_classification_display }}
+    {% if request_obj.succursale %} — {{ request_obj.succursale }}{% endif %}</p>
+{% endif %}
+
 <form method="post" class="reading-form">
 
     {% csrf_token %}

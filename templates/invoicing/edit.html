@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Edit invoice draft" %}{% endblock %}
+{% block content %}<div class="page-header"><h1>{% trans "Edit invoice draft" %}</h1></div>
+<p>{{ invoice.request.request_number }} — {{ invoice.currency }}</p><p>{% trans "Leave unknown prices blank. Zero is an explicit authorized price." %}</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}{{ prices.management_form }}{{ prices.non_form_errors }}
+<table><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th></tr></thead><tbody>{% for row in prices %}<tr><td>{{ row.material_description }}{{ row.line_id }}{{ row.line_id.errors }}</td><td>{{ row.net_quantity }}</td><td>{{ row.unit_price }}{{ row.unit_price.errors }}</td></tr>{% endfor %}</tbody></table>
+<button type="submit" class="btn">{% trans "Save draft prices" %}</button> <a class="btn btn-secondary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back" %}</a></form>
+<form method="post" action="{% url 'invoicing:refresh' invoice.pk %}">{% csrf_token %}{{ form.revision }}<p>{% trans "Refresh quantities after new stock returns, then review the updated draft." %}</p><button class="btn btn-secondary" type="submit">{% trans "Refresh issued quantities" %}</button></form>{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% if kind == "BC" %}{% trans "Purchase Order (BC)" %}{% else %}{% trans "Material Issue Note (BS)" %}{% endif %}{% endblock %}
+{% block content %}
+<style>
+    .document-confirm { max-width: 720px; margin: 12px auto; }
+    .document-confirm__header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; }
+    .document-confirm__icon { display: grid; place-items: center; flex: 0 0 52px; height: 52px; border-radius: 12px; background: var(--info-bg); color: var(--primary); }
+    .document-confirm h1 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 30px); line-height: 1.25; }
+    .document-confirm__reference { padding: 20px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); margin-bottom: 24px; }
+    .document-confirm__reference dt { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .document-confirm__reference dd { margin: 0; font-size: 22px; font-weight: 700; color: var(--primary); overflow-wrap: anywhere; }
+    .document-confirm__note { display: flex; align-items: flex-start; gap: 10px; padding: 16px; background: var(--success-bg); color: var(--success-text); border-radius: 8px; line-height: 1.6; }
+    .document-confirm__note svg { flex: 0 0 22px; margin-top: 2px; }
+    .document-confirm__actions { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border); }
+    .document-confirm__actions .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; font: inherit; cursor: pointer; }
+    .document-confirm .btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+    @media (max-width: 540px) { .document-confirm__actions .btn { width: 100%; } .document-confirm__header { gap: 12px; } }
+</style>
+<section class="document-confirm" aria-labelledby="document-confirm-heading">
+    <header class="document-confirm__header">
+        <span class="document-confirm__icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h6"/></svg>
+        </span>
+        <div>
+            <h1 id="document-confirm-heading">{% if kind == "BC" %}{% trans "Purchase Order (BC)" %}{% else %}{% trans "Material Issue Note (BS)" %}{% endif %}</h1>
+            <p class="muted" style="margin: 0;">{% trans "Confirm first issuance" %}</p>
+        </div>
+    </header>
+    <dl class="document-confirm__reference">
+        <dt>{% trans "Material request reference" %}</dt>
+        <dd>{{ request_obj.request_number }}</dd>
+    </dl>
+    <p style="line-height: 1.7;">{% trans "Confirming permanently assigns this document's official reference and opens its print view. Reprints keep the same reference." %}</p>
+    <p class="document-confirm__note">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/></svg>
+        <span>{% trans "Printing does not deduct stock or modify inventory." %}</span>
+    </p>
+    <form method="post" class="document-confirm__actions">
+        {% csrf_token %}
+        <button class="btn" type="submit">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V3h12v6M6 18H3V9h18v9h-3M6 14h12v7H6z"/></svg>
+            {% trans "Confirm & Print" %}
+        </button>
+        <a class="btn btn-secondary" href="{{ back_url }}">{% trans "Cancel" %}</a>
+    </form>
+</section>
+{% endblock %}

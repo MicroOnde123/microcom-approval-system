@@ -16,6 +16,7 @@ from openpyxl.drawing.line import LineProperties
 from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphProperties, RichTextProperties
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
+from .stock_report_export import reporting_time
 
 
 def add_stock_report_analytics(workbook, requests, filters):
@@ -33,7 +34,7 @@ def add_stock_report_analytics(workbook, requests, filters):
         dept = departments.setdefault(req.request_for_department_id,
                                       [req.request_for_department.name, set(), 0])
         dept[1].add(req.pk)
-        month = req.finalized_at.strftime("%Y-%m") if req.finalized_at else None
+        month = reporting_time(req.finalized_at)[:7] if req.finalized_at else None
         if month:
             months[month][1].add(req.pk)
         else:
@@ -84,7 +85,7 @@ def add_stock_report_analytics(workbook, requests, filters):
         tr("Report period (Date Needed): ", "Période (Date requise) : ") + period,
         tr("Department: ", "Département : ") + (dept_name or (f"ID {dept_filter}" if dept_filter else tr("All", "Tous"))),
         tr("Search: ", "Recherche : ") + (filters.get("q", "").strip() or tr("None", "Aucune")),
-        tr("Generated At (UTC): ", "Généré le (UTC) : ") + timezone.now().strftime("%Y-%m-%d %H:%M"),
+        tr("Generated At (Africa/Kinshasa): ", "Généré le (Africa/Kinshasa) : ") + reporting_time(timezone.now()),
     ]
     for row, text in enumerate(metadata, 4):
         dashboard.merge_cells(start_row=row, start_column=1, end_row=row, end_column=12)

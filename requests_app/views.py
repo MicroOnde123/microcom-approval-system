@@ -1,17 +1,17 @@
 import csv
 import time
 import uuid
-from decimal import Decimal, InvalidOperation
 from django.http import HttpResponse
+from django.utils.html import format_html
 from urllib.parse import urlencode
 
+from django.core import signing
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from django.contrib import messages
-from django.db import models, transaction
+from django.db import DatabaseError, models, transaction
 from django.db.models.functions import RowNumber
 from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
@@ -20,8 +20,11 @@ from django.views.decorators.http import require_POST
 from .forms import MaterialIssueNoteForm, RequestForm, RequestMaterialItemFormSet
 from .approval_forms import ApprovalActionForm
 from .stock_forms import ReturnToStockForm
+from .stock_services import RETURN_TOKEN_SALT, material_return_totals, return_material_stock
 from .models import Request, RequestApproval, RequestAttachment, RequestMaterialItem, StockMovement, RequestAuditLog
 from .services import submit_request, approve_step, reject_step, return_step, resubmit_request
+from .references import committed_creation, creation_digest, create_request_once
+from .material_documents import issue_document, validate_access as validate_material_document_access
 from django.utils.translation import get_language, gettext as _
 
 from openpyxl import Workbook
@@ -207,53 +210,26 @@ def submitted_material_count(formset):
     return count, len(material_ids) != len(set(material_ids))
 
 
-def save_complete_draft_material_rows(req, post_data):
-    prefix = MATERIAL_FORMSET_PREFIX
-    total = int(post_data.get(f"{prefix}-TOTAL_FORMS") or 0)
-    initial = int(post_data.get(f"{prefix}-INITIAL_FORMS") or 0)
+def save_complete_draft_material_rows(req, formset):
+    """Save only complete, validated draft rows; keep incomplete rows optional."""
     seen_material_ids = set()
-
-    for index in range(total):
-        material_id = post_data.get(f"{prefix}-{index}-material")
-        quantity_value = post_data.get(f"{prefix}-{index}-quantity")
-        note = post_data.get(f"{prefix}-{index}-note", "")
-        delete_requested = post_data.get(f"{prefix}-{index}-DELETE")
-        item_id = post_data.get(f"{prefix}-{index}-id")
-        existing_item = None
-
-        if item_id:
-            existing_item = req.material_items.filter(id=item_id).first()
-
-        if delete_requested and existing_item:
-            existing_item.delete()
+    for row in formset.forms:
+        cleaned = row.cleaned_data
+        if not cleaned:
             continue
-
-        if not material_id or not quantity_value:
+        item = row.instance
+        if cleaned.get("DELETE"):
+            if item.pk:
+                item.delete()
             continue
-
-        try:
-            material = Material.objects.get(id=material_id, is_active=True)
-            quantity = Decimal(quantity_value)
-        except (Material.DoesNotExist, InvalidOperation):
+        material = cleaned.get("material")
+        quantity = cleaned.get("quantity")
+        if not material or quantity is None or material.pk in seen_material_ids:
             continue
-
-        if quantity <= 0 or material.id in seen_material_ids:
-            continue
-
-        seen_material_ids.add(material.id)
-
-        if existing_item and index < initial:
-            existing_item.material = material
-            existing_item.quantity = quantity
-            existing_item.note = note
-            existing_item.save()
-        else:
-            RequestMaterialItem.objects.create(
-                request=req,
-                material=material,
-                quantity=quantity,
-                note=note,
-            )
+        seen_material_ids.add(material.pk)
+        item = row.save(commit=False)
+        item.request = req
+        item.save()
 
 
 def save_valid_material_formset(formset):
@@ -261,8 +237,8 @@ def save_valid_material_formset(formset):
 
 @login_required
 def create_request(request):
-    if not request.user.department:
-        messages.error(request, "Your account is not linked to any department.")
+    if request.method != "POST" and not request.user.department:
+        messages.error(request, _("Your account is not linked to any department."))
         return redirect("dashboard")
 
     if request.method == "POST":
@@ -271,9 +247,28 @@ def create_request(request):
         token_status, existing_request_id, submission_token = submission_token_result(
             request, "create"
         )
-        if token_status == "used" and existing_request_id:
+        try:
+            digest = creation_digest(request.POST, request.FILES)
+            existing = committed_creation(submission_token, request.user, digest)
+        except ValidationError as exc:
+            messages.error(request, exc.messages[0])
+            return redirect("create_request")
+        except DatabaseError:
+            # Do not redirect to a fresh token when the previous result cannot
+            # be verified. Avoid form/context processors that query the DB.
+            response = HttpResponse(format_html(
+                "<p>{}</p><p><a href=\"{}\">{}</a></p>",
+                _("We could not verify the previous submission. Keep the original form and retry the same data and attachments. Do not start a new request to recover this submission."),
+                reverse("my_requests"), _("Back to My Requests")), status=503)
+            response["Cache-Control"] = "no-store"
+            response["Retry-After"] = "3"
+            return response
+        if existing:
             messages.info(request, _("This request was already saved."))
-            return redirect("request_detail", request_id=existing_request_id)
+            return redirect("request_detail", request_id=existing.pk)
+        if not request.user.department:
+            messages.error(request, _("Your account is not linked to any department."))
+            return redirect("dashboard")
         if token_status != "pending":
             messages.error(request, _("This form has expired. Please submit it again."))
             return redirect("create_request")
@@ -287,11 +282,11 @@ def create_request(request):
         formset = RequestMaterialItemFormSet(
             request.POST,
             prefix=MATERIAL_FORMSET_PREFIX,
+            form_kwargs={"draft": is_draft_action},
         )
 
         if form.is_valid():
             req = form.save(commit=False)
-            req.request_number = f"REQ-{get_random_string(6).upper()}"
             req.submitted_by = request.user
             req.department = request.user.department
             req.metadata_json = build_permission_metadata(form)
@@ -299,16 +294,11 @@ def create_request(request):
 
             material_request = requires_materials(req)
 
-            if is_draft_action:
-                req.save()
-                if material_request:
-                    save_complete_draft_material_rows(req, request.POST)
-                save_attachments(request, req)
-                mark_submission_token_used(request, submission_token, req.id)
-                messages.success(request, _("Draft saved successfully."))
-                return redirect("request_detail", request_id=req.id)
+            if material_request and is_draft_action and not formset.is_valid():
+                return render(request, "requests_app/create_request.html",
+                              request_form_context(form, formset, submission_token))
 
-            if material_request:
+            if material_request and not is_draft_action:
                 if not formset.is_valid():
                     return render(
                         request,
@@ -334,26 +324,35 @@ def create_request(request):
                         request_form_context(form, formset, submission_token),
                     )
 
-            req.save()
-
-            if material_request:
-                formset.instance = req
-                save_valid_material_formset(formset)
-
-            save_attachments(request, req)
+            def save_related(saved):
+                if material_request:
+                    if is_draft_action:
+                        save_complete_draft_material_rows(saved, formset)
+                    else:
+                        formset.instance = saved
+                        save_valid_material_formset(formset)
 
             try:
-                submit_request(req)
-            except Exception:
-                req.delete()
-                messages.error(request, _("No approval workflow is configured for this request type."))
-                return render(
-                    request,
-                    "requests_app/create_request.html",
-                    request_form_context(form, formset, submission_token),
-                )
+                req, replayed = create_request_once(
+                    req, request.user, token=submission_token, digest=digest,
+                    save_related=save_related, submit=not is_draft_action,
+                    save_files=lambda saved: save_attachments(request, saved))
+            except ValidationError as exc:
+                form.add_error(None, exc)
+                return render(request, "requests_app/create_request.html",
+                              request_form_context(form, formset, submission_token))
+            except (DatabaseError, OSError):
+                form.add_error(None, _("The request could not be saved safely. Retry the same form or ask an administrator to review reference configuration."))
+                return render(request, "requests_app/create_request.html",
+                              request_form_context(form, formset, submission_token), status=503)
 
             mark_submission_token_used(request, submission_token, req.id)
+            if replayed:
+                messages.info(request, _("This request was already saved."))
+                return redirect("request_detail", request_id=req.id)
+            if is_draft_action:
+                messages.success(request, _("Draft saved successfully."))
+                return redirect("request_detail", request_id=req.id)
             messages.success(request, _("Request submitted successfully."))
             return redirect("dashboard")
 
@@ -476,11 +475,11 @@ def approval_detail(request, approval_id):
         or approval.request.current_step_order != approval.step_order
         or approval.request.status not in ["PENDING", "IN_REVIEW"]
     ):
-        messages.error(request, "This approval is no longer active.")
+        messages.error(request, _("This approval is no longer active."))
         return redirect(back_url)
 
     if request.method == "POST":
-        form = ApprovalActionForm(request.POST)
+        form = ApprovalActionForm(request.POST, approval=approval)
 
         if form.is_valid():
             action = form.cleaned_data["action"]
@@ -488,14 +487,18 @@ def approval_detail(request, approval_id):
 
             try:
                 if action == "APPROVE":
-                    approve_step(approval, request.user, comment)
-                    messages.success(request, "Request approved successfully.")
+                    classification_data = {}
+                    if approval.requires_stock_classification:
+                        classification_data = {"classification": form.cleaned_data["classification"],
+                                               "succursale": form.cleaned_data.get("succursale")}
+                    approve_step(approval, request.user, comment, **classification_data)
+                    messages.success(request, _("Request approved successfully."))
                 elif action == "REJECT":
                     reject_step(approval, request.user, comment)
-                    messages.success(request, "Request rejected successfully.")
+                    messages.success(request, _("Request rejected successfully."))
                 elif action == "RETURN":
                     return_step(approval, request.user, comment)
-                    messages.success(request, "Request returned for changes.")
+                    messages.success(request, _("Request returned for changes."))
             except Exception as e:
                 messages.error(request, str(e))
                 return redirect(
@@ -504,7 +507,7 @@ def approval_detail(request, approval_id):
 
             return redirect(back_url)
     else:
-        form = ApprovalActionForm()
+        form = ApprovalActionForm(approval=approval)
 
     return render(
         request,
@@ -571,6 +574,8 @@ def request_detail(request, request_id):
             "active_approval_for_user": active_approval_for_user,
             "can_cancel_request": can_cancel_request,
             "can_edit_request": can_edit_request,
+            "stock_review_pending": request_obj.approvals.filter(
+                requires_stock_classification=True, status="PENDING").exists(),
             "can_edit_material_issue_note": (
                 request_obj.status == "APPROVED"
                 and requires_materials(request_obj)
@@ -672,16 +677,29 @@ def edit_request(request, request_id):
                 request.POST,
                 instance=req,
                 prefix=MATERIAL_FORMSET_PREFIX,
+                form_kwargs={"draft": is_draft_save},
             )
 
             if is_draft_save:
-                req.save()
-                if material_request:
-                    save_complete_draft_material_rows(req, request.POST)
-                else:
-                    req.material_items.all().delete()
-
-                save_attachments(request, req)
+                if material_request and not formset.is_valid():
+                    return render(request, "requests_app/edit_request.html",
+                                  request_form_context(form, formset, submission_token,
+                                      request_obj=request_obj,
+                                      back_url=reverse("request_detail", args=[req.id])))
+                try:
+                    with transaction.atomic():
+                        req.save()
+                        if material_request:
+                            save_complete_draft_material_rows(req, formset)
+                        else:
+                            req.material_items.all().delete()
+                        save_attachments(request, req)
+                except ValidationError as exc:
+                    form.add_error(None, exc)
+                    return render(request, "requests_app/edit_request.html",
+                                  request_form_context(form, formset, submission_token,
+                                      request_obj=request_obj,
+                                      back_url=reverse("request_detail", args=[req.id])))
                 mark_submission_token_used(request, submission_token, req.id)
                 if request_obj.status == "DRAFT":
                     messages.success(request, _("Draft saved successfully."))
@@ -875,10 +893,45 @@ def approved_document(request, request_id):
         messages.error(request, "This request is not approved yet.")
         return redirect("request_detail", request_id=request_obj.id)
 
+    if request_obj.request_type.requires_materials:
+        url = reverse("material_document", args=[request_obj.pk, "BS"])
+        return redirect(url + ("?" + request.GET.urlencode() if request.GET else ""))
     return render_approved_document(request, request_obj)
 
 
-def render_approved_document(request, request_obj, document_url=None, default_back_url=None):
+@login_required
+def material_document(request, request_id, kind):
+    if kind not in {"BC", "BS"}:
+        from django.http import Http404
+        raise Http404
+    if request.method not in {"GET", "POST"}:
+        from django.http import HttpResponseNotAllowed
+        return HttpResponseNotAllowed(["GET", "POST"])
+    req = get_object_or_404(Request.objects.select_related("request_type").prefetch_related(
+        "material_items__material", "approvals__approver_user", "approvals__acted_by"), pk=request_id)
+    try:
+        validate_material_document_access(req, request.user)
+    except ValidationError:
+        return HttpResponse(_("Material documents require final approval and confirmed stock deduction."), status=409)
+    if request.method == "POST":
+        try:
+            issue_document(req.pk, kind, request.user)
+        except (DatabaseError, ValidationError):
+            return HttpResponse(_("The material document could not be issued safely. Retry the same document."), status=503)
+        # POST/redirect/GET: browser refresh and reprints never allocate again.
+        url = reverse("material_document", args=[req.pk, kind])
+        return redirect(url + ("?" + request.GET.urlencode() if request.GET else ""))
+    document = req.material_documents.filter(kind=kind).first()
+    if document is None:
+        return render(request, "requests_app/material_document_confirm.html", {
+            "request_obj": req, "kind": kind,
+            "back_url": reverse("request_detail", args=[req.pk]),
+        })
+    return render_approved_document(request, req,
+        document_url=reverse("material_document", args=[req.pk, kind]), material_document=document)
+
+
+def render_approved_document(request, request_obj, document_url=None, default_back_url=None, material_document=None):
     copies = request.GET.get("copies", "1")
     if copies not in {"1", "2"}:
         copies = "1"
@@ -904,6 +957,8 @@ def render_approved_document(request, request_obj, document_url=None, default_ba
             "document_url": document_url or reverse("approved_document", args=[request_obj.id]),
             "copies": copies,
             "two_copy_warning": two_copy_warning,
+            "material_document": material_document,
+            "material_document_title": (_("Material Order") if material_document and material_document.kind == "BC" else _("Material Exit Slip")),
         },
     )
 
@@ -1009,11 +1064,13 @@ def get_filtered_material_report_requests(request):
         "material_items__material__category",
         "approvals__approver_user",
         "approvals__acted_by",
+        "material_documents",
     ).select_related(
         "submitted_by",
         "department",
         "request_for_department",
         "request_type",
+        "succursale",
     )
 
     q = request.GET.get("q", "").strip()
@@ -1219,6 +1276,8 @@ def bulk_print_material_documents(request):
     requests = Request.objects.filter(
         id__in=selected_ids,
         status="APPROVED",
+        stock_deducted=True,
+        request_type__requires_materials=True,
         material_items__isnull=False,
         
     ).distinct().prefetch_related(
@@ -1276,65 +1335,40 @@ def return_material_to_stock(request, item_id):
 
     if request.method == "POST":
         form = ReturnToStockForm(request.POST)
-
         if form.is_valid():
-            quantity = form.cleaned_data["quantity"]
-            reason = form.cleaned_data["reason"]
-
-            if quantity > item.quantity:
-                messages.error(
-                    request,
-                    _("Returned quantity cannot be greater than requested quantity."),
+            try:
+                movement, created = return_material_stock(
+                    item.id, request.user, form.cleaned_data["quantity"],
+                    form.cleaned_data["reason"], form.cleaned_data["operation_token"],
                 )
-                return redirect("return_material_to_stock", item_id=item.id)
-
-            material.stock_quantity += quantity
-            material.save(update_fields=["stock_quantity"])
-
-            StockMovement.objects.create(
-                material=material,
-                request=req,
-                quantity=quantity,
-                movement_type="RETURN",
-                performed_by=request.user,
-                note=_("Material returned to stock."),
-                return_reason=reason,
-            )
-
-            RequestAuditLog.objects.create(
-                request=req,
-                action="STOCK_RETURNED",
-                performed_by=request.user,
-                comment=_("Returned %(quantity)s %(unit)s of %(material)s to stock. Reason: %(reason)s")
-                % {
-                    "quantity": quantity,
-                    "unit": material.unit or "",
-                    "material": material.name,
-                    "reason": reason,
-                },
-            )
-
-            messages.success(
-                request,
-                _("Material returned to stock successfully."),
-            )
-
-            return redirect(back_url)
-
+            except ValidationError as exc:
+                form.add_error(None, exc)
+            else:
+                messages.success(request, _("Material returned to stock successfully.") if created
+                                 else _("This return has already been recorded."))
+                return redirect(back_url)
     else:
-        form = ReturnToStockForm()
+        token = signing.dumps({"item": item.pk, "user": request.user.pk,
+                               "operation": str(uuid.uuid4())}, salt=RETURN_TOKEN_SALT)
+        form = ReturnToStockForm(initial={"operation_token": token})
+
+    # Re-read after a rejected POST: another transaction may have returned stock.
+    item.refresh_from_db()
+    material.refresh_from_db()
+    totals = {}
+    return_error = ""
+    try:
+        totals = material_return_totals(item)
+    except ValidationError as exc:
+        return_error = " ".join(exc.messages)
 
     return render(
         request,
         "requests_app/return_material_to_stock.html",
-        {
-            "form": form,
-            "item": item,
-            "request_obj": req,
-            "material": material,
-            "back_url": back_url,
-        },
+        {"form": form, "item": item, "request_obj": req, "material": material,
+         "back_url": back_url, "return_error": return_error, **totals},
     )
+
 
 @login_required
 def notification_count(request):
@@ -1364,7 +1398,24 @@ def export_material_report_excel(request):
             _("You are not allowed to export material reports.")
         )
 
-    requests = list(get_filtered_material_report_requests(request))
+    from .stock_report_export import (ExportFilterForm, movement_scope, enforce_size,
+        reporting_time, request_extras, add_movements, protect_text_cells, enforce_loaded_size)
+    from .stock_report_bookkeeping import load_bookkeeping, add_statistics
+    filters = ExportFilterForm(request.GET)
+    if not filters.is_valid():
+        return HttpResponse(_("Invalid report filters. Use valid dates and a valid department; the start date must not exceed the end date."), status=400)
+    rows = get_filtered_material_report_requests(request)
+    movements = movement_scope(rows, filters.cleaned_data)
+    try:
+        limit = enforce_size(rows, movements)
+        requests = list(rows[:limit + 1])
+        movements = list(movements[:limit + 1])
+        enforce_loaded_size(requests, movements, limit)
+        used_rows = sum(len(row.material_items.all()) for row in requests) + len(movements)
+        financial = load_bookkeeping(request.user, requests, limit - used_rows)
+    except ValidationError as error:
+        return HttpResponse(format_html("<p>{}</p><a href=\"{}\">{}</a>",
+            error.messages[0], reverse("material_reports"), _("Back to Material Reports")), status=413)
 
     workbook = Workbook()
     sheet = workbook.active
@@ -1386,15 +1437,21 @@ def export_material_report_excel(request):
         _("Description"),
         _("Material Issue Note"),
         _("Approvers"),
+        _("Request Classification"),
+        _("Succursale"),
+        _("BC Reference"),
+        _("BS Reference"),
+        _("Missing Information"),
     ]
 
-    sheet.merge_cells("A1:O1")
+    sheet.merge_cells("A1:T1")
     sheet["A1"] = _("Microcom Material Report")
     sheet["A1"].font = Font(bold=True, size=14)
     sheet["A1"].alignment = Alignment(horizontal="center")
 
     sheet["A2"] = _("Generated At")
-    sheet["B2"] = timezone.now().strftime("%Y-%m-%d %H:%M")
+    sheet["B2"] = reporting_time(timezone.now())
+    sheet["D2"] = "Africa/Kinshasa"
 
     start_row = 4
 
@@ -1407,6 +1464,7 @@ def export_material_report_excel(request):
     row_num = start_row + 1
 
     for req in requests:
+        extras = request_extras(req)
         approvers = ", ".join([
             approval.display_approver_name
             for approval in req.approvals.all()
@@ -1420,7 +1478,7 @@ def export_material_report_excel(request):
                 req.department.name if req.department else "",
                 req.request_for_department.name,
                 req.date_needed,
-                req.finalized_at.strftime("%Y-%m-%d %H:%M") if req.finalized_at else "",
+                reporting_time(req.finalized_at),
                 item.material.name,
                 item.material.code,
                 item.material.category.name if item.material.category else "",
@@ -1430,6 +1488,7 @@ def export_material_report_excel(request):
                 req.description,
                 req.material_issue_note,
                 approvers,
+                *extras,
             ])
             row_num += 1
 
@@ -1446,7 +1505,7 @@ def export_material_report_excel(request):
             cell.alignment = Alignment(vertical="top", wrap_text=True)
 
     sheet.freeze_panes = "A5"
-    sheet.auto_filter.ref = f"A{start_row}:O{sheet.max_row}"
+    sheet.auto_filter.ref = f"A{start_row}:T{sheet.max_row}"
 
     widths = {
         "A": 18,
@@ -1464,6 +1523,11 @@ def export_material_report_excel(request):
         "M": 45,
         "N": 45,
         "O": 35,
+        "P": 26,
+        "Q": 30,
+        "R": 22,
+        "S": 22,
+        "T": 45,
     }
 
     for col, width in widths.items():
@@ -1474,13 +1538,16 @@ def export_material_report_excel(request):
     )
     filename = (
         "rapport_materiel.xlsx"
-        if get_language() == "fr"
+        if (get_language() or "en").startswith("fr")
         else "material_report.xlsx"
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     from .stock_report_analytics import add_stock_report_analytics
     add_stock_report_analytics(workbook, requests, request.GET)
+    add_movements(workbook, movements, requests)
+    add_statistics(workbook, requests, movements, financial)
+    protect_text_cells(workbook)
     workbook.save(response)
     return response
 

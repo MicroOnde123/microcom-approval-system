@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n return_note_navigation %}
 
 {% block title %}{% trans "Return to Stock" %}{% endblock %}
 
@@ -30,10 +30,20 @@
         {{ material.name }}
     </div>
 
+    {% if not return_error %}
     <div class="detail-item">
-        <strong>{% trans "Requested Quantity" %}</strong>
-        {{ item.quantity }} {{ material.unit }}
+        <strong>{% trans "Originally Issued Quantity" %}</strong>
+        {{ issued_quantity }} {{ material.unit }}
     </div>
+    <div class="detail-item">
+        <strong>{% trans "Previously Returned Quantity" %}</strong>
+        {{ returned_quantity }} {{ material.unit }}
+    </div>
+    <div class="detail-item">
+        <strong>{% trans "Remaining Returnable Quantity" %}</strong>
+        {{ remaining_quantity }} {{ material.unit }}
+    </div>
+    {% endif %}
 
     <div class="detail-item">
         <strong>{% trans "Current Stock" %}</strong>
@@ -41,13 +51,17 @@
     </div>
 </div>
 
+{% if return_error %}<p role="alert">{{ return_error }}</p>{% endif %}
+{% return_note_links request.user request_obj.pk as return_note_nav %}
+{% if return_note_nav.can_read %}<p class="muted">{% trans "A material return note can optionally value returns already recorded in stock." %}</p>{% endif %}
+{% include "invoicing/return_notes/links.html" %}
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ back_url }}">
 
     {{ form.as_p }}
 
-    <button type="submit" class="btn">
+    <button type="submit" class="btn" {% if return_error or remaining_quantity == 0 %}disabled{% endif %}>
         {% trans "Return to Stock" %}
     </button>
 </form>

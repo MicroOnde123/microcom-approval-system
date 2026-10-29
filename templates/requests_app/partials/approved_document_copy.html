@@ -9,6 +9,7 @@
         <div class="doc-meta">
             <strong>{% trans "Request No:" %}</strong>
             {{ request_obj.request_number }}
+            {% if material_document %}<br><strong>{% trans "Document No:" %}</strong> {{ material_document.reference }}{% endif %}
             <br>
             <strong>{% trans "Status:" %}</strong>
             {{ request_obj.status }}
@@ -22,7 +23,7 @@
         </div>
     </div>
 
-    <h1 class="main-title">{% trans "Material Exit Slip" %}</h1>
+    <h1 class="main-title">{% if material_document %}{{ material_document_title }}{% else %}{% trans "Material Exit Slip" %}{% endif %}</h1>
 
     <div class="subtitle">{% trans "Approved material request document" %}</div>
 

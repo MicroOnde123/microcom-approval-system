@@ -18,6 +18,86 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 # Draft, cancellation, and returned-request workflow strings.
+# Phase 1 stock safety.
+# Approval interface: labels only; internal action values remain unchanged.
+msgid "Approve"
+msgstr "Approuver"
+
+msgid "Reject"
+msgstr "Rejeter"
+
+msgid "Return for changes"
+msgstr "Retourner pour correction"
+
+msgid "Request approved successfully."
+msgstr "Demande approuvée avec succès."
+
+msgid "Request rejected successfully."
+msgstr "Demande rejetée avec succès."
+
+msgid "Request returned for changes."
+msgstr "Demande retournée pour correction."
+
+msgid "This approval is no longer active."
+msgstr "Cette approbation n'est plus active."
+
+msgid "Use at most two decimal places for the quantity."
+msgstr "Utilisez au maximum deux décimales pour la quantité."
+
+msgid "The quantity is too large."
+msgstr "La quantité est trop élevée."
+
+msgid "Enter a valid quantity."
+msgstr "Saisissez une quantité valide."
+
+msgid "You are not allowed to return stock."
+msgstr "Vous n'êtes pas autorisé à retourner du matériel au stock."
+
+msgid "Material returned to stock."
+msgstr "Matériel retourné au stock."
+
+msgid "Returned %(quantity)s %(unit)s of %(material)s to stock. Reason: %(reason)s"
+msgstr "Retour au stock de %(quantity)s %(unit)s de %(material)s. Motif : %(reason)s"
+
+msgid "Quantity must be greater than zero."
+msgstr "La quantité doit être supérieure à zéro."
+
+msgid "Stock has not been issued for this approved request."
+msgstr "Le stock n'a pas été sorti pour cette demande approuvée."
+
+msgid "Returns are blocked because this request has repeated material lines. Historical movements cannot be assigned safely."
+msgstr "Les retours sont bloqués car cette demande contient plusieurs lignes du même matériel. Les mouvements historiques ne peuvent pas être attribués de manière fiable."
+
+msgid "Stock movement history is inconsistent. A stock administrator must review it before a return."
+msgstr "L'historique des mouvements de stock est incohérent. Un administrateur du stock doit le vérifier avant tout retour."
+
+msgid "This return form has expired or is invalid. Open a new return form."
+msgstr "Ce formulaire de retour a expiré ou n'est pas valide. Ouvrez un nouveau formulaire de retour."
+
+msgid "A return reason is required."
+msgstr "Le motif du retour est obligatoire."
+
+msgid "Only %(quantity)s %(unit)s remain available to return."
+msgstr "Seuls %(quantity)s %(unit)s restent disponibles pour un retour."
+
+msgid "Insufficient stock for %(material)s. Available: %(available)s %(unit)s, requested: %(quantity)s %(unit)s."
+msgstr "Stock insuffisant pour %(material)s. Disponible : %(available)s %(unit)s, demandé : %(quantity)s %(unit)s."
+
+msgid "Stock deducted after approval of request %(number)s."
+msgstr "Stock déduit après l'approbation de la demande %(number)s."
+
+msgid "This return has already been recorded."
+msgstr "Ce retour a déjà été enregistré."
+
+msgid "Originally Issued Quantity"
+msgstr "Quantité initialement sortie"
+
+msgid "Previously Returned Quantity"
+msgstr "Quantité déjà retournée"
+
+msgid "Remaining Returnable Quantity"
+msgstr "Quantité restante pouvant être retournée"
+
 msgid "Save as Draft"
 msgstr "Enregistrer comme brouillon"
 
@@ -1183,3 +1263,1575 @@ msgstr "Suivant"
 
 msgid "Date Submitted"
 msgstr "Date de soumission"
+
+msgid "Stock has changed since this form was opened. Reload the page and review the current balance before saving."
+msgstr "Le stock a changé depuis l’ouverture de ce formulaire. Rechargez la page et vérifiez le solde actuel avant d’enregistrer."
+
+msgid "US dollar (USD)"
+msgstr "Dollar américain (USD)"
+
+msgid "Congolese franc (CDF)"
+msgstr "Franc congolais (CDF)"
+
+msgid "Euro (EUR)"
+msgstr "Euro (EUR)"
+
+msgid "Use {number} once and optionally {year}, with a numeric width of at most 12."
+msgstr "Utilisez {number} une seule fois et, facultativement, {year}, avec une largeur numérique maximale de 12."
+
+msgid "Use a relative static image path without traversal or an external URL."
+msgstr "Utilisez un chemin relatif d’image statique, sans remontée de répertoire ni URL externe."
+
+msgid "Company name"
+msgstr "Nom de l’entreprise"
+
+msgid "Verified company address"
+msgstr "Adresse vérifiée de l’entreprise"
+
+msgid "Contact details"
+msgstr "Coordonnées"
+
+msgid "Company logo reference"
+msgstr "Référence du logo de l’entreprise"
+
+msgid "Relative path to an existing static image. No external image is fetched."
+msgstr "Chemin relatif vers une image statique existante. Aucune image externe n’est téléchargée."
+
+msgid "Default document currency"
+msgstr "Devise par défaut des documents"
+
+msgid "Select a supported currency: USD, CDF or EUR."
+msgstr "Sélectionnez une devise prise en charge : USD, CDF ou EUR."
+
+msgid "Invoice number format"
+msgstr "Format du numéro de facture"
+
+msgid "Use {number} and optionally {year}. This preference does not allocate document numbers."
+msgstr "Utilisez {number} et, facultativement, {year}. Ce paramètre n’attribue aucun numéro de document."
+
+msgid "Other document number format"
+msgstr "Format du numéro des autres documents"
+
+msgid "Optional numbering preference for future stock documents. No numbers are allocated."
+msgstr "Format facultatif pour les futurs documents de stock. Aucun numéro n’est attribué."
+
+msgid "Updated at"
+msgstr "Modifié le"
+
+msgid "Company and document settings"
+msgstr "Paramètres de l’entreprise et des documents"
+
+msgid "Succursale code"
+msgstr "Code de la succursale"
+
+msgid "Succursale name"
+msgstr "Nom de la succursale"
+
+msgid "Active"
+msgstr "Actif"
+
+msgid "Created at"
+msgstr "Créé le"
+
+msgid "Succursale"
+msgstr "Succursale"
+
+msgid "Succursales"
+msgstr "Succursales"
+
+msgid "Unit price"
+msgstr "Prix unitaire"
+
+msgid "Unit price cannot be negative."
+msgstr "Le prix unitaire ne peut pas être négatif."
+
+msgid "Leave blank when the price is unknown. Zero is an explicit price."
+msgstr "Laissez vide si le prix est inconnu. Zéro correspond à un prix explicite."
+
+msgid "Price currency"
+msgstr "Devise du prix"
+
+msgid "For a new price, defaults to the document currency, or USD when settings are absent."
+msgstr "Pour un nouveau prix, utilise la devise des documents ou USD si aucun paramètre n’est défini."
+
+msgid "Stock classification review"
+msgstr "Examen de classification du stock"
+
+msgid "Designate the first step of a material workflow. A single-step workflow is valid."
+msgstr "Désignez la première étape d’un circuit de matériel. Un circuit à une seule étape est valide."
+
+msgid "Stock classification is only available for material workflows."
+msgstr "La classification du stock est réservée aux circuits de matériel."
+
+msgid "Assign an active primary user to the central stock-review step."
+msgstr "Affectez un utilisateur principal actif à l’étape de contrôle du stock central."
+
+msgid "The alternate stock reviewer must be active."
+msgstr "Le suppléant du contrôle du stock doit être actif."
+
+msgid "Only one stock-review step may be designated per workflow."
+msgstr "Une seule étape de contrôle du stock peut être désignée par circuit."
+
+msgid "The designated stock review must be the first configured approval step."
+msgstr "Le contrôle du stock désigné doit être la première étape d’approbation configurée."
+
+msgid "Client"
+msgstr "Client"
+
+msgid "Microcom"
+msgstr "Microcom"
+
+msgid "Stock classification"
+msgstr "Classification du stock"
+
+msgid "Classified by"
+msgstr "Classifié par"
+
+msgid "Classified at"
+msgstr "Classifié le"
+
+msgid "Requires stock classification"
+msgstr "Classification du stock requise"
+
+msgid "The first stock review must be approved before later approval steps."
+msgstr "Le premier contrôle du stock doit être approuvé avant les étapes d’approbation suivantes."
+
+msgid "Only the designated stock reviewer can classify this request."
+msgstr "Seul le responsable désigné du contrôle du stock peut classifier cette demande."
+
+msgid "You are not allowed to approve this step."
+msgstr "Vous n’êtes pas autorisé à approuver cette étape."
+
+msgid "This is not the current approval step."
+msgstr "Cette étape n’est pas l’étape d’approbation actuelle."
+
+msgid "Select Client or Microcom to approve the stock review."
+msgstr "Sélectionnez Client ou Microcom pour approuver le contrôle du stock."
+
+msgid "Select an active succursale for a Microcom request."
+msgstr "Sélectionnez une succursale active pour une demande Microcom."
+
+msgid "Client requests must not select a succursale."
+msgstr "Les demandes Client ne doivent pas sélectionner de succursale."
+
+msgid "Classification confirmed: %(classification)s; succursale: %(succursale)s. Previous classification: %(previous)s; previous succursale: %(previous_succursale)s."
+msgstr "Classification confirmée : %(classification)s ; succursale : %(succursale)s. Classification précédente : %(previous)s ; succursale précédente : %(previous_succursale)s."
+
+msgid "Confirm or replace the classification when approving this stock review. Rejection and return for correction do not require classification."
+msgstr "Confirmez ou remplacez la classification lors de l’approbation de ce contrôle du stock. Le rejet et le retour pour correction n’exigent pas de classification."
+
+msgid "Previous classification (confirmation required)"
+msgstr "Classification précédente (confirmation requise)"
+
+msgid "Previous classification; stock-review confirmation is pending."
+msgstr "Classification précédente ; confirmation du contrôle du stock en attente."
+
+msgid "Invoicing"
+msgstr "Facturation"
+
+msgid "Business timezone"
+msgstr "Fuseau horaire métier"
+
+msgid "Select a valid IANA business timezone."
+msgstr "Sélectionnez un fuseau horaire métier IANA valide."
+
+msgid "An aware finalization timestamp is required."
+msgstr "Un horodatage de finalisation avec fuseau horaire est requis."
+
+msgid "Use individual financial records; bulk changes are prohibited."
+msgstr "Modifiez les enregistrements financiers individuellement ; les modifications groupées sont interdites."
+
+msgid "Bulk financial deletion is prohibited."
+msgstr "La suppression groupée des enregistrements financiers est interdite."
+
+msgid "Financial evidence is append-only."
+msgstr "Les justificatifs financiers peuvent uniquement être ajoutés."
+
+msgid "Finalized financial records cannot be changed."
+msgstr "Les enregistrements financiers finalisés ne peuvent pas être modifiés."
+
+msgid "Verified at"
+msgstr "Vérifié le"
+
+msgid "Administrator verification permission is required."
+msgstr "Une autorisation de vérification administrative est requise."
+
+msgid "Complete the company name, address and contact details before verification."
+msgstr "Complétez le nom, l’adresse et les coordonnées de l’entreprise avant la vérification."
+
+msgid "Company verification does not match the configuration."
+msgstr "La vérification de l’entreprise ne correspond pas à la configuration."
+
+msgid "Invoice"
+msgstr "Facture"
+
+msgid "Credit note"
+msgstr "Avoir"
+
+msgid "Document type"
+msgstr "Type de document"
+
+msgid "Business year"
+msgstr "Année métier"
+
+msgid "Series"
+msgstr "Série"
+
+msgid "Number format"
+msgstr "Format de numérotation"
+
+msgid "Starting counter"
+msgstr "Compteur initial"
+
+msgid "Next counter"
+msgstr "Compteur suivant"
+
+msgid "Numbering verification evidence"
+msgstr "Justificatif de vérification de la numérotation"
+
+msgid "Record the external numbering-history verification evidence."
+msgstr "Consignez le justificatif de vérification de l’historique externe de numérotation."
+
+msgid "Annual document formats must include {year}."
+msgstr "Les formats annuels des documents doivent inclure {year}."
+
+msgid "Finalized"
+msgstr "Finalisé"
+
+msgid "Currency"
+msgstr "Devise"
+
+msgid "Document number"
+msgstr "Numéro de document"
+
+msgid "Issue date"
+msgstr "Date d’émission"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Amount in French words"
+msgstr "Montant en lettres françaises"
+
+msgid "Net billable quantity"
+msgstr "Quantité nette facturable"
+
+msgid "Line total"
+msgstr "Total de la ligne"
+
+msgid "Allocated quantity"
+msgstr "Quantité affectée"
+
+msgid "Excluded return quantity"
+msgstr "Quantité retournée exclue"
+
+msgid "Credited quantity"
+msgstr "Quantité créditée"
+
+msgid "Pending"
+msgstr "En attente"
+
+msgid "Ready"
+msgstr "Prêt"
+
+msgid "Failed"
+msgstr "Échec"
+
+msgid "Actor"
+msgstr "Auteur"
+
+msgid "Administrator"
+msgstr "Administrateur"
+
+msgid "Audit metadata"
+msgstr "Métadonnées d’audit"
+
+msgid "Branding snapshot"
+msgstr "Instantané de l’identité visuelle"
+
+msgid "Checksum"
+msgstr "Somme de contrôle"
+
+msgid "Classification actor"
+msgstr "Auteur de la classification"
+
+msgid "Classification approval"
+msgstr "Approbation de classification"
+
+msgid "Classification at"
+msgstr "Date de classification"
+
+msgid "Company snapshot"
+msgstr "Instantané de l’entreprise"
+
+msgid "Company verification"
+msgstr "Vérification de l’entreprise"
+
+msgid "Company verifications"
+msgstr "Vérifications de l’entreprise"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Configuration snapshot"
+msgstr "Instantané de configuration"
+
+msgid "Content digest"
+msgstr "Empreinte du contenu"
+
+msgid "Created by"
+msgstr "Créé par"
+
+msgid "Description snapshot"
+msgstr "Instantané de la description"
+
+msgid "Details"
+msgstr "Détails"
+
+msgid "Document identifier"
+msgstr "Identifiant du document"
+
+msgid "Event type"
+msgstr "Type d’événement"
+
+msgid "File reference"
+msgstr "Référence du fichier"
+
+msgid "Finalized at"
+msgstr "Finalisé le"
+
+msgid "Finalized by"
+msgstr "Finalisé par"
+
+msgid "Issue allocation"
+msgstr "Affectation de sortie"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "Line"
+msgstr "Ligne"
+
+msgid "Material code snapshot"
+msgstr "Instantané du code matériel"
+
+msgid "Occurred at"
+msgstr "Date de l’événement"
+
+msgid "Out movement"
+msgstr "Mouvement de sortie"
+
+msgid "Position"
+msgstr "Position"
+
+msgid "Rendering status"
+msgstr "État du rendu"
+
+msgid "Rendering version"
+msgstr "Version du rendu"
+
+msgid "Request"
+msgstr "Demande"
+
+msgid "Request reference snapshot"
+msgstr "Instantané de la référence de demande"
+
+msgid "Return movement"
+msgstr "Mouvement de retour"
+
+msgid "Rounding policy"
+msgstr "Règle d’arrondi"
+
+msgid "Sequence"
+msgstr "Séquence"
+
+msgid "Sequence counter"
+msgstr "Compteur de séquence"
+
+msgid "Snapshot version"
+msgstr "Version de l’instantané"
+
+msgid "Succursale snapshot"
+msgstr "Instantané de la succursale"
+
+msgid "Unit price snapshot"
+msgstr "Instantané du prix unitaire"
+
+msgid "Unit snapshot"
+msgstr "Instantané de l’unité"
+
+msgid "Verification digest"
+msgstr "Empreinte de vérification"
+
+msgid "Verified by"
+msgstr "Vérifié par"
+
+msgid "Document sequence"
+msgstr "Séquence de documents"
+
+msgid "Document sequences"
+msgstr "Séquences de documents"
+
+msgid "Invoices"
+msgstr "Factures"
+
+msgid "Invoice line"
+msgstr "Ligne de facture"
+
+msgid "Invoice lines"
+msgstr "Lignes de facture"
+
+msgid "Invoice issue allocation"
+msgstr "Affectation de sortie à une facture"
+
+msgid "Invoice issue allocations"
+msgstr "Affectations de sortie à une facture"
+
+msgid "Invoice return exclusion"
+msgstr "Exclusion de retour de facturation"
+
+msgid "Invoice return exclusions"
+msgstr "Exclusions de retour de facturation"
+
+msgid "Credit notes"
+msgstr "Avoirs"
+
+msgid "Credit allocation"
+msgstr "Affectation d’avoir"
+
+msgid "Credit allocations"
+msgstr "Affectations d’avoir"
+
+msgid "Document artifact"
+msgstr "Fichier de document"
+
+msgid "Document artifacts"
+msgstr "Fichiers de document"
+
+msgid "Invoice audit event"
+msgstr "Événement d’audit de facture"
+
+msgid "Invoice audit events"
+msgstr "Événements d’audit de facture"
+
+msgid "A confirmed Microcom classification and succursale are required."
+msgstr "Une classification Microcom confirmée et une succursale sont requises."
+
+msgid "A unique positive OUT movement matching each material line is required. Administrator review is required."
+msgstr "Un mouvement OUT positif unique correspondant à chaque ligne de matériel est requis. Un administrateur doit examiner les données."
+
+msgid "All invoice lines must use the same supported currency."
+msgstr "Toutes les lignes de facture doivent utiliser la même devise prise en charge."
+
+msgid "An administrator must configure and verify the company information first."
+msgstr "Un administrateur doit d’abord configurer et vérifier les informations de l’entreprise."
+
+msgid "An administrator must configure and verify the invoice sequence for this business year and series."
+msgstr "Un administrateur doit configurer et vérifier la séquence de factures pour cette année métier et cette série."
+
+msgid "An administrator must verify the current company information before invoicing."
+msgstr "Un administrateur doit vérifier les informations actuelles de l’entreprise avant la facturation."
+
+msgid "Attest checked external numbering history"
+msgstr "Attester l’historique externe de numérotation vérifié"
+
+msgid "Attest current company information"
+msgstr "Attester les informations actuelles de l’entreprise"
+
+msgid "Can finalize invoices"
+msgstr "Peut finaliser les factures"
+
+msgid "Can manage invoices across stock-review assignments"
+msgstr "Peut gérer les factures de toutes les affectations de contrôle du stock"
+
+msgid "Company information attestation recorded."
+msgstr "Attestation des informations de l’entreprise enregistrée."
+
+msgid "Create invoice draft"
+msgstr "Créer une facture brouillon"
+
+msgid "Draft created"
+msgstr "Brouillon créé"
+
+msgid "Draft edited"
+msgstr "Brouillon modifié"
+
+msgid "Draft quantities refreshed"
+msgstr "Quantités du brouillon actualisées"
+
+msgid "Draft quantities refreshed from stock evidence. Review them before finalizing."
+msgstr "Quantités du brouillon actualisées à partir des mouvements de stock. Vérifiez-les avant la finalisation."
+
+msgid "Edit invoice draft"
+msgstr "Modifier la facture brouillon"
+
+msgid "Eligibility is checked before a draft is saved."
+msgstr "L’admissibilité est vérifiée avant l’enregistrement d’un brouillon."
+
+msgid "Enter an authorized unit price for every line. Explicit zero prices are allowed."
+msgstr "Saisissez un prix unitaire autorisé pour chaque ligne. Un prix nul explicite est accepté."
+
+msgid "Enter an exact nonnegative unit price with at most four decimal places."
+msgstr "Saisissez un prix unitaire exact, positif ou nul, avec au plus quatre décimales."
+
+msgid "Finalization permanently freezes the prices, quantities, company details and document number."
+msgstr "La finalisation fige définitivement les prix, les quantités, les informations de l’entreprise et le numéro du document."
+
+msgid "Finalize invoice"
+msgstr "Finaliser la facture"
+
+msgid "Finalized invoices are read-only."
+msgstr "Les factures finalisées sont en lecture seule."
+
+msgid "Financial allocation is ambiguous. Ask an administrator to review duplicate or missing material lines."
+msgstr "L’affectation financière est ambiguë. Demandez à un administrateur d’examiner les lignes de matériel répétées ou manquantes."
+
+msgid "Historical returns exceed the issued quantity. Administrator review is required."
+msgstr "Les retours historiques dépassent la quantité sortie. Un administrateur doit examiner les données."
+
+msgid "I confirm the prices and net quantities. Finalization is permanent."
+msgstr "Je confirme les prix et les quantités nettes. La finalisation est définitive."
+
+msgid "Invoice currency"
+msgstr "Devise de la facture"
+
+msgid "Invoice detail"
+msgstr "Détail de la facture"
+
+msgid "Invoice draft created. No document number has been allocated."
+msgstr "Facture brouillon créée. Aucun numéro de document n’a été attribué."
+
+msgid "Invoice draft saved."
+msgstr "Facture brouillon enregistrée."
+
+msgid "Invoice finalized"
+msgstr "Facture finalisée"
+
+msgid "Invoice finalized. Its number and financial snapshots are now permanent."
+msgstr "Facture finalisée. Son numéro et ses instantanés financiers sont désormais définitifs."
+
+msgid "Invoice history"
+msgstr "Historique de la facture"
+
+msgid "Invoice issuance requires the configured Africa/Kinshasa business timezone."
+msgstr "L’émission de factures nécessite le fuseau horaire métier Africa/Kinshasa configuré."
+
+msgid "Invoice note"
+msgstr "Note de facture"
+
+msgid "Invoice series"
+msgstr "Série de factures"
+
+msgid "Leave unknown prices blank. Zero is an explicit authorized price."
+msgstr "Laissez les prix inconnus vides. Zéro correspond à un prix autorisé explicite."
+
+msgid "No authorized invoices are available."
+msgstr "Aucune facture autorisée n’est disponible."
+
+msgid "Numbering history attestation recorded."
+msgstr "Attestation de l’historique de numérotation enregistrée."
+
+msgid "Only fully approved material requests with actual stock issuance can be invoiced."
+msgstr "Seules les demandes de matériel entièrement approuvées avec une sortie de stock réelle peuvent être facturées."
+
+msgid "Prices in another currency remain unknown. No currency conversion is performed."
+msgstr "Les prix dans une autre devise restent inconnus. Aucune conversion de devise n’est effectuée."
+
+msgid "Refresh issued quantities"
+msgstr "Actualiser les quantités sorties"
+
+msgid "Refresh quantities after new stock returns, then review the updated draft."
+msgstr "Actualisez les quantités après de nouveaux retours de stock, puis vérifiez le brouillon actualisé."
+
+msgid "Requests available for invoice review"
+msgstr "Demandes disponibles pour examen de facturation"
+
+msgid "Save draft prices"
+msgstr "Enregistrer les prix du brouillon"
+
+msgid "Select a supported invoice currency."
+msgstr "Sélectionnez une devise de facture prise en charge."
+
+msgid "Stock movement relationships are inconsistent. Administrator review is required."
+msgstr "Les liens entre mouvements de stock sont incohérents. Un administrateur doit examiner les données."
+
+msgid "Stock returns have changed the net quantities. Refresh and review the draft before finalizing."
+msgstr "Les retours de stock ont modifié les quantités nettes. Actualisez et vérifiez le brouillon avant la finalisation."
+
+msgid "The amount exceeds the supported financial range."
+msgstr "Le montant dépasse la plage financière prise en charge."
+
+msgid "The business year changed while waiting for numbering. Reload and try again; no number was consumed."
+msgstr "L’année métier a changé pendant l’attente de numérotation. Rechargez et réessayez ; aucun numéro n’a été consommé."
+
+msgid "The configured logo cannot be frozen safely. Administrator review is required."
+msgstr "Le logo configuré ne peut pas être figé en toute sécurité. Un administrateur doit l’examiner."
+
+msgid "The configured logo is unavailable. An administrator must review it."
+msgstr "Le logo configuré est indisponible. Un administrateur doit l’examiner."
+
+msgid "The designated first stock review must have confirmed this classification."
+msgstr "Le premier contrôle du stock désigné doit avoir confirmé cette classification."
+
+msgid "The document sequence has reached its supported limit. Administrator review is required."
+msgstr "La séquence de documents a atteint sa limite prise en charge. Un administrateur doit l’examiner."
+
+msgid "The invoice could not be saved safely. Reload it and ask an administrator to review its evidence or numbering configuration."
+msgstr "La facture n’a pas pu être enregistrée en toute sécurité. Rechargez-la et demandez à un administrateur d’examiner ses justificatifs ou sa configuration de numérotation."
+
+msgid "The invoice issue allocation is missing. Administrator review is required."
+msgstr "L’affectation de sortie de la facture est manquante. Un administrateur doit examiner les données."
+
+msgid "The invoice sequence requires administrator verification of external numbering history."
+msgstr "La séquence de factures nécessite une vérification administrative de l’historique externe de numérotation."
+
+msgid "The source material identities changed. Administrator review is required."
+msgstr "Les identités des matériels sources ont changé. Un administrateur doit examiner les données."
+
+msgid "The source movement identities changed. Administrator review is required."
+msgstr "Les identités des mouvements sources ont changé. Un administrateur doit examiner les données."
+
+msgid "The submitted invoice lines are invalid. Reload the draft."
+msgstr "Les lignes de facture soumises sont invalides. Rechargez le brouillon."
+
+msgid "The submitted invoice lines or note are invalid. Reload the draft."
+msgstr "Les lignes de facture ou la note soumises sont invalides. Rechargez le brouillon."
+
+msgid "This draft has changed or the form has expired. Reload it before continuing."
+msgstr "Ce brouillon a changé ou le formulaire a expiré. Rechargez-le avant de continuer."
+
+msgid "This finalized invoice is read-only. Its financial information is frozen."
+msgstr "Cette facture finalisée est en lecture seule. Ses informations financières sont figées."
+
+msgid "This invoice is outside your stock-review assignments."
+msgstr "Cette facture ne relève pas de vos affectations de contrôle du stock."
+
+msgid "This request already has an invoice."
+msgstr "Cette demande possède déjà une facture."
+
+msgid "Use a nonnegative amount with at most two decimal places."
+msgstr "Utilisez un montant positif ou nul avec au plus deux décimales."
+
+msgid "Use a supported PNG, JPEG or WebP company logo."
+msgstr "Utilisez un logo d’entreprise PNG, JPEG ou WebP pris en charge."
+
+msgid "Use an exact supported currency amount."
+msgstr "Utilisez un montant exact dans une devise prise en charge."
+
+msgid "You do not have permission to perform this invoice action."
+msgstr "Vous n’avez pas l’autorisation d’effectuer cette action sur la facture."
+
+msgid "Audit details"
+msgstr "Détails de l’audit"
+
+msgid "Material request reference"
+msgstr "Référence de la demande de matériel"
+
+msgid "Total amount payable"
+msgstr "Montant total à payer"
+
+msgid "Stock Department"
+msgstr "Service Stock"
+
+msgid "Download English PDF"
+msgstr "Télécharger le PDF en anglais"
+
+msgid "Download French PDF"
+msgstr "Télécharger le PDF en français"
+
+msgid "Invoice PDF"
+msgstr "PDF de la facture"
+
+msgid "Choose English or French for the PDF."
+msgstr "Choisissez l’anglais ou le français pour le PDF."
+
+msgid "The frozen invoice contains characters unsupported by the PDF font. Administrator review is required."
+msgstr "La facture figée contient des caractères non pris en charge par la police PDF. Un administrateur doit examiner les données."
+
+msgid "The frozen company logo is incomplete or damaged. Administrator review is required."
+msgstr "Le logo figé de l’entreprise est incomplet ou endommagé. Un administrateur doit examiner les données."
+
+msgid "The private PDF is unavailable or damaged. Generate it again."
+msgstr "Le PDF privé est indisponible ou endommagé. Générez-le à nouveau."
+
+msgid "The finalized invoice snapshot is incomplete. Administrator review is required."
+msgstr "L’instantané de la facture finalisée est incomplet. Un administrateur doit examiner les données."
+
+msgid "Generate the PDF only after invoice finalization has committed."
+msgstr "Générez le PDF uniquement après la validation définitive de la transaction de finalisation."
+
+msgid "Only finalized invoices have PDFs."
+msgstr "Seules les factures finalisées disposent de PDF."
+
+msgid "PDF generation failed. Retry rendering; the finalized invoice is unchanged."
+msgstr "La génération du PDF a échoué. Relancez le rendu ; la facture finalisée reste inchangée."
+
+msgid "Comments"
+msgstr "Commentaires"
+
+msgid "Page"
+msgstr "Page"
+
+msgid "Released credit reservations are immutable."
+msgstr "Les réservations d’avoir libérées sont immuables."
+
+msgid "Credit creation token"
+msgstr "Jeton de création d’avoir"
+
+msgid "Reservation revision"
+msgstr "Révision des réservations"
+
+msgid "Reviewed revision"
+msgstr "Révision examinée"
+
+msgid "Reviewed by"
+msgstr "Examiné par"
+
+msgid "Reviewed at"
+msgstr "Examiné le"
+
+msgid "Review operation"
+msgstr "Opération de vérification"
+
+msgid "Reservation released at"
+msgstr "Réservation libérée le"
+
+msgid "Release operation"
+msgstr "Opération de libération"
+
+msgid "Create credit draft"
+msgstr "Créer un brouillon d’avoir"
+
+msgid "Reserve credit"
+msgstr "Réserver un avoir"
+
+msgid "Rebalance credit reservations"
+msgstr "Rééquilibrer les réservations d’avoir"
+
+msgid "Release credit reservation"
+msgstr "Libérer une réservation d’avoir"
+
+msgid "Review credit amounts"
+msgstr "Examiner les montants de l’avoir"
+
+msgid "Finalize credit note"
+msgstr "Finaliser l’avoir"
+
+msgid "Can finalize credit notes"
+msgstr "Peut finaliser les avoirs"
+
+msgid "Operation kind"
+msgstr "Type d’opération"
+
+msgid "Operation reason"
+msgstr "Motif de l’opération"
+
+msgid "Operation payload"
+msgstr "Données de l’opération"
+
+msgid "Database transaction"
+msgstr "Transaction de base de données"
+
+msgid "Credit operation"
+msgstr "Opération d’avoir"
+
+msgid "Credit operations"
+msgstr "Opérations d’avoir"
+
+msgid "A credit operation reason is required."
+msgstr "Un motif d’opération d’avoir est requis."
+
+msgid "An active credit operation actor is required."
+msgstr "Un acteur actif est requis pour l’opération d’avoir."
+
+msgid "Previous reserved amount"
+msgstr "Montant réservé précédent"
+
+msgid "New reserved amount"
+msgstr "Nouveau montant réservé"
+
+msgid "Previous reserved quantity"
+msgstr "Quantité réservée précédente"
+
+msgid "New reserved quantity"
+msgstr "Nouvelle quantité réservée"
+
+msgid "Credit reservation audit"
+msgstr "Audit de réservation d’avoir"
+
+msgid "Credit reservation audits"
+msgstr "Audits des réservations d’avoir"
+
+msgid "Material return note"
+msgstr "Bon de retour"
+
+msgid "Material return notes"
+msgstr "Bons de retour"
+
+msgid "Material return note audit"
+msgstr "Audit de bon de retour"
+
+msgid "Material return note audits"
+msgstr "Audits de bons de retour"
+
+msgid "Material return note line"
+msgstr "Ligne de bon de retour"
+
+msgid "Material return note lines"
+msgstr "Lignes de bon de retour"
+
+msgid "Material return note artifact"
+msgstr "Document de bon de retour"
+
+msgid "Material return note artifacts"
+msgstr "Documents de bons de retour"
+
+msgid "A material return note reason is required."
+msgstr "Un motif de bon de retour est requis."
+
+msgid "An active material return note actor is required."
+msgstr "Un acteur actif est requis pour le bon de retour."
+
+msgid "Return note issuance token"
+msgstr "Jeton d’émission du bon de retour"
+
+msgid "Issuance audit"
+msgstr "Audit d’émission"
+
+msgid "Original invoice snapshot"
+msgstr "Instantané de la facture d’origine"
+
+msgid "Cumulative documented return value"
+msgstr "Valeur cumulée des retours documentés"
+
+msgid "Adjusted net material value"
+msgstr "Valeur nette ajustée des matériaux"
+
+msgid "Can issue material return notes"
+msgstr "Peut émettre des bons de retour"
+
+msgid "Can view protected material return note documents"
+msgstr "Peut consulter les documents protégés des bons de retour"
+
+msgid "Returned quantity"
+msgstr "Quantité retournée"
+
+msgid "Returned value"
+msgstr "Valeur retournée"
+
+msgid "You do not have permission to perform this material return note action."
+msgstr "Vous n’avez pas l’autorisation d’effectuer cette action sur un bon de retour."
+
+msgid "This material return note is outside your stock-review assignments."
+msgstr "Ce bon de retour ne relève pas de vos affectations de contrôle du stock."
+
+msgid "The material return note confirmation is invalid, expired or changed. Preview it again."
+msgstr "La confirmation du bon de retour est invalide, expirée ou modifiée. Prévisualisez-le à nouveau."
+
+msgid "The material return note could not be issued safely. Reload and ask an administrator to review the evidence or numbering."
+msgstr "Le bon de retour n’a pas pu être émis en toute sécurité. Rechargez et demandez à un administrateur de vérifier les justificatifs ou la numérotation."
+
+msgid "Select distinct complete stock RETURN movements."
+msgstr "Sélectionnez des mouvements de retour au stock entiers et distincts."
+
+msgid "Enter a material return note reason of at most 2000 characters."
+msgstr "Saisissez un motif de bon de retour de 2000 caractères au maximum."
+
+msgid "Select a valid material return note numbering series."
+msgstr "Sélectionnez une série de numérotation valide pour le bon de retour."
+
+msgid "Material return note services require their own outermost transaction."
+msgstr "Les services de bon de retour nécessitent leur propre transaction principale."
+
+msgid "Material return note issuance requires READ COMMITTED isolation."
+msgstr "L’émission d’un bon de retour nécessite le niveau d’isolation READ COMMITTED."
+
+msgid "Material return notes require a finalized internal invoice."
+msgstr "Les bons de retour nécessitent une facture interne finalisée."
+
+msgid "Active credit allocations block material return notes for this invoice. Administrator review is required."
+msgstr "Des affectations d’avoir actives bloquent les bons de retour pour cette facture. Une vérification par un administrateur est requise."
+
+msgid "The RETURN movement has ineligible or ambiguous historical provenance. Administrator review is required."
+msgstr "Le mouvement de retour a une provenance historique non admissible ou ambiguë. Une vérification par un administrateur est requise."
+
+msgid "A selected RETURN movement has already been documented."
+msgstr "Un mouvement de retour sélectionné a déjà été documenté."
+
+msgid "The selected returns exceed the original invoice quantity or value."
+msgstr "Les retours sélectionnés dépassent la quantité ou la valeur de la facture d’origine."
+
+msgid "An administrator must configure and verify the material return note sequence for this business year and series."
+msgstr "Un administrateur doit configurer et vérifier la séquence des bons de retour pour cet exercice et cette série."
+
+msgid "The material return note numbering sequence requires administrator verification."
+msgstr "La séquence de numérotation des bons de retour doit être vérifiée par un administrateur."
+
+msgid "Returned materials"
+msgstr "Matériaux retournés"
+
+msgid "Select at least one eligible complete RETURN movement."
+msgstr "Sélectionnez au moins un mouvement de retour entier et admissible."
+
+msgid "Return note series"
+msgstr "Série du bon de retour"
+
+msgid "I confirm this returned-material valuation. Issuance is permanent."
+msgstr "Je confirme cette valorisation des matériaux retournés. L’émission est définitive."
+
+msgid "The confirmation could not be stored safely. Ask an administrator to review session storage."
+msgstr "La confirmation n’a pas pu être conservée en toute sécurité. Demandez à un administrateur de vérifier le stockage des sessions."
+
+msgid "The return note document is unavailable. Ask an administrator to review private storage."
+msgstr "Le document du bon de retour est indisponible. Demandez à un administrateur de vérifier le stockage privé."
+
+msgid "Confirm the preview before issuing the material return note."
+msgstr "Confirmez l’aperçu avant d’émettre le bon de retour."
+
+msgid "This preview is unavailable. Check the invoice return-note history before starting a new preview."
+msgstr "Cet aperçu est indisponible. Consultez l’historique des bons de retour de la facture avant de créer un nouvel aperçu."
+
+msgid "Material return note issued. The original invoice and stock records are unchanged."
+msgstr "Bon de retour émis. La facture d’origine et les écritures de stock restent inchangées."
+
+msgid "The finalized material return note snapshot is incomplete. Administrator review is required."
+msgstr "L’instantané du bon de retour émis est incomplet. Une vérification par un administrateur est requise."
+
+msgid "Generate the PDF only after material return note issuance has committed."
+msgstr "Générez le PDF uniquement après la validation de la transaction d’émission du bon de retour."
+
+msgid "PDF generation failed. Retry rendering; the issued material return note is unchanged."
+msgstr "La génération du PDF a échoué. Réessayez le rendu ; le bon de retour émis reste inchangé."
+
+msgid "The frozen material return note contains characters unsupported by the PDF font. Administrator review is required."
+msgstr "Le bon de retour figé contient des caractères non pris en charge par la police du PDF. Une vérification par un administrateur est requise."
+
+msgid "Original invoice"
+msgstr "Facture d’origine"
+
+msgid "Internal valuation of materials already returned to stock. No payment, refund or credit adjustment."
+msgstr "Valorisation interne des matériaux déjà retournés au stock. Aucun ajustement de paiement, de remboursement ou d’avoir."
+
+msgid "Original unit price"
+msgstr "Prix unitaire d’origine"
+
+msgid "Returned value on this note"
+msgstr "Valeur retournée sur ce bon"
+
+msgid "Original invoice value"
+msgstr "Valeur de la facture d’origine"
+
+msgid "Cumulative returned value as of this note"
+msgstr "Valeur cumulée des retours à la date de ce bon"
+
+msgid "Adjusted net material value as of this note"
+msgstr "Valeur nette ajustée des matériaux à la date de ce bon"
+
+msgid "Material return note history"
+msgstr "Historique des bons de retour"
+
+msgid "Issue material return note"
+msgstr "Émettre un bon de retour"
+
+msgid "A material return note can optionally value returns already recorded in stock."
+msgstr "Un bon de retour peut, sur demande, valoriser des retours déjà enregistrés en stock."
+
+msgid "Back to invoice"
+msgstr "Retour à la facture"
+
+msgid "This optional document values materials already returned to stock. It does not change inventory or create a credit or payment adjustment."
+msgstr "Ce document facultatif valorise des matériaux déjà retournés au stock. Il ne modifie pas le stock et ne crée aucun avoir ni ajustement de paiement."
+
+msgid "No eligible undocumented returns are available. Existing return notes remain accessible from the history."
+msgstr "Aucun retour admissible non documenté n’est disponible. Les bons de retour existants restent accessibles dans l’historique."
+
+msgid "Select"
+msgstr "Sélectionner"
+
+msgid "Select return"
+msgstr "Sélectionner le retour"
+
+msgid "Eligibility"
+msgstr "Admissibilité"
+
+msgid "Eligible"
+msgstr "Admissible"
+
+msgid "No stock returns have been recorded for this invoice."
+msgstr "Aucun retour au stock n’a été enregistré pour cette facture."
+
+msgid "Preview material return note"
+msgstr "Prévisualiser le bon de retour"
+
+msgid "Change selection"
+msgstr "Modifier la sélection"
+
+msgid "Review the complete returned quantities and frozen prices. No document number has been allocated."
+msgstr "Vérifiez les quantités retournées entières et les prix figés. Aucun numéro de document n’a été attribué."
+
+msgid "Your session may expire before the two-hour confirmation limit. If a response is lost, check the return-note history before starting again."
+msgstr "Votre session peut expirer avant la limite de confirmation de deux heures. En cas de réponse perdue, consultez l’historique des bons de retour avant de recommencer."
+
+msgid "No material return notes have been issued for this invoice."
+msgstr "Aucun bon de retour n’a été émis pour cette facture."
+
+msgid "Material return note unavailable"
+msgstr "Bon de retour indisponible"
+
+msgid "Preview again"
+msgstr "Prévisualiser à nouveau"
+
+msgid "Pages"
+msgstr "Pages"
+
+msgid "This confirmation is missing, malformed, expired or overwritten. Check issued-note history. A new preview is a different operation, not a retry of the previous one."
+msgstr "Cette confirmation est absente, invalide, expirée ou remplacée. Consultez l’historique des bons émis. Un nouvel aperçu est une autre opération, et non une nouvelle tentative de la précédente."
+
+msgid "The PDF could not be prepared because storage or the document service is temporarily unavailable. Retry PDF only; the issued note is unchanged."
+msgstr "Le PDF n’a pas pu être préparé car le stockage ou le service documentaire est temporairement indisponible. Réessayez uniquement le PDF ; le bon émis reste inchangé."
+
+msgid "The PDF cannot be rendered safely. Ask an administrator to review the frozen snapshot, font or private storage configuration. The issued note is unchanged."
+msgstr "Le PDF ne peut pas être généré en toute sécurité. Demandez à un administrateur de vérifier l’instantané figé, la police ou la configuration du stockage privé. Le bon émis reste inchangé."
+
+msgid "This physical return predates or coincides with facture finalization. It cannot be valued again by a material return note."
+msgstr "Ce retour physique précède la finalisation de la facture ou coïncide avec celle-ci. Il ne peut pas être valorisé à nouveau par un bon de retour."
+
+msgid "The previous issuance may have completed. Check history or retry the same confirmation. Do not start a new operation to recover this response."
+msgstr "L’émission précédente a peut-être abouti. Consultez l’historique ou réessayez avec la même confirmation. Ne lancez pas une nouvelle opération pour récupérer cette réponse."
+
+msgid "Material return note valuation requires a finalized internal facture. Recording a physical return does not create a facture or a return note."
+msgstr "La valorisation par bon de retour nécessite une facture interne finalisée. L’enregistrement d’un retour physique ne crée ni facture ni bon de retour."
+
+msgid "Retry same confirmation"
+msgstr "Réessayer avec la même confirmation"
+
+msgid "This retry reuses the original operation. It does not create a new confirmation or issuance token."
+msgstr "Cette nouvelle tentative réutilise l’opération d’origine. Elle ne crée aucune nouvelle confirmation ni aucun nouveau jeton d’émission."
+
+msgid "Return to issued note"
+msgstr "Retour au bon émis"
+
+msgid "Retry PDF"
+msgstr "Réessayer le PDF"
+
+msgid "Retry PDF renders the existing issued note only. It never issues another return note."
+msgstr "Réessayer le PDF génère uniquement le document du bon déjà émis. Aucun autre bon de retour n’est émis."
+
+msgid "Start new preview (different operation)"
+msgstr "Créer un nouvel aperçu (autre opération)"
+
+msgid "Issued at (business timezone)"
+msgstr "Émis le (fuseau horaire métier)"
+
+msgid "Documented movements"
+msgstr "Mouvements documentés"
+
+msgid "additional movements; open note for full details"
+msgstr "mouvements supplémentaires ; ouvrez le bon pour consulter tous les détails"
+
+msgid "Physical address"
+msgstr "Adresse physique"
+
+msgid "Required for new succursales and future invoice issuance. Existing blank addresses may be completed later."
+msgstr "Obligatoire pour les nouvelles succursales et l’émission de futures factures. Les adresses existantes vides peuvent être complétées ultérieurement."
+
+msgid "Enter a physical address for a new succursale."
+msgstr "Saisissez une adresse physique pour une nouvelle succursale."
+
+msgid "Enter the succursale physical address before finalizing this invoice."
+msgstr "Saisissez l’adresse physique de la succursale avant de finaliser cette facture."
+
+msgid "Succursale physical address"
+msgstr "Adresse physique de la succursale"
+
+msgid "Draft #%(draft_id)s"
+msgstr "Brouillon n° %(draft_id)s"
+
+msgid "Provisional"
+msgstr "Provisoire"
+
+msgid "Incomplete pricing"
+msgstr "Tarification incomplète"
+
+msgid "%(amount)s %(currency)s"
+msgstr "%(amount)s %(currency)s"
+
+msgid "%(material)s — %(change)s; Quantity: %(quantity)s; Unit price: %(price)s"
+msgstr "%(material)s — %(change)s ; Quantité : %(quantity)s ; Prix unitaire : %(price)s"
+
+msgid "%(material)s — Currency: %(before)s → %(after)s"
+msgstr "%(material)s — Devise : %(before)s → %(after)s"
+
+msgid "%(material)s — Quantity: %(before)s → %(after)s"
+msgstr "%(material)s — Quantité : %(before)s → %(after)s"
+
+msgid "%(material)s — Quantity: %(quantity)s; Unit price: %(price)s"
+msgstr "%(material)s — Quantité : %(quantity)s ; Prix unitaire : %(price)s"
+
+msgid "%(material)s — Unit price: %(before)s → %(after)s"
+msgstr "%(material)s — Prix unitaire : %(before)s → %(after)s"
+
+msgid "Current invoice-line label: %(name)s (line #%(line)s)"
+msgstr "Libellé actuel de la ligne de facture : %(name)s (ligne n° %(line)s)"
+
+msgid "Document number: %(number)s"
+msgstr "Numéro de document : %(number)s"
+
+msgid "Draft created in %(currency)s. Values below were recorded at creation."
+msgstr "Brouillon créé en %(currency)s. Les valeurs ci-dessous ont été enregistrées à la création."
+
+msgid "Empty"
+msgstr "Vide"
+
+msgid "Invoice finalized with its recorded reference and total."
+msgstr "Facture finalisée avec sa référence et son total enregistrés."
+
+msgid "Invoice line #%(line)s"
+msgstr "Ligne de facture n° %(line)s"
+
+msgid "Invoice note: %(before)s → %(after)s"
+msgstr "Note de facture : %(before)s → %(after)s"
+
+msgid "Issue date: %(date)s"
+msgstr "Date d’émission : %(date)s"
+
+msgid "Line added"
+msgstr "Ligne ajoutée"
+
+msgid "Line removed"
+msgstr "Ligne supprimée"
+
+msgid "No recorded quantity or price changes."
+msgstr "Aucun changement enregistré de quantité ou de prix."
+
+msgid "Not priced"
+msgstr "Prix non renseigné"
+
+msgid "Other invoice event"
+msgstr "Autre événement de facture"
+
+msgid "Readable details are unavailable for this historical event. Original audit evidence is preserved."
+msgstr "Les détails lisibles de cet événement historique sont indisponibles. Les données d’audit originales sont conservées."
+
+msgid "Recorded changes (before → after)."
+msgstr "Changements enregistrés (avant → après)."
+
+msgid "Refresh completed without recorded quantity or price changes."
+msgstr "Actualisation terminée sans changement enregistré de quantité ou de prix."
+
+msgid "Total: %(amount)s %(currency)s"
+msgstr "Total : %(amount)s %(currency)s"
+
+msgid "No invoice history available."
+msgstr "Aucun historique de facture disponible."
+
+msgid "Print Invoice"
+msgstr "Imprimer la facture"
+
+msgid "Select up to %(limit)s finalized invoices to print."
+msgstr "Sélectionnez au maximum %(limit)s factures finalisées à imprimer."
+
+msgid "Select invoice %(number)s"
+msgstr "Sélectionner la facture %(number)s"
+
+msgid "Select at least one finalized invoice to print."
+msgstr "Sélectionnez au moins une facture finalisée à imprimer."
+
+msgid "Select no more than %(limit)s invoices to print."
+msgstr "Ne sélectionnez pas plus de %(limit)s factures à imprimer."
+
+msgid "The invoice selection is invalid. Return to the invoice list and select again."
+msgstr "La sélection de factures est invalide. Revenez à la liste et recommencez la sélection."
+
+msgid "The selected invoices exceed the printing size limit. Print a smaller selection."
+msgstr "Les factures sélectionnées dépassent la taille maximale d’impression. Imprimez une sélection plus petite."
+
+msgid "The selected invoices exceed the printing page limit. Print a smaller selection."
+msgstr "Les factures sélectionnées dépassent le nombre maximal de pages. Imprimez une sélection plus petite."
+
+msgid "The combined invoice PDF could not be prepared. Try a smaller selection or ask an administrator for help."
+msgstr "Le PDF regroupant les factures n’a pas pu être préparé. Essayez une sélection plus petite ou contactez un administrateur."
+
+msgid "Only finalized invoices can be printed."
+msgstr "Seules les factures finalisées peuvent être imprimées."
+
+msgid "Invoice printing is unavailable. Ask an administrator to review private document storage and printing configuration."
+msgstr "L’impression des factures est indisponible. Demandez à un administrateur de vérifier le stockage privé des documents et la configuration d’impression."
+
+msgid "Invoice number, request reference, succursale..."
+msgstr "Numéro de facture, référence de demande, succursale..."
+
+msgid "Enter a valid issue date in YYYY-MM-DD format."
+msgstr "Saisissez une date d’émission valide au format AAAA-MM-JJ."
+
+msgid "Enter both issue dates before printing filtered invoices."
+msgstr "Saisissez les deux dates d’émission avant d’imprimer les factures filtrées."
+
+msgid "Select a valid invoice status."
+msgstr "Sélectionnez un statut de facture valide."
+
+msgid "The From date must not be after the To date."
+msgstr "La date de début ne doit pas être postérieure à la date de fin."
+
+msgid "No finalized invoices match these filters."
+msgstr "Aucune facture finalisée ne correspond à ces filtres."
+
+msgid "More than %(limit)s finalized invoices match these filters. Narrow the date range or search before printing."
+msgstr "Plus de %(limit)s factures finalisées correspondent à ces filtres. Affinez la période ou la recherche avant d’imprimer."
+
+msgid "Dates filter official invoice issue dates. Drafts have no issue date and are excluded by date filters."
+msgstr "Les dates filtrent les dates officielles d’émission des factures. Les brouillons n’ont pas de date d’émission et sont exclus par les filtres de date."
+
+msgid "Print Filtered Invoices"
+msgstr "Imprimer les factures filtrées"
+
+msgid "Apply both issue dates first. Print all matching finalized invoices across all pages, up to %(limit)s invoices."
+msgstr "Appliquez d’abord les deux dates d’émission. Imprimez toutes les factures finalisées correspondantes, sur toutes les pages, dans la limite de %(limit)s factures."
+
+msgid "All"
+msgstr "Tous"
+
+msgid "Invoice preparation requires Africa/Kinshasa."
+msgstr "La préparation des factures exige le fuseau Africa/Kinshasa."
+
+msgid "The following business year is outside the supported range."
+msgstr "L’année suivante dépasse la plage autorisée."
+
+msgid "Preparation failed. Review company and sequence configuration."
+msgstr "Échec de la préparation. Vérifiez la configuration de l’entreprise et des séquences."
+
+msgid "Prepared"
+msgstr "Préparées"
+
+msgid "Already existing"
+msgstr "Déjà existantes"
+
+msgid "Unverified: administrator attestation required"
+msgstr "Non vérifiées : attestation d’un administrateur requise"
+
+msgid "Potential numbering conflict: %(left)s / %(right)s"
+msgstr "Conflit potentiel de numérotation : %(left)s / %(right)s"
+
+msgid "No sequences prepared. Resolve conflicting formats first."
+msgstr "Aucune séquence préparée. Résolvez d’abord les conflits de formats."
+
+msgid "No verified current-year invoice series found."
+msgstr "Aucune série de factures vérifiée pour l’année en cours."
+
+msgid "Client: %(name)s"
+msgstr "Client : %(name)s"
+
+msgid "Reference namespace"
+msgstr "Espace de numérotation"
+
+msgid "Use 1–16 uppercase letters or digits, starting with a letter."
+msgstr "Utilisez 1 à 16 lettres majuscules ou chiffres, en commençant par une lettre."
+
+msgid "Assigned automatically on first creation; immutable once assigned. ADM and MAT are reserved."
+msgstr "Attribué automatiquement à la première création ; immuable ensuite. ADM et MAT sont réservés."
+
+msgid "This request type needs a distinct reference namespace. Ask an administrator."
+msgstr "Ce type de demande nécessite un espace de numérotation distinct. Contactez un administrateur."
+
+msgid "This request type needs a valid reference namespace. Ask an administrator."
+msgstr "Ce type de demande nécessite un espace de numérotation valide. Contactez un administrateur."
+
+msgid "The request reference is outside the supported range."
+msgstr "La référence de demande dépasse la plage autorisée."
+
+msgid "Invalid request creation confirmation."
+msgstr "Confirmation de création de demande invalide."
+
+msgid "This confirmation was used for different request data. Open a new creation form."
+msgstr "Cette confirmation a été utilisée avec des données différentes. Ouvrez un nouveau formulaire de création."
+
+msgid "Request reference allocation requires a PostgreSQL transaction."
+msgstr "L’attribution d’une référence de demande nécessite une transaction PostgreSQL."
+
+msgid "The request sequence is exhausted. Administrator review is required."
+msgstr "La séquence de demandes est épuisée. Un administrateur doit intervenir."
+
+msgid "The request could not be saved safely. Retry the same form or ask an administrator to review reference configuration."
+msgstr "La demande n’a pas pu être enregistrée en toute sécurité. Réessayez le même formulaire ou demandez à un administrateur de vérifier la configuration des références."
+
+msgid "The administration and material reference types must be distinct."
+msgstr "Les types de référence administration et matériel doivent être distincts."
+
+msgid "ADM and MAT are reserved for their canonical request types. The configured namespace does not match this type."
+msgstr "ADM et MAT sont réservés à leurs types de demande respectifs. L’espace de numérotation configuré ne correspond pas à ce type."
+
+msgid "An assigned request reference namespace cannot be changed."
+msgstr "Un espace de numérotation déjà attribué ne peut pas être modifié."
+
+msgid "We could not verify the previous submission. Keep the original form and retry the same data and attachments. Do not start a new request to recover this submission."
+msgstr "Nous n’avons pas pu vérifier l’envoi précédent. Conservez le formulaire d’origine et réessayez avec les mêmes données et pièces jointes. Ne créez pas une nouvelle demande pour récupérer cet envoi."
+
+msgid "Your account is not linked to any department."
+msgstr "Votre compte n’est lié à aucun département."
+
+msgid "Material Order"
+msgstr "Bon de commande"
+
+msgid "Print BC — Material Order"
+msgstr "Imprimer BC — Bon de commande"
+
+msgid "Print BS — Material Exit Slip"
+msgstr "Imprimer BS — Bon de sortie"
+
+msgid "Document No:"
+msgstr "N° du document :"
+
+msgid "Prepare and print"
+msgstr "Préparer et imprimer"
+
+msgid "Prepare this document's permanent reference and open its print view. Stock will not change."
+msgstr "Attribuez la référence permanente de ce document et ouvrez son aperçu d’impression. Le stock ne sera pas modifié."
+
+msgid "Invalid material document reference."
+msgstr "Référence de document matériel invalide."
+
+msgid "Material document numbering requires PostgreSQL."
+msgstr "La numérotation des documents matériels nécessite PostgreSQL."
+
+msgid "The material document sequence is exhausted. Ask an administrator."
+msgstr "La séquence des documents matériels est épuisée. Contactez un administrateur."
+
+msgid "Material documents require final approval and confirmed stock deduction."
+msgstr "Les documents matériels nécessitent une approbation finale et une déduction de stock confirmée."
+
+msgid "The material document could not be issued safely. Retry the same document."
+msgstr "Le document matériel n’a pas pu être émis en toute sécurité. Réessayez le même document."
+
+msgid "You are not allowed to view this document."
+msgstr "Vous n’êtes pas autorisé à consulter ce document."
+
+msgid "Request Classification"
+msgstr "Classification de la demande"
+
+msgid "BC Reference"
+msgstr "Référence BC"
+
+msgid "BS Reference"
+msgstr "Référence BS"
+
+msgid "Missing Information"
+msgstr "Informations manquantes"
+
+msgid "Not applicable"
+msgstr "Sans objet"
+
+msgid "Missing succursale"
+msgstr "Succursale manquante"
+
+msgid "Classification unavailable"
+msgstr "Classification indisponible"
+
+msgid "%(kind)s not issued"
+msgstr "%(kind)s non émis"
+
+msgid "Not issued"
+msgstr "Non émis"
+
+msgid "Complete"
+msgstr "Complet"
+
+msgid "Stock Movements"
+msgstr "Mouvements de stock"
+
+msgid "Stock movement scope"
+msgstr "Périmètre des mouvements de stock"
+
+msgid "Movements linked to the filtered approved requests. Unlinked movements appear only without request filters. Times: Africa/Kinshasa."
+msgstr "Mouvements liés aux demandes approuvées filtrées. Les mouvements sans demande liée apparaissent uniquement sans filtre de demande. Heures : Africa/Kinshasa."
+
+msgid "Movement Date (Africa/Kinshasa)"
+msgstr "Date du mouvement (Africa/Kinshasa)"
+
+msgid "Movement Type"
+msgstr "Type de mouvement"
+
+msgid "No linked request"
+msgstr "Aucune demande liée"
+
+msgid "Actor unavailable"
+msgstr "Auteur indisponible"
+
+msgid "Stock Out"
+msgstr "Sortie de stock"
+
+msgid "Stock In"
+msgstr "Entrée de stock"
+
+msgid "Invalid report filters. Use valid dates and a valid department; the start date must not exceed the end date."
+msgstr "Filtres de rapport invalides. Utilisez des dates et un département valides ; la date de début ne doit pas dépasser la date de fin."
+
+msgid "The start date must not be after the end date."
+msgstr "La date de début ne doit pas dépasser la date de fin."
+
+msgid "The Excel export limit is invalid. Ask an administrator."
+msgstr "La limite d’export Excel est invalide. Contactez un administrateur."
+
+msgid "The Excel export exceeds %(limit)s rows. Narrow the filters and try again."
+msgstr "L’export Excel dépasse %(limit)s lignes. Affinez les filtres et réessayez."
+
+msgid "Excel dates use Africa/Kinshasa. Date filters apply to Date Needed. Movements follow the selected approved requests; unlinked movements appear only without request filters."
+msgstr "Les dates Excel utilisent Africa/Kinshasa. Les filtres de date portent sur la date requise. Les mouvements suivent les demandes approuvées sélectionnées ; les mouvements sans demande liée apparaissent uniquement sans filtre de demande."
+
+msgid "The workbook exceeds the export row limit. Narrow the filters and try again."
+msgstr "Le classeur dépasse la limite de lignes d’export. Affinez les filtres et réessayez."
+
+msgid "Frozen succursale unavailable"
+msgstr "Succursale figée indisponible"
+
+msgid "Unit unavailable"
+msgstr "Unité indisponible"
+
+msgid "Date unavailable"
+msgstr "Date indisponible"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "No finalized valuation"
+msgstr "Aucune valorisation finalisée"
+
+msgid "Missing frozen lines"
+msgstr "Lignes figées manquantes"
+
+msgid "Frozen price unavailable"
+msgstr "Prix figé indisponible"
+
+msgid "Bookkeeping"
+msgstr "Comptabilité interne"
+
+msgid "Invoice Reference"
+msgstr "Référence de facture"
+
+msgid "Invoice Issue Date"
+msgstr "Date d’émission de facture"
+
+msgid "Frozen Material"
+msgstr "Matériel figé"
+
+msgid "Material Category (current)"
+msgstr "Catégorie de matériel (actuelle)"
+
+msgid "Net Quantity"
+msgstr "Quantité nette"
+
+msgid "Frozen Unit"
+msgstr "Unité figée"
+
+msgid "Frozen Unit Price"
+msgstr "Prix unitaire figé"
+
+msgid "Stored Line Total"
+msgstr "Total de ligne enregistré"
+
+msgid "Bookkeeping Status"
+msgstr "Statut comptable"
+
+msgid "Authorized finalized invoice evidence only. Later returns and credits are not netted. Categories are current; invoice amounts and branch names are frozen."
+msgstr "Uniquement les justificatifs de factures finalisées autorisées. Les retours et crédits ultérieurs ne sont pas déduits. Les catégories sont actuelles ; les montants et noms de succursale des factures sont figés."
+
+msgid "Relevant Requests"
+msgstr "Demandes concernées"
+
+msgid "Materials Issued"
+msgstr "Matériels sortis"
+
+msgid "Missing Stock Information"
+msgstr "Informations de stock manquantes"
+
+msgid "Quantity Issued"
+msgstr "Quantité sortie"
+
+msgid "Known Authorized Invoice Totals"
+msgstr "Totaux connus des factures autorisées"
+
+msgid "No Finalized Valuation (requests)"
+msgstr "Demandes sans valorisation finalisée"
+
+msgid "Missing Frozen Values"
+msgstr "Valeurs figées manquantes"
+
+msgid "Material Count"
+msgstr "Nombre de matériels"
+
+msgid "Movement Count"
+msgstr "Nombre de mouvements"
+
+msgid "Available Central Stock"
+msgstr "Stock central disponible"
+
+msgid "Known Authorized Stored Line Totals"
+msgstr "Totaux de lignes enregistrés autorisés et connus"
+
+msgid "Approved Material Requests"
+msgstr "Demandes de matériel approuvées"
+
+msgid "BC Documents"
+msgstr "Documents BC"
+
+msgid "BS Documents"
+msgstr "Documents BS"
+
+msgid "Grouping"
+msgstr "Regroupement"
+
+msgid "Measure"
+msgstr "Indicateur"
+
+msgid "Unit / Currency"
+msgstr "Unité / Devise"
+
+msgid "Value"
+msgstr "Valeur"
+
+msgid "Separate measures: never add incompatible units or currencies. Issued quantities use recorded OUT movements; stock is central, not held by succursales."
+msgstr "Indicateurs séparés : ne jamais additionner des unités ou devises incompatibles. Les quantités sorties proviennent des mouvements OUT enregistrés ; le stock est central, pas détenu par les succursales."
+
+msgid "Succursale Summary"
+msgstr "Synthèse par succursale"
+
+msgid "Material Group Summary"
+msgstr "Synthèse par groupe matériel"
+
+msgid "Categories and available stock are current; each material balance is counted once."
+msgstr "Les catégories et le stock disponible sont actuels ; chaque solde de matériel est compté une seule fois."
+
+msgid "Monthly Statistics"
+msgstr "Statistiques mensuelles"
+
+msgid "Africa/Kinshasa: requests by approval time, movements by movement time, BC/BS by issuance time; invoices by official issue date."
+msgstr "Africa/Kinshasa : demandes par date d’approbation, mouvements par date du mouvement, BC/BS par date d’émission ; factures par date d’émission officielle."
+
+msgid "Africa/Kinshasa: requests by approval time, movements by movement time, BC/BS by issuance time; invoices by finalization time. Official invoice issue dates remain unchanged in Bookkeeping."
+msgstr "Africa/Kinshasa : demandes par approbation, mouvements par date du mouvement, BC/BS par émission ; factures par finalisation. Les dates d’émission officielles restent inchangées dans la comptabilité interne."
+
+msgid "Internal invoice not applicable"
+msgstr "Facture interne non applicable"
+
+msgid "Invoice not issued or not finalized (on demand)"
+msgstr "Facture non émise ou non finalisée (sur demande)"
+
+msgid "MICROCOM invoices not issued or not finalized (on demand)"
+msgstr "Factures MICROCOM non émises ou non finalisées (sur demande)"
+
+msgid "Purchase Order (BC)"
+msgstr "Bon de Commande (BC)"
+
+msgid "Material Issue Note (BS)"
+msgstr "Bon de Sortie (BS)"
+
+msgid "Confirm first issuance"
+msgstr "Confirmer la première émission"
+
+msgid "Confirming permanently assigns this document's official reference and opens its print view. Reprints keep the same reference."
+msgstr "La confirmation attribue définitivement la référence officielle de ce document et ouvre sa version imprimable. Les réimpressions conservent la même référence."
+
+msgid "Printing does not deduct stock or modify inventory."
+msgstr "L’impression ne déduit pas de stock et ne modifie pas l’inventaire."
+
+msgid "Confirm & Print"
+msgstr "Confirmer et imprimer"

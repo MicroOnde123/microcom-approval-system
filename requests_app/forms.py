@@ -1,4 +1,5 @@
 from django import forms
+from decimal import Decimal
 from django.forms import inlineformset_factory
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -206,6 +207,17 @@ class MaterialIssueNoteForm(forms.ModelForm):
 
 
 class RequestMaterialItemForm(forms.ModelForm):
+    quantity = forms.DecimalField(
+        label=_("Quantity"), min_value=Decimal("0.01"), max_digits=10, decimal_places=2,
+        error_messages={
+            "min_value": _("Quantity must be greater than zero."),
+            "max_decimal_places": _("Use at most two decimal places for the quantity."),
+            "max_digits": _("The quantity is too large."),
+            "max_whole_digits": _("The quantity is too large."),
+            "invalid": _("Enter a valid quantity."),
+        },
+    )
+
     material = forms.ModelChoiceField(
         queryset=Material.objects.filter(is_active=True).select_related("category"),
         required=True,
@@ -216,8 +228,13 @@ class RequestMaterialItemForm(forms.ModelForm):
         model = RequestMaterialItem
         fields = ["material", "quantity", "note"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, draft=False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.draft = draft
+        if draft:
+            # Drafts may retain incomplete rows, but supplied values must be valid.
+            self.fields["material"].required = False
+            self.fields["quantity"].required = False
 
         self.fields["material"].queryset = (
             Material.objects.filter(is_active=True)
@@ -231,7 +248,7 @@ class RequestMaterialItemForm(forms.ModelForm):
         material = cleaned_data.get("material")
         quantity = cleaned_data.get("quantity")
 
-        if material and quantity:
+        if material and quantity and not self.draft:
             if quantity > material.stock_quantity:
                 raise forms.ValidationError(
                     _("Only %(quantity)s %(unit)s available in stock.")

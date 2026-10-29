@@ -58,7 +58,7 @@ class StockReportAnalyticsTests(TestCase):
             with patch("requests_app.stock_report_analytics.add_stock_report_analytics"):
                 _, original = self.export(params)
             _, enhanced = self.export(params)
-        self.assertEqual(enhanced.sheetnames, ["Material Report", "Dashboard", "Graphs"])
+        self.assertEqual(enhanced.sheetnames, ["Material Report", "Dashboard", "Graphs", "Stock Movements", "Succursale Summary", "Material Group Summary", "Monthly Statistics"])
         before, after = original.active, enhanced.active
         self.assertEqual(list(before.values), list(after.values))
         for row in before:
@@ -79,7 +79,7 @@ class StockReportAnalyticsTests(TestCase):
 
     def assert_analytics_match_rows(self, wb):
         rows = list(wb.active.values)[4:]
-        dash, graphs = wb.worksheets[1:]
+        dash, graphs = wb.worksheets[1:3]
         self.assertEqual(dash["A10"].value, len({r[0] for r in rows}))
         self.assertEqual(dash["D9"].value, "Material Lines Issued")
         self.assertEqual(dash["D10"].value, len(rows))
@@ -131,10 +131,10 @@ class StockReportAnalyticsTests(TestCase):
         for language, names, message in (("en", ["Material Report", "Dashboard", "Graphs"], "No stock data"),
                                          ("fr", ["Rapport de matériel", "Tableau de bord", "Graphiques"], "Aucune donnée")):
             _, wb = self.export({"q": "no-match"}, language)
-            self.assertEqual(wb.sheetnames, names)
+            self.assertEqual(wb.sheetnames, names + (["Mouvements de stock", "Synthèse par succursale", "Synthèse par groupe matériel", "Statistiques mensuelles"] if language == "fr" else ["Stock Movements", "Succursale Summary", "Material Group Summary", "Monthly Statistics"]))
             self.assertEqual(wb.active.max_row, 4)
             self.assertEqual(wb.worksheets[1]["D10"].value, 0)
-            for sheet in wb.worksheets[1:]:
+            for sheet in wb.worksheets[1:3]:
                 self.assertIn(message, sheet["A15"].value)
                 self.assertEqual(len(sheet._charts), 0)
         _, wb = self.export(language="fr")
@@ -209,6 +209,9 @@ class StockReportAnalyticsTests(TestCase):
         self.assertEqual(self.client.get(reverse("export_material_report_excel"), HTTP_HOST="127.0.0.1").status_code, 403)
 
     def test_queries_do_not_grow_per_request(self):
+        # Normalize permission-cache state; measure data queries, not the first
+        # fixed-cost auth permission lookup on this reused RequestFactory user.
+        self.user.has_perm("invoicing.view_invoice")
         from django.db import connection
         from django.test.utils import CaptureQueriesContext
         from django.test import RequestFactory

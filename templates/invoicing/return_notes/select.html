@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Issue material return note" %}{% endblock %}
+{% block content %}
+<div class="page-header"><h1>{% trans "Issue material return note" %}</h1><a class="btn btn-secondary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back to invoice" %}</a></div>
+<p>{{ invoice.number }} — {{ invoice.currency }}</p>
+<p class="message info">{% trans "This optional document values materials already returned to stock. It does not change inventory or create a credit or payment adjustment." %}</p>
+{% if not has_eligible %}<p role="status">{% trans "No eligible undocumented returns are available. Existing return notes remain accessible from the history." %}</p>{% endif %}
+{% if not has_sequences %}<p class="message warning">{% trans "An administrator must configure and verify the material return note sequence for this business year and series." %}</p>{% endif %}
+<form method="post" action="{% url 'invoicing:return_note_preview' invoice.pk %}">{% csrf_token %}
+{{ form.non_field_errors }}{{ form.movements.errors }}
+<div class="table-wrap"><table><caption>{% trans "Returned materials" %}</caption><thead><tr><th>{% trans "Select" %}</th><th>{% trans "Return movement" %}</th><th>{% trans "Material" %}</th><th>{% trans "Returned quantity" %}</th><th>{% trans "Eligibility" %}</th></tr></thead><tbody>
+{% for row in rows %}<tr><td><input type="checkbox" name="movements" value="{{ row.return_movement_id }}" id="return-{{ row.return_movement_id }}" {% if not row.eligible %}disabled{% endif %} {% if row.selected %}checked{% endif %}><label for="return-{{ row.return_movement_id }}">{% trans "Select return" %} {{ row.return_movement_id }}</label></td><td>{{ row.return_movement_id }}<br>{{ row.movement.created_at|date:"Y-m-d H:i" }}</td><td>{{ row.line.material_code_snapshot }} — {{ row.line.description_snapshot }}</td><td>{{ row.movement.quantity }} {{ row.line.unit_snapshot }}</td><td>{% if row.eligible %}{% trans "Eligible" %}{% else %}{{ row.reason }}{% endif %}</td></tr>{% empty %}<tr><td colspan="5">{% trans "No stock returns have been recorded for this invoice." %}</td></tr>{% endfor %}
+</tbody></table></div>
+{{ form.reason.as_field_group }}{{ form.series.as_field_group }}
+<button class="btn" type="submit" {% if not has_eligible or not has_sequences %}disabled{% endif %}>{% trans "Preview material return note" %}</button>
+</form><p><a href="{% url 'invoicing:return_note_history' invoice.pk %}">{% trans "Material return note history" %}</a></p>
+{% endblock %}

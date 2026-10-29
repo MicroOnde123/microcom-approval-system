@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n return_note_navigation %}
 
 {% block title %}{% trans "Request Detail" %}{% endblock %}
 
 {% block content %}
+{% return_note_links request.user request_obj.pk as return_note_nav %}
+{% include "invoicing/return_notes/links.html" %}
 <div class="page-header">
     <div>
         <h1>{% trans "Request Detail" %}</h1>
@@ -28,9 +30,14 @@
                     {% trans "Permission Document" %}
                 </a>
             {% elif request_obj.material_items.exists %}
+                {% if request_obj.request_type.requires_materials and request_obj.stock_deducted %}
+                <a href="{% url 'material_document' request_obj.id 'BC' %}" class="btn" target="_blank">{% trans "Print BC — Material Order" %}</a>
+                <a href="{% url 'material_document' request_obj.id 'BS' %}" class="btn" target="_blank">{% trans "Print BS — Material Exit Slip" %}</a>
+                {% elif not request_obj.request_type.requires_materials %}
                 <a href="{% url 'approved_document' request_obj.id %}?next={{ request.get_full_path|urlencode }}" class="btn" target="_blank">
                     {% trans "Approved Document" %}
                 </a>
+                {% endif %}
             {% endif %}
 
         {% endif %}
@@ -41,6 +48,12 @@
 <div class="message info" style="margin-bottom: 20px;">
     {% trans "This request is currently saved as a Draft and has not been submitted for approval." %}
 </div>
+{% endif %}
+
+{% if request_obj.classification %}
+<p><strong>{% trans "Stock classification" %}:</strong> {{ request_obj.get_classification_display }}
+    {% if request_obj.succursale %} — {{ request_obj.succursale }}{% endif %}
+    {% if stock_review_pending %}<br>{% trans "Previous classification; stock-review confirmation is pending." %}{% endif %}</p>
 {% endif %}
 
 {% if can_edit_request %}

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 
 from .models import (
     RequestType,
@@ -28,16 +29,41 @@ class RequestApprovalInline(admin.TabularInline):
         "comment",
         "acted_at",
         "created_at",
+        "requires_stock_classification",
     )
+
+
+class HistoricalMaterialItemAdminForm(forms.ModelForm):
+    class Meta:
+        model = RequestMaterialItem
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.legacy_zero = (not self.instance._state.adding and self.instance.quantity == 0)
+        if self.legacy_zero:
+            for name in ("quantity", "material", "request"):
+                if name in self.fields:
+                    self.fields[name].disabled = True
+
+    def _get_validation_exclusions(self):
+        exclusions = super()._get_validation_exclusions()
+        if self.legacy_zero:
+            exclusions.add("quantity")
+        return exclusions
 
 
 class RequestMaterialItemInline(admin.TabularInline):
     model = RequestMaterialItem
+    form = HistoricalMaterialItemAdminForm
     extra = 0
 
 
 @admin.register(RequestType)
 class RequestTypeAdmin(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        return ("reference_namespace",) if obj and obj.reference_namespace else ()
+
     list_display = (
         "name",
         "code",
@@ -57,6 +83,10 @@ class RequestTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Request)
 class RequestAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        # All new requests must use the normal validated, idempotent flow.
+        return False
+
     list_display = (
         "request_number",
         "request_type",
@@ -93,6 +123,10 @@ class RequestAdmin(admin.ModelAdmin):
         "submitted_at",
         "finalized_at",
         "stock_deducted",
+        "classification",
+        "succursale",
+        "classified_by",
+        "classified_at",
     )
 
     inlines = [
@@ -104,6 +138,7 @@ class RequestAdmin(admin.ModelAdmin):
 
 @admin.register(RequestApproval)
 class RequestApprovalAdmin(admin.ModelAdmin):
+    readonly_fields = ("requires_stock_classification",)
     list_display = (
         "request",
         "step_order",
@@ -147,6 +182,8 @@ class RequestAttachmentAdmin(admin.ModelAdmin):
 
 @admin.register(RequestMaterialItem)
 class RequestMaterialItemAdmin(admin.ModelAdmin):
+    form = HistoricalMaterialItemAdminForm
+
     list_display = (
         "request",
         "material",
@@ -187,6 +224,15 @@ class RequestAuditLogAdmin(admin.ModelAdmin):
 
 @admin.register(StockMovement)
 class StockMovementAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     list_display = (
         "material",
         "movement_type",
@@ -218,4 +264,6 @@ class StockMovementAdmin(admin.ModelAdmin):
         "performed_by",
         "note",
         "created_at",
+        "return_reason",
+        "return_operation_token",
     )
