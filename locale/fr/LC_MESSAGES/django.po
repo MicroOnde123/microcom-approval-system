@@ -1351,8 +1351,8 @@ msgstr "Pour un nouveau prix, utilise la devise des documents ou USD si aucun pa
 msgid "Stock classification review"
 msgstr "Examen de classification du stock"
 
-msgid "Designate the first step of a material workflow. A single-step workflow is valid."
-msgstr "Désignez la première étape d’un circuit de matériel. Un circuit à une seule étape est valide."
+msgid "Designate one step at any position in a material workflow. Steps keep their configured order."
+msgstr "Désignez une étape à n’importe quelle position d’un circuit de matériel. Les étapes conservent leur ordre configuré."
 
 msgid "Stock classification is only available for material workflows."
 msgstr "La classification du stock est réservée aux circuits de matériel."
@@ -1366,8 +1366,8 @@ msgstr "Le suppléant du contrôle du stock doit être actif."
 msgid "Only one stock-review step may be designated per workflow."
 msgstr "Une seule étape de contrôle du stock peut être désignée par circuit."
 
-msgid "The designated stock review must be the first configured approval step."
-msgstr "Le contrôle du stock désigné doit être la première étape d’approbation configurée."
+msgid "All preceding approval steps must be completed first."
+msgstr "Toutes les étapes d’approbation précédentes doivent d’abord être terminées."
 
 msgid "Client"
 msgstr "Client"
@@ -1387,8 +1387,8 @@ msgstr "Classifié le"
 msgid "Requires stock classification"
 msgstr "Classification du stock requise"
 
-msgid "The first stock review must be approved before later approval steps."
-msgstr "Le premier contrôle du stock doit être approuvé avant les étapes d’approbation suivantes."
+msgid "The designated stock review must be approved before later approval steps."
+msgstr "Le contrôle du stock désigné doit être approuvé avant les étapes d’approbation suivantes."
 
 msgid "Only the designated stock reviewer can classify this request."
 msgstr "Seul le responsable désigné du contrôle du stock peut classifier cette demande."
@@ -1864,8 +1864,8 @@ msgstr "Le logo configuré ne peut pas être figé en toute sécurité. Un admin
 msgid "The configured logo is unavailable. An administrator must review it."
 msgstr "Le logo configuré est indisponible. Un administrateur doit l’examiner."
 
-msgid "The designated first stock review must have confirmed this classification."
-msgstr "Le premier contrôle du stock désigné doit avoir confirmé cette classification."
+msgid "The designated stock review must have confirmed this classification."
+msgstr "Le contrôle du stock désigné doit avoir confirmé cette classification."
 
 msgid "The document sequence has reached its supported limit. Administrator review is required."
 msgstr "La séquence de documents a atteint sa limite prise en charge. Un administrateur doit l’examiner."

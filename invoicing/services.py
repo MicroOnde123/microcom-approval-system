@@ -123,10 +123,10 @@ def _evidence(request):
         raise ValidationError(_("A confirmed Microcom classification and succursale are required."))
     approvals = list(request.approvals.order_by("step_order","pk"))
     reviews = [approval for approval in approvals if approval.requires_stock_classification]
-    if (len(reviews)!=1 or not approvals or reviews[0].pk!=approvals[0].pk or
+    if (len(reviews)!=1 or
             any(approval.status not in {"APPROVED","SKIPPED"} for approval in approvals) or
             reviews[0].status!="APPROVED" or not reviews[0].acted_at or reviews[0].acted_by_id!=request.classified_by_id):
-        raise ValidationError(_("The designated first stock review must have confirmed this classification."))
+        raise ValidationError(_("The designated stock review must have confirmed this classification."))
     items = list(request.material_items.order_by("material_id","pk"))
     movements = list(StockMovement.objects.filter(request=request,movement_type__in=["OUT","RETURN"]).order_by("created_at","pk"))
     if not items or len({item.material_id for item in items})!=len(items):

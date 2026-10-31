@@ -31,7 +31,7 @@ class ApprovalWorkflowStep(models.Model):
     is_required = models.BooleanField(default=True)
     is_stock_review = models.BooleanField(
         _("Stock classification review"), default=False,
-        help_text=_("Designate the first step of a material workflow. A single-step workflow is valid."))
+        help_text=_("Designate one step at any position in a material workflow. Steps keep their configured order."))
 
     def clean(self):
         super().clean()
@@ -61,5 +61,3 @@ def validate_stock_review_steps(steps):
     reviews = [step for step in steps if step.is_stock_review]
     if len(reviews) > 1:
         raise ValidationError(_("Only one stock-review step may be designated per workflow."))
-    if reviews and reviews[0].step_order != min(step.step_order for step in steps):
-        raise ValidationError(_("The designated stock review must be the first configured approval step."))

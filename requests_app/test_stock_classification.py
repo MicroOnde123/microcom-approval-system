@@ -168,7 +168,7 @@ class StockClassificationTests(StockSafetyFixtures, TestCase):
         with self.assertRaises(ValidationError):
             approve_step(later, self.other)
         Request.objects.filter(pk=req.pk).update(current_step_order=2)
-        with self.assertRaisesMessage(ValidationError, "first stock review"):
+        with self.assertRaisesMessage(ValidationError, "preceding approval steps"):
             approve_step(later, self.other)
         self.assertEqual(self.balance(), 100)
 
@@ -283,24 +283,22 @@ class StockClassificationTests(StockSafetyFixtures, TestCase):
                 self.assertFalse(form.is_valid())
                 self.assertIn(error, str(form.errors))
 
-    def test_workflow_configuration_rejects_later_duplicate_and_role_only_review(self):
+    def test_workflow_configuration_accepts_later_but_rejects_duplicate_and_role_only_review(self):
         later = ApprovalWorkflowStep(workflow=self.workflow, step_order=2, approver_user=self.other, is_stock_review=True)
         with self.assertRaises(ValidationError):
             validate_stock_review_steps([self.step, later])
         self.step.is_stock_review = False
-        with self.assertRaises(ValidationError):
-            validate_stock_review_steps([self.step, later])
+        validate_stock_review_steps([self.step, later])
         later.approver_user = None
         with self.assertRaises(ValidationError):
             later.clean()
 
-    def test_standalone_admin_rejects_designation_after_first_step(self):
+    def test_standalone_admin_accepts_designation_after_first_step(self):
         self.step.is_stock_review = False
         self.step.save()
         form = WorkflowStepAdminForm(data={"workflow": self.workflow.pk, "step_order": 2,
             "approver_user": self.user.pk, "is_required": "on", "is_stock_review": "on"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("first configured", str(form.errors))
+        self.assertTrue(form.is_valid(), form.errors)
 
     def test_admin_inline_accepts_single_review_without_inserting_steps(self):
         self.user.is_staff = self.user.is_superuser = True
