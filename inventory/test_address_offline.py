@@ -53,14 +53,14 @@ class AddressOfflineTests(unittest.TestCase):
             "request_reference": "REQ/SYNTHETIC", "total": "2.00", "currency": "USD", "amount_words_fr": "deux dollars",
             "note": "", "lines": [{"code": "MAT", "description": "Câble", "unit": "m", "quantity": "1", "price": "2", "total": "2"}]}
 
-    def test_bilingual_pdf_retains_but_does_not_display_frozen_address(self):
+    def test_bilingual_pdf_displays_frozen_address_without_mutating_it(self):
         snapshot = self.snapshot(); original = deepcopy(snapshot)
         for language, label in (("en", "Succursale physical address"), ("fr", "Adresse physique de la succursale")):
             text = pdf_text(render_pdf(snapshot, language=language))
             for value in (label, "12, avenue Équateur", "Bâtiment A & <B>"):
-                self.assertNotIn("".join(value.split()), "".join(text.split()))
+                self.assertIn("".join(value.split()), "".join(text.split()))
         self.assertEqual(snapshot, original)
-        self.assertIn("v4", RENDERER_VERSION)
+        self.assertIn("v5", RENDERER_VERSION)
 
     def test_legacy_pdf_without_address_remains_renderable(self):
         snapshot = self.snapshot(); del snapshot["branch"]["physical_address"]

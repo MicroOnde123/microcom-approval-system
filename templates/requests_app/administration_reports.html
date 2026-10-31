@@ -1,97 +1,157 @@
+
 {% extends "base.html" %}
 {% load i18n %}
+
 {% block title %}{% trans "Administration Report" %}{% endblock %}
 {% block page_layout %}app-container--wide{% endblock %}
 
 {% block content %}
 <div class="page-header">
-<div>
-<h1>{% trans "Administration Report" %}</h1>
-<p class="muted">{% trans "Central register of approved General Authorization requests." %}</p>
+    <div>
+        <h1>{% trans "Administration Report" %}</h1>
+        <p class="muted">{% trans "Central register of approved General Authorization requests." %}</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-tertiary">{% trans "Back to Dashboard" %}</a>
 </div>
-<a href="{% url 'dashboard' %}" class="btn btn-secondary">{% trans "Back to Dashboard" %}</a>
-</div>
-<form method="get" style="margin-bottom:20px;">
-<div class="form-grid">
-<div>
-<label for="report-search">{% trans "Search" %}</label>
-<input id="report-search" name="q" value="{{ q }}">
-</div>
-<div>
-<label for="report-department">{% trans "Submitted From Department" %}</label>
-<select id="report-department" name="department">
-<option value="">{% trans "All Departments" %}</option>{% for id,name in departments %}<option value="{{ id }}" {% if department == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>{% endfor %}
-</select>
-</div>
-<div>
-<label for="report-requester">{% trans "Requester" %}</label>
-<select id="report-requester" name="requester">
-<option value="">{% trans "All Requesters" %}</option>{% for id,name,username in requesters %}<option value="{{ id }}" {% if requester == id|stringformat:"s" %}selected{% endif %}>{{ name|default:username }}</option>{% endfor %}
-</select>
-</div>
-<div>
-<label for="report-destination">{% trans "Request For Department" %}</label>
-<select id="report-destination" name="request_for_department">
-<option value="">{% trans "All Departments" %}</option>
-{% for id,name in destination_departments %}
-<option value="{{ id }}" {% if request_for_department == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
-{% endfor %}
-</select>
-</div>
-<div>
-<label for="report-from">{% trans "Date From" %}</label>
-<input id="report-from" type="date" name="date_from" value="{{ date_from }}">
-</div>
-<div>
-<label for="report-to">{% trans "Date To" %}</label>
-<input id="report-to" type="date" name="date_to" value="{{ date_to }}">
-</div>
-</div>
-<div style="margin-top:12px;">
-<button class="btn">{% trans "Filter" %}</button> <a class="btn btn-secondary" href="{% url 'administration_reports' %}">{% trans "Clear Filters" %}</a>
-</div>
+
+<form method="get"
+      class="filter-form"
+      data-auto-filters="true"
+      data-searching-label="{% trans 'Searching...' %}"
+      data-validation-label="{% trans 'Review the filter errors.' %}"
+      data-updated-label="{% trans 'Results updated.' %}"
+      data-error-label="{% trans 'Results could not be updated. Select Filter to reload the page.' %}"
+      style="margin-bottom:20px;">
+
+    <div class="form-grid">
+        <div>
+            <label for="report-search">{% trans "Search" %}</label>
+            <input id="report-search" type="search" name="q" value="{{ q }}">
+        </div>
+
+        <div>
+            <label for="report-department">{% trans "Submitted From Department" %}</label>
+            <select id="report-department" name="department">
+                <option value="">{% trans "All Departments" %}</option>
+                {% for id, name in departments %}
+                    <option value="{{ id }}" {% if department == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="report-requester">{% trans "Requester" %}</label>
+            <select id="report-requester" name="requester">
+                <option value="">{% trans "All Requesters" %}</option>
+                {% for id, name, username in requesters %}
+                    <option value="{{ id }}" {% if requester == id|stringformat:"s" %}selected{% endif %}>{{ name|default:username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="report-destination">{% trans "Request For Department" %}</label>
+            <select id="report-destination" name="request_for_department">
+                <option value="">{% trans "All Departments" %}</option>
+                {% for id, name in destination_departments %}
+                    <option value="{{ id }}" {% if request_for_department == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="report-from">{% trans "Date From" %}</label>
+            <input id="report-from" type="date" name="date_from" value="{{ date_from }}">
+        </div>
+
+        <div>
+            <label for="report-to">{% trans "Date To" %}</label>
+            <input id="report-to" type="date" name="date_to" value="{{ date_to }}">
+        </div>
+    </div>
+
+    <div style="margin-top:12px;">
+        <button type="submit" class="btn">{% trans "Filter" %}</button>
+        <a class="btn btn-secondary" href="{% url 'administration_reports' %}">{% trans "Clear Filters" %}</a>
+    </div>
 </form>
-<div class="table-wrap" tabindex="0">
-<table class="data-table">
-<thead>
-<tr>
-<th class="table-id">{% trans "Request Number" %}</th>
-<th class="table-person">{% trans "Requester" %}</th>
-<th class="table-department">{% trans "Submitted From Department" %}</th>
-<th class="table-department">{% trans "Request For Department" %}</th>
-<th class="table-type">{% trans "Request Type" %}</th>
-<th class="table-description">{% trans "Description" %}</th>
-<th class="table-date">{% trans "Date Submitted" %}</th>
-<th class="table-date">{% trans "Approved Date" %}</th>
-<th class="table-status">{% trans "Status" %}</th>
-<th class="table-actions">{% trans "Actions" %}</th>
-</tr>
-</thead>
-<tbody>{% for req in requests %}<tr>
-<td class="table-id">{{ req.request_number }}</td>
-<td class="table-person">{{ req.submitted_by.full_name|default:req.submitted_by.username }}</td>
-<td class="table-department">{{ req.department }}</td>
-<td class="table-department">{{ req.request_for_department }}</td>
-<td class="table-type">{{ req.request_type }}</td>
-<td class="table-description">{{ req.description|truncatechars:160 }}</td>
-<td class="table-date">{{ req.submitted_at|date:"Y-m-d H:i" }}</td>
-<td class="table-date">{{ req.finalized_at|date:"Y-m-d H:i"|default:"-" }}</td>
-<td class="table-status">
-<span class="status-badge status-APPROVED">{% trans "Approved" %}</span>
-</td>
-<td class="table-actions">
-<div class="actions-inline">
-<a class="btn btn-secondary" target="_blank" href="{% url 'administration_report_document' req.id %}?next={{ current_list_url|urlencode }}">{% trans "View Document" %}</a>
-<a class="btn" target="_blank" href="{% url 'administration_report_document' req.id %}?copies=1&amp;next={{ current_list_url|urlencode }}">{% trans "Print" %}</a>
+
+<div id="live-filter-results" aria-live="off">
+    <div class="table-wrap" tabindex="0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="table-id">{% trans "Request Number" %}</th>
+                    <th class="table-person">{% trans "Requester" %}</th>
+                    <th class="table-department">{% trans "Submitted From Department" %}</th>
+                    <th class="table-department">{% trans "Request For Department" %}</th>
+                    <th class="table-type">{% trans "Request Type" %}</th>
+                    <th class="table-description">{% trans "Description" %}</th>
+                    <th class="table-date">{% trans "Date Submitted" %}</th>
+                    <th class="table-date">{% trans "Approved Date" %}</th>
+                    <th class="table-status">{% trans "Status" %}</th>
+                    <th class="table-actions">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td class="table-id">{{ req.request_number }}</td>
+                    <td class="table-person">{{ req.submitted_by.full_name|default:req.submitted_by.username }}</td>
+                    <td class="table-department">{{ req.department }}</td>
+                    <td class="table-department">{{ req.request_for_department }}</td>
+                    <td class="table-type">{{ req.request_type }}</td>
+                    <td class="table-description">{{ req.description|truncatechars:160 }}</td>
+                    <td class="table-date">{{ req.submitted_at|date:"Y-m-d H:i" }}</td>
+                    <td class="table-date">{{ req.finalized_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                    <td class="table-status">
+                        <span class="status-badge status-APPROVED">{% trans "Approved" %}</span>
+                    </td>
+                    <td class="table-actions">
+                        <div class="actions-inline filter-actions">
+                            <a class="btn btn-secondary"
+                               target="_blank"
+                               rel="noopener"
+                               href="{% url 'administration_report_document' req.id %}?next={{ current_list_url|urlencode }}">
+                                {% trans "View Document" %}
+                            </a>
+                            <a class="btn btn-secondary"
+                               target="_blank"
+                               rel="noopener"
+                               href="{% url 'administration_report_document' req.id %}?copies=1&amp;next={{ current_list_url|urlencode }}">
+                                {% trans "Print" %}
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10">{% trans "No approved Administration requests found." %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="actions-inline request-list-pagination" style="margin-top:12px;">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-secondary"
+               href="?{{ active_querystring }}&amp;page={{ page_obj.previous_page_number }}">
+                {% trans "Previous" %}
+            </a>
+        {% endif %}
+
+        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-secondary"
+               href="?{{ active_querystring }}&amp;page={{ page_obj.next_page_number }}">
+                {% trans "Next" %}
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
-</td>
-</tr>
-{% empty %}
-<tr>
-<td colspan="10">{% trans "No approved Administration requests found." %}</td>
-</tr>{% endfor %}
-</tbody>
-</table>
-</div>
-{% if page_obj.has_other_pages %}<div class="actions-inline" style="margin-top:12px;">{% if page_obj.has_previous %}<a class="btn btn-secondary" href="?{{ active_querystring }}&amp;page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}<span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="btn btn-secondary" href="?{{ active_querystring }}&amp;page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}</div>{% endif %}
 {% endblock %}

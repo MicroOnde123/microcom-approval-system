@@ -39,8 +39,8 @@ class FinancialRecord(models.Model):
 
     def save(self, *args, _finalize_at_statement_time=False, **kwargs):
         if _finalize_at_statement_time and (
-                not isinstance(self, Invoice) or self._state.adding or self.status != "FINALIZED"):
-            raise ValueError("Statement-time finalization requires an existing finalized-state invoice.")
+                not isinstance(self, (Invoice, MaterialReturnNote)) or self._state.adding or self.status != "FINALIZED"):
+            raise ValueError("Statement-time finalization requires an existing finalized-state invoice or material return note.")
         self._check_immutable()
         self.full_clean()
         if _finalize_at_statement_time:

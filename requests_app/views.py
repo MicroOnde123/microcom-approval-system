@@ -376,19 +376,24 @@ def is_stock_manager(user):
     
 @login_required
 def my_requests(request):
-    qs = Request.objects.filter(submitted_by=request.user).order_by("-submitted_at")
-    department = request.GET.get("department", "").strip()
-    if department:
-        qs = qs.filter(request_for_department_id=department)
+    from django.core.paginator import Paginator
+    from .list_filters import RequestListFilterForm, apply_filters
+    form = RequestListFilterForm(request.GET)
+    qs = Request.objects.filter(submitted_by=request.user).order_by("-submitted_at", "-pk")
+    qs = apply_filters(qs, form).select_related("request_for_department", "request_type")
+    page = Paginator(qs, 25).get_page(request.GET.get("page"))
+    query = request.GET.copy(); query.pop("page", None)
     return render(request, "requests_app/my_requests.html", {
-        "requests": qs.select_related("request_for_department"),
-        "departments": Department.objects.order_by("name"),
-        "selected_department": department,
+        "requests": page, "page_obj": page, "filter_form": form,
+        "active_querystring": query.urlencode(), "filter_reset_url": reverse("my_requests"),
     })
 
 
 @login_required
 def pending_approvals(request):
+    from .list_filters import PendingFilterForm, validation_messages
+    filter_form = PendingFilterForm(request.GET)
+    filters_valid = filter_form.is_valid()
     approvals = RequestApproval.objects.filter(
         models.Q(approver_user=request.user)
         | models.Q(alternate_approver_user=request.user),
@@ -407,19 +412,21 @@ def pending_approvals(request):
     q = request.GET.get("q", "").strip()
     department = request.GET.get("department", "").strip()
 
-    if date_from:
+    if not filters_valid:
+        approvals = approvals.none()
+    if date_from and filters_valid:
         approvals = approvals.filter(request__date_needed__gte=date_from)
 
-    if date_to:
+    if date_to and filters_valid:
         approvals = approvals.filter(request__date_needed__lte=date_to)
 
-    if request_type:
+    if request_type and filters_valid:
         approvals = approvals.filter(request__request_type_id=request_type)
 
-    if department:
+    if department and filters_valid:
         approvals = approvals.filter(request__request_for_department_id=department)
 
-    if q:
+    if q and filters_valid:
         approvals = approvals.filter(
             models.Q(request__request_number__icontains=q)
             | models.Q(request__submitted_by__username__icontains=q)
@@ -438,6 +445,7 @@ def pending_approvals(request):
         "requests_app/pending_approvals.html",
         {
             "approvals": approvals,
+            "filter_validation_errors": validation_messages(filter_form),
             "request_types": request_types,
             "date_from": date_from,
             "date_to": date_to,
@@ -1041,17 +1049,24 @@ def approval_history(request):
         "alternate_approver_user",
     ).order_by("-acted_at")
 
-    department = request.GET.get("department", "").strip()
-    if department:
-        approvals = approvals.filter(request__request_for_department_id=department)
-
+    # Filter outside the latest-action selection: a date/action filter must not
+    # resurrect an older action for a request.
+    from django.core.paginator import Paginator
+    from .list_filters import ApprovalHistoryFilterForm, apply_filters
+    latest = approvals.values("pk")
+    approvals = RequestApproval.objects.filter(pk__in=models.Subquery(latest)).select_related(
+        "request__request_type", "request__request_for_department"
+    ).prefetch_related("request__material_items").order_by("-acted_at", "-pk")
+    form = ApprovalHistoryFilterForm(request.GET)
+    approvals = apply_filters(approvals, form, prefix="request__", date_field="acted_at")
+    page = Paginator(approvals, 25).get_page(request.GET.get("page"))
+    query = request.GET.copy(); query.pop("page", None)
     return render(
         request,
         "requests_app/approval_history.html",
         {
-            "approvals": approvals,
-            "departments": Department.objects.order_by("name"),
-            "selected_department": department,
+            "approvals": page, "page_obj": page, "filter_form": form,
+            "active_querystring": query.urlencode(), "filter_reset_url": reverse("approval_history"),
             "current_list_url": current_path_with_query(request),
         },
     )
@@ -1103,6 +1118,11 @@ def material_reports(request):
     if not is_stock_manager(request.user):
         return HttpResponseForbidden("You are not allowed to access material reports.")
 
+    from .stock_report_export import ExportFilterForm
+    from .list_filters import validation_messages
+    filter_form = ExportFilterForm(request.GET)
+    filters_valid = filter_form.is_valid()
+
     requests = Request.objects.filter(
         status="APPROVED",
         material_items__isnull=False,
@@ -1123,7 +1143,10 @@ def material_reports(request):
     date_to = request.GET.get("date_to", "").strip()
     department = request.GET.get("department", "").strip()
 
-    if q:
+    if not filters_valid:
+        requests = requests.none()
+
+    if q and filters_valid:
         requests = requests.filter(
             models.Q(request_number__icontains=q)
             | models.Q(submitted_by__username__icontains=q)
@@ -1132,24 +1155,28 @@ def material_reports(request):
             | models.Q(material_items__material__code__icontains=q)
         )
 
-    if date_from:
+    if date_from and filters_valid:
         requests = requests.filter(date_needed__gte=date_from)
 
-    if date_to:
+    if date_to and filters_valid:
         requests = requests.filter(date_needed__lte=date_to)
 
-    if department:
+    if department and filters_valid:
         requests = requests.filter(request_for_department_id=department)
 
     departments = Department.objects.order_by("name").values_list("id", "name")
 
     requests = requests.order_by("-finalized_at", "-submitted_at")
 
+    from .stock_integrity import annotate_return_ledgers, movement_prefetch
+    requests = annotate_return_ledgers(list(requests.prefetch_related(movement_prefetch())))
+
     return render(
         request,
         "requests_app/material_reports.html",
         {
             "requests": requests,
+            "filter_validation_errors": validation_messages(filter_form),
             "departments": departments,
             "q": q,
             "date_from": date_from,
@@ -1362,11 +1389,15 @@ def return_material_to_stock(request, item_id):
     except ValidationError as exc:
         return_error = " ".join(exc.messages)
 
+    if totals:
+        form.fields["quantity"].widget.attrs.update({"max": str(totals["remaining_quantity"]), "step": "0.01", "inputmode": "decimal"})
+
     return render(
         request,
         "requests_app/return_material_to_stock.html",
         {"form": form, "item": item, "request_obj": req, "material": material,
-         "back_url": back_url, "return_error": return_error, **totals},
+         "back_url": back_url, "return_error": return_error,
+         "can_return": bool(totals and totals["remaining_quantity"] > 0), **totals},
     )
 
 

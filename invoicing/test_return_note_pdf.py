@@ -47,7 +47,7 @@ class ReturnNotePdfTests(unittest.TestCase):
                 content = render_pdf(source, lang); text = pdf_text(content)
                 compact = re.sub(r"\s+", "", text)
                 for item in [title, value, source["number"], source["original"]["number"], "REQ-SYN-001", "42",
-                    "Câble électrique € & <test>", "USD", "2.00", "4.00", "6.00", source["amount_words_fr"], source["reason"]]:
+                    "Câble électrique € & <test>", "USD", "2.00", "4.00", "6.00", source["amount_words_fr"] if lang == "fr" else "two US dollars", source["reason"]]:
                     self.assertIn(re.sub(r"\s+", "", item), compact)
                 self.assertNotIn("Total amount payable", text); self.assertNotIn("Montant total à payer", text)
                 self.assertNotIn(b"/Subtype /Image", content)

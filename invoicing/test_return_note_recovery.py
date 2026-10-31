@@ -166,14 +166,17 @@ class ReturnNoteRecoveryTests(unittest.TestCase):
         with patch.object(access, "ui_enabled", return_value=True), patch.object(issuance, "get_material_return_note", return_value=note), \
              patch.object(views, "authorize_return_note"), patch.object(views, "generate_pdf",
                  side_effect=[documents.pdf_error(transient=True), SimpleNamespace(pk=3)]) as generate, \
-             patch.object(issuance, "issue_material_return_note") as issue:
+             patch.object(issuance, "issue_material_return_note") as issue, \
+             patch.object(views, "active_language", return_value="fr"), \
+             patch.object(views, "download_pdf", return_value=(None, __import__("io").BytesIO(b"%PDF-synthetic"))):
             response = views.pdf(self.request(), 9, "fr")
             retry = views.pdf(self.request(), 9, "fr")
         body = response.content.decode()
         self.assertIn("Return to issued note", body); self.assertIn("Retry PDF", body)
         self.assertIn("/return-notes/9/pdf/fr/", body)
         self.assertNotIn("/return-notes/issue/", body); issue.assert_not_called()
-        self.assertEqual(retry.status_code, 302)
+        self.assertEqual(retry.status_code, 200)
+        self.assertIn(b"data-pdf-frame", retry.content)
         self.assertEqual(generate.call_args_list[0], generate.call_args_list[1])
         generate.assert_called_with(9, self.user, language="fr")
 

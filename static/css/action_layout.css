@@ -1,0 +1,53 @@
+/* Application screen chrome only: never included by printable documents. */
+@media screen {
+    .app-container .page-header { align-items:flex-start; gap:16px 24px; margin-bottom:24px; }
+    .app-container .page-header > :first-child { min-width:0; }
+    .app-container .page-header > div:first-child { flex:1 1 20rem; }
+    .app-container .page-header h1 { margin-bottom:6px; overflow-wrap:anywhere; }
+    .app-container .page-header .muted { margin:0; line-height:1.5; }
+    .app-container .actions-inline,
+    .app-container .context-toolbar,
+    .app-container .form-actions { display:flex; flex-wrap:wrap; align-items:center; gap:10px; min-width:0; }
+    .app-container .context-toolbar { margin:0 0 20px; padding:14px 0; border-block:1px solid var(--border); }
+    .app-container .context-toolbar .actions-inline { margin:0; }
+    .app-container .context-toolbar > p { margin:0; }
+    .app-container .context-toolbar:not(:has(a, button, p)) { display:none; }
+    .app-container .context-toolbar > .actions-inline + .actions-inline { padding-inline-start:14px; border-inline-start:1px solid var(--border); }
+    .app-container .actions-inline > form,
+    .app-container .context-toolbar > form { margin:0; min-width:0; max-width:100%; }
+    .app-container .form-actions { margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+    .app-container .card-actions { margin-top:12px; display:flex; flex-wrap:wrap; gap:10px; }
+    .app-container .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:42px; max-width:100%; box-sizing:border-box; line-height:1.35; text-align:center; white-space:normal; word-break:normal; overflow-wrap:normal; }
+    .app-container .btn-tertiary { background:transparent; color:var(--primary); border:1px solid transparent; }
+    .app-container .btn-tertiary:hover { background:var(--bg); text-decoration:underline; }
+    .app-container .btn-danger { background:#991b1b; color:#fff; border:1px solid #991b1b; }
+    .app-container .btn-danger:hover { background:#7f1d1d; }
+    .app-container .btn:disabled,
+    .app-container .btn[aria-disabled="true"] { opacity:.55; cursor:not-allowed; }
+    .app-container .btn:focus-visible { outline:3px solid #2563eb; outline-offset:3px; }
+    .app-container .status-badge,
+    .app-container .ops-badge { white-space:nowrap; word-break:normal; overflow-wrap:normal; flex-shrink:0; width:max-content; line-height:1.4; }
+    .app-container .ops-table td:last-child { min-width:8rem; }
+    .app-container .ops-table th { min-width:5rem; word-break:normal; overflow-wrap:normal; }
+    .app-container .ops-table th:first-child { min-width:9rem; }
+    .app-container .table-number,
+    .app-container .table-money { white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .app-container .table-reference { min-width:10rem; overflow-wrap:anywhere; }
+    .app-container .data-table .table-actions .btn { white-space:normal; }
+    .app-container .filter-actions { align-items:center; gap:10px; }
+    .app-container .filter-actions .btn { margin:0; }
+    .app-container .ops-pdf-actions { align-items:center; }
+    .app-container .document-form > .btn { justify-self:start; }
+    .app-container .document-parties > * { min-width:0; overflow-wrap:anywhere; }
+    .app-container .table-wrap:focus-visible,
+    .app-container .ops-table-scroll:focus-visible { outline:3px solid #2563eb; outline-offset:3px; }
+}
+@media screen and (max-width:700px) {
+    .app-container .page-header { gap:12px; }
+    .app-container .page-header > .actions-inline { width:100%; justify-content:flex-start; }
+    .app-container .context-toolbar { align-items:flex-start; }
+    .app-container .context-toolbar > .actions-inline + .actions-inline { padding-inline-start:0; border-inline-start:0; }
+    .app-container .context-toolbar > .actions-inline { width:100%; }
+    .app-container .form-actions > .btn,
+    .app-container .filter-actions > .btn { flex:0 1 auto; }
+}

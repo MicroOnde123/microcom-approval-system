@@ -278,6 +278,9 @@ class InvoiceLifecycleTests(LifecycleFixtures,TestCase):
         self.price(invoice)
         sequence = self.verified_sequence()
         before = self.source_snapshot()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT number,document_type,document_id FROM invoicing_finalreference")
+            registry_before = cursor.fetchall()
         with patch("invoicing.services._event",side_effect=ValidationError("Synthetic failure")):
             with self.assertRaises(ValidationError):
                 self.finalize(invoice)
@@ -285,8 +288,8 @@ class InvoiceLifecycleTests(LifecycleFixtures,TestCase):
         sequence.refresh_from_db()
         self.assertEqual((invoice.status,invoice.number,sequence.next_counter),("DRAFT",None,1))
         with connection.cursor() as cursor:
-            cursor.execute("SELECT count(*) FROM invoicing_finalreference")
-            self.assertEqual(cursor.fetchone()[0],0)
+            cursor.execute("SELECT number,document_type,document_id FROM invoicing_finalreference")
+            self.assertCountEqual(cursor.fetchall(), registry_before)
         self.assertEqual(self.source_snapshot(),before)
 
     def test_snapshot_and_words_do_not_change_when_catalogues_change(self):

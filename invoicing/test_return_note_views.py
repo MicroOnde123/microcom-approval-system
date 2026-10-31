@@ -41,7 +41,8 @@ class ReturnNoteViewTests(unittest.TestCase):
                   ("return_note_history", {"invoice_id": 11}, "get"),
                   ("return_note_detail", {"note_id": 2}, "get"),
                   ("return_note_pdf", {"note_id": 2, "language": "en"}, "post"),
-                  ("return_note_download", {"artifact_id": 3}, "get")]
+                  ("return_note_download", {"artifact_id": 3}, "get"),
+                  ("return_note_print", {"note_id": 2}, "post")]
         with patch.object(views, "_invoice") as lookup, patch.object(views.issuance, "get_material_return_note") as retrieve:
             for name, kwargs, method in routes:
                 match = resolve(reverse("invoicing:" + name, kwargs=kwargs))

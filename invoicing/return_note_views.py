@@ -1,3 +1,5 @@
+from .document_presentation import amount_words
+from .print_delivery import print_response, active_language
 """HTTP orchestration only. E-R2 owns all financial decisions and issuance."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -174,7 +176,8 @@ def detail(request, note_id):
     except PermissionDenied:
         can_document = False
     return render(request, "invoicing/return_notes/detail.html", {"note": note, "lines": note.lines.order_by("pk"),
-        "reason": note.operation.reason, "can_document": can_document})
+        "reason": note.operation.reason, "can_document": can_document,
+        "display_amount_words": amount_words(note.total, note.currency, active_language(), note.amount_words_fr)})
 
 
 @transaction.non_atomic_requests
@@ -182,7 +185,8 @@ def detail(request, note_id):
 @login_required
 @never_cache
 @require_POST
-def pdf(request, note_id, language):
+def pdf(request, note_id, language=None):
+    language = active_language()
     try:
         note = issuance.get_material_return_note(note_id, request.user)
     except issuance.MaterialReturnNote.DoesNotExist:
@@ -194,7 +198,14 @@ def pdf(request, note_id, language):
         raise Http404 from None
     except (ValidationError, ImproperlyConfigured) as error:
         return _error(request, error, note=note, language=language)
-    return redirect("invoicing:return_note_download", artifact_id=artifact.pk)
+    try:
+        verified_artifact, stream = download_pdf(artifact.pk, request.user)
+        try:
+            return print_response(request, stream.read(), f"return-note-{note_id}-{language}.pdf")
+        finally:
+            stream.close()
+    except (ValidationError, ImproperlyConfigured) as error:
+        return _error(request, error, note=note, language=language)
 
 
 @gated
@@ -214,7 +225,7 @@ def download(request, artifact_id):
         raise Http404 from None
     except (ValidationError, ImproperlyConfigured) as error:
         return _error(request, error, note=note, language=owner.language)
-    response = FileResponse(stream, as_attachment=True,
+    response = FileResponse(stream, as_attachment=False,
         filename=f"return-note-{artifact.note_id}-{artifact.language}.pdf", content_type="application/pdf")
     response["Cache-Control"] = "private, no-store"
     response["X-Content-Type-Options"] = "nosniff"

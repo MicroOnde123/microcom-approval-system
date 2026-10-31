@@ -13,7 +13,7 @@
     </div>
 
     <div class="actions-inline">
-        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        <a href="{% url 'dashboard' %}" class="btn btn-tertiary">
             {% trans "Back to Dashboard" %}
         </a>
 
@@ -23,86 +23,77 @@
     </div>
 </div>
 
-<form method="get" style="margin-bottom: 20px;">
-    <label for="my-request-department">{% trans "Request For Department" %}</label>
-    <select id="my-request-department" name="department">
-        <option value="">{% trans "All Departments" %}</option>
-        {% for department in departments %}
-            {% with department_id=department.id|stringformat:"s" %}
-            <option value="{{ department.id }}" {% if selected_department == department_id %}selected{% endif %}>{{ department.name }}</option>
-            {% endwith %}
-        {% endfor %}
-    </select>
-    <button type="submit" class="btn">{% trans "Filter" %}</button>
-    <a href="{% url 'my_requests' %}" class="btn btn-secondary">{% trans "Clear" %}</a>
-</form>
+{% include "requests_app/partials/list_filters.html" %}
 
-<div class="table-wrap" tabindex="0">
-    <table class="data-table">
+<div id="live-filter-results" aria-live="off">
+    <div class="table-wrap" tabindex="0">
+        <table class="data-table">
 
-        <thead>
-            <tr>
-                <th class="table-id">{% trans "Number" %}</th>
-                <th class="table-description">{% trans "Title" %}</th>
-                <th class="table-type">{% trans "Type" %}</th>
-                <th class="table-department">{% trans "Request For Department" %}</th>
-                <th class="table-status">{% trans "Status" %}</th>
-                <th class="table-date">{% trans "Submitted" %}</th>
-            </tr>
-        </thead>
+            <thead>
+                <tr>
+                    <th class="table-id">{% trans "Number" %}</th>
+                    <th class="table-description">{% trans "Title" %}</th>
+                    <th class="table-type">{% trans "Type" %}</th>
+                    <th class="table-department">{% trans "Request For Department" %}</th>
+                    <th class="table-status">{% trans "Status" %}</th>
+                    <th class="table-date">{% trans "Submitted" %}</th>
+                </tr>
+            </thead>
 
-        <tbody>
+            <tbody>
 
-            {% for r in requests %}
+                {% for r in requests %}
 
-            <tr>
+                <tr>
 
-                <td class="table-id">
-                    <a href="{% url 'request_detail' r.id %}?next={{ request.get_full_path|urlencode }}">
-                        <strong>{{ r.request_number }}</strong>
-                    </a>
-                </td>
+                    <td class="table-id">
+                        <a href="{% url 'request_detail' r.id %}?next={{ request.get_full_path|urlencode }}">
+                            <strong>{{ r.request_number }}</strong>
+                        </a>
+                    </td>
 
-                <td class="table-description">
-                    {{ r.description|truncatechars:60 }}
-                </td>
+                    <td class="table-description">
+                        {{ r.description|truncatechars:60 }}
+                    </td>
 
-                <td class="table-type">
-                    {{ r.request_type }}
-                </td>
+                    <td class="table-type">
+                        {{ r.request_type }}
+                    </td>
 
-                <td class="table-department">{{ r.request_for_department }}</td>
+                    <td class="table-department">{{ r.request_for_department }}</td>
 
-                <td class="table-status">
-                    <span class="status-badge status-{{ r.status }}">
-                        {% if r.status == "DRAFT" %}
+                    <td class="table-status">
+                        <span class="status-badge status-{{ r.status }}">
+                            {% if r.status == "DRAFT" %}
                             {% trans "Draft" %}
-                        {% elif r.status == "CANCELLED" %}
+                            {% elif r.status == "CANCELLED" %}
                             {% trans "Cancelled" %}
-                        {% else %}
-                            {{ r.status }}
-                        {% endif %}
-                    </span>
-                </td>
+                            {% else %}
+                            {% trans r.get_status_display %}
+                            {% endif %}
+                        </span>
+                    </td>
 
-                <td class="table-date">
-                    {{ r.submitted_at|date:"Y-m-d H:i" }}
-                </td>
+                    <td class="table-date">
+                        {{ r.submitted_at|date:"Y-m-d H:i" }}
+                    </td>
 
-            </tr>
+                </tr>
 
-            {% empty %}
+                {% empty %}
 
-            <tr>
-                <td colspan="6">
-                    {% trans "No requests yet." %}
-                </td>
-            </tr>
+                <tr>
+                    <td colspan="6">
+                        {% trans "No requests yet." %}
+                    </td>
+                </tr>
 
-            {% endfor %}
+                {% endfor %}
 
-        </tbody>
+            </tbody>
 
-    </table>
+        </table>
+    </div>
+    {% include "requests_app/partials/list_pagination.html" %}
 </div>
 {% endblock %}

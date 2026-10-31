@@ -1137,9 +1137,6 @@ msgstr "Aucun compte actif n’existe avec cette adresse e-mail."
 msgid "Return to Stock"
 msgstr "Retour au stock"
 
-msgid "Print"
-msgstr "Imprimer"
-
 msgid "Returned Quantity"
 msgstr "Quantité retournée"
 
@@ -1163,9 +1160,6 @@ msgstr "Retour aux approbations en attente"
 
 msgid "Back to Request Detail"
 msgstr "Retour au détail de la demande"
-
-msgid "Back"
-msgstr "Retour"
 
 msgid "Current Stock"
 msgstr "Stock actuel"
@@ -2835,3 +2829,381 @@ msgstr "L’impression ne déduit pas de stock et ne modifie pas l’inventaire.
 
 msgid "Confirm & Print"
 msgstr "Confirmer et imprimer"
+
+msgid "Search by request reference or title..."
+msgstr "Rechercher par référence ou titre de demande..."
+
+msgid "Search and filters"
+msgstr "Recherche et filtres"
+
+msgid "Searching..."
+msgstr "Recherche en cours..."
+
+msgid "All Statuses"
+msgstr "Tous les statuts"
+
+msgid "All Actions"
+msgstr "Toutes les actions"
+
+msgid "Request Status"
+msgstr "Statut de la demande"
+
+msgid "Pagination"
+msgstr "Pagination"
+
+msgid "Dates filter your latest action on each request (Africa/Kinshasa)."
+msgstr "Les dates filtrent votre dernière action sur chaque demande (Africa/Kinshasa)."
+
+msgid "Dates filter request creation time (Africa/Kinshasa)."
+msgstr "Les dates filtrent la création des demandes (Africa/Kinshasa)."
+
+msgid "Enter an end date before the year 9999."
+msgstr "Saisissez une date de fin antérieure à l’année 9999."
+
+msgid "Results updated."
+msgstr "Résultats actualisés."
+
+msgid "Results could not be updated. Select Filter to reload the page."
+msgstr "Les résultats n’ont pas pu être actualisés. Sélectionnez Filtrer pour recharger la page."
+
+msgid "Review the filter errors."
+msgstr "Vérifiez les erreurs des filtres."
+
+msgid "Filters"
+msgstr "Filtres"
+
+msgid "Only authorized stock personnel may manage material outcomes and return receipts."
+msgstr "Seul le personnel de stock autorisé peut gérer les résultats du matériel et les reçus de retour."
+
+msgid "Invalid operation token. Reload the form."
+msgstr "Jeton d’opération invalide. Rechargez le formulaire."
+
+msgid "Enter nonnegative quantities with at most two decimal places."
+msgstr "Saisissez des quantités positives ou nulles avec deux décimales au maximum."
+
+msgid "Material outcomes require an approved request with confirmed stock deduction."
+msgstr "La régularisation nécessite une demande approuvée et une sortie de stock confirmée."
+
+msgid "No issued material lines are available."
+msgstr "Aucune ligne de matériel sorti n’est disponible."
+
+msgid "This operation token was already used with different details."
+msgstr "Ce jeton d’opération a déjà été utilisé avec des informations différentes."
+
+msgid "Select distinct recorded RETURN movements."
+msgstr "Sélectionnez des mouvements de retour enregistrés distincts."
+
+msgid "A selected return is unavailable or already has a receipt. Open receipt history."
+msgstr "Un retour sélectionné est indisponible ou possède déjà un reçu. Consultez l’historique des reçus."
+
+msgid "The recorded return evidence is inconsistent. Administrator review is required."
+msgstr "Les justificatifs du retour sont incohérents. Un administrateur doit les vérifier."
+
+msgid "The return receipt sequence is exhausted. Administrator review is required."
+msgstr "La séquence des reçus de retour est épuisée. Un administrateur doit intervenir."
+
+msgid "Enter a reason and a valid reconciliation revision."
+msgstr "Saisissez un motif et une révision de régularisation valide."
+
+msgid "Account for every issued material line."
+msgstr "Répartissez les quantités de chaque ligne de matériel sorti."
+
+msgid "The reporting technician must be the original request owner."
+msgstr "Le technicien déclarant doit être l’auteur de la demande initiale."
+
+msgid "This reconciliation changed. Reload and review the latest revision."
+msgstr "Cette régularisation a changé. Rechargez et vérifiez la dernière révision."
+
+msgid "Outcome quantities must equal issued quantities; returned quantities must match recorded physical returns."
+msgstr "La somme des quantités doit correspondre aux sorties ; les quantités retournées doivent correspondre aux retours physiques enregistrés."
+
+msgid "Material reconciliation revision %(revision)s."
+msgstr "Révision de régularisation du matériel %(revision)s."
+
+msgid "CLIENT-installed"
+msgstr "Installé chez le CLIENT"
+
+msgid "MICROCOM-used"
+msgstr "Utilisé par MICROCOM"
+
+msgid "Retained / testing"
+msgstr "Conservé / en test"
+
+msgid "Physically returned"
+msgstr "Retourné physiquement"
+
+msgid "Material Return Receipt"
+msgstr "Bon de retour — reçu de matériel"
+
+msgid "Nonfinancial receipt. No credit, refund or invoice adjustment."
+msgstr "Reçu non financier. Aucun avoir, remboursement ou ajustement de facture."
+
+msgid "Return date"
+msgstr "Date du retour"
+
+msgid "Stock employee"
+msgstr "Agent de stock"
+
+msgid "Not recorded"
+msgstr "Non enregistré"
+
+msgid "The PDF could not be generated. Return to receipt history and retry."
+msgstr "Le PDF n’a pas pu être généré. Revenez à l’historique des reçus et réessayez."
+
+msgid "Recorded physical returns"
+msgstr "Retours physiques enregistrés"
+
+msgid "Reconciliation reason"
+msgstr "Motif de régularisation"
+
+msgid "The operation could not be confirmed. Retry the same form or review history; do not create a new operation."
+msgstr "L’opération n’a pas pu être confirmée. Réessayez le même formulaire ou consultez l’historique ; ne créez pas une nouvelle opération."
+
+msgid "Reconcile materials and return receipts"
+msgstr "Régularisation du matériel et reçus de retour"
+
+msgid "Stock personnel record outcomes reported by the original request owner. Original classification and financial documents remain unchanged."
+msgstr "Le personnel de stock enregistre les résultats rapportés par l’auteur de la demande. La classification initiale et les documents financiers restent inchangés."
+
+msgid "Reporting technician"
+msgstr "Technicien déclarant"
+
+msgid "Recording outcomes does not restore stock. Record physical returns first using Return to stock."
+msgstr "La régularisation ne rétablit pas le stock. Enregistrez d’abord les retours physiques avec Retour au stock."
+
+msgid "Save reconciliation revision"
+msgstr "Enregistrer la révision de régularisation"
+
+msgid "Confirming assigns a permanent RCP reference. Reprints never change stock."
+msgstr "La confirmation attribue une référence RCP définitive. Les réimpressions ne modifient jamais le stock."
+
+msgid "Issue return receipt"
+msgstr "Émettre le reçu de retour"
+
+msgid "No undocumented physical returns are available."
+msgstr "Aucun retour physique sans reçu n’est disponible."
+
+msgid "View / Print PDF"
+msgstr "Voir / Imprimer le PDF"
+
+msgid "Reconciliation history"
+msgstr "Historique des régularisations"
+
+msgid "Revision"
+msgstr "Révision"
+
+msgid "No reconciliation has been recorded."
+msgstr "Aucune régularisation n’a été enregistrée."
+
+msgid "PDF unavailable"
+msgstr "PDF indisponible"
+
+msgid "Return to receipt history"
+msgstr "Revenir à l’historique des reçus"
+
+msgid "Material Reconciliation"
+msgstr "Régularisation du matériel"
+
+msgid "Material operations"
+msgstr "Opérations de matériel"
+
+msgid "Material Status"
+msgstr "État du matériel"
+
+msgid "Reconcile Materials"
+msgstr "Régulariser le matériel"
+
+msgid "Return Materials"
+msgstr "Retourner du matériel"
+
+msgid "Back to request"
+msgstr "Revenir à la demande"
+
+msgid "Issued"
+msgstr "Sorti"
+
+msgid "Used / installed"
+msgstr "Utilisé / installé"
+
+msgid "Review required"
+msgstr "Vérification nécessaire"
+
+msgid "Reconciled"
+msgstr "Régularisé"
+
+msgid "Not yet reconciled"
+msgstr "Non encore régularisé"
+
+msgid "Status reflects the latest reconciliation. New physical returns may require a new revision."
+msgstr "L’état reflète la dernière régularisation. De nouveaux retours physiques peuvent nécessiter une nouvelle révision."
+
+msgid "Record use, installation and retained quantities"
+msgstr "Enregistrer les quantités utilisées, installées et conservées"
+
+msgid "Physical returns are recorded separately. This form never changes stock or invoices."
+msgstr "Les retours physiques sont enregistrés séparément. Ce formulaire ne modifie ni le stock ni les factures."
+
+msgid "Review reconciliation"
+msgstr "Vérifier la régularisation"
+
+msgid "Check quantities. Each material must be fully accounted for."
+msgstr "Vérifiez les quantités. La totalité de chaque matériel sorti doit être répartie."
+
+msgid "How was the remaining material used?"
+msgstr "Quelle est la destination du matériel restant ?"
+
+msgid "Split quantities / multiple outcomes"
+msgstr "Répartir les quantités entre plusieurs destinations"
+
+msgid "Short explanation"
+msgstr "Brève explication"
+
+msgid "Review the quantities before saving a permanent revision."
+msgstr "Vérifiez les quantités avant d’enregistrer une révision définitive."
+
+msgid "Review and save"
+msgstr "Vérifier et enregistrer"
+
+msgid "Record materials physically received into central stock"
+msgstr "Enregistrer le matériel physiquement reçu au stock central"
+
+msgid "Record a return only after receiving the material. Stock is restored once on confirmation."
+msgstr "Enregistrez un retour uniquement après réception du matériel. Le stock est rétabli une seule fois à la confirmation."
+
+msgid "Available to return"
+msgstr "Quantité encore retournable"
+
+msgid "Fully returned"
+msgstr "Entièrement retourné"
+
+msgid "Document recorded physical returns"
+msgstr "Documenter les retours physiques enregistrés"
+
+msgid "Confirm return receipt"
+msgstr "Confirmer le bon de retour"
+
+msgid "Select returned materials"
+msgstr "Sélectionner le matériel retourné"
+
+msgid "Generate Bon de retour"
+msgstr "Générer le bon de retour"
+
+msgid "PDF language"
+msgstr "Langue du PDF"
+
+msgid "View PDF"
+msgstr "Voir le PDF"
+
+msgid "PDFs open in a new tab. Use the browser print button to print."
+msgstr "Les PDF s’ouvrent dans un nouvel onglet. Utilisez le bouton d’impression du navigateur."
+
+msgid "Material reconciliation saved."
+msgstr "Régularisation du matériel enregistrée."
+
+msgid "Return receipt issued. You can now view or print the PDF."
+msgstr "Bon de retour émis. Vous pouvez maintenant consulter ou imprimer le PDF."
+
+msgid "Confirm return to stock"
+msgstr "Confirmer le retour en stock"
+
+msgid "All issued quantities have already been returned. No further stock return is available."
+msgstr "Toutes les quantités sorties ont déjà été retournées. Aucun retour supplémentaire en stock n’est possible."
+
+msgid "Technician"
+msgstr "Technicien"
+
+msgid "Confirm"
+msgstr "Confirmer"
+
+msgid "Return undelivered or unused material back into stock."
+msgstr "Réintégrer au stock le matériel non livré ou inutilisé."
+
+msgid "Select at least one recorded return."
+msgstr "Sélectionnez au moins un retour enregistré."
+
+msgid "Material Management"
+msgstr "Gestion du matériel"
+
+msgid "Overview"
+msgstr "Vue d’ensemble"
+
+msgid "Reconcile"
+msgstr "Régulariser"
+
+msgid "Returns & Receipts"
+msgstr "Retours et bons de retour"
+
+msgid "Select a material from this request."
+msgstr "Sélectionnez un matériel de cette demande."
+
+msgid "Approved"
+msgstr "Approuvée"
+
+msgid "Total physically returned"
+msgstr "Quantité totale physiquement retournée"
+
+msgid "Historical discrepancy"
+msgstr "Incohérence historique"
+
+msgid "Historical stock discrepancy — review required."
+msgstr "Incohérence historique du stock — vérification nécessaire."
+
+msgid "Returnable"
+msgstr "Retour possible"
+
+msgid "Movement history"
+msgstr "Historique des mouvements"
+
+msgid "No stock movements recorded."
+msgstr "Aucun mouvement de stock enregistré."
+
+msgid "No stock integrity discrepancies found."
+msgstr "Aucune incohérence du stock détectée."
+
+msgid "Unknown database alias."
+msgstr "Alias de base de données inconnu."
+
+msgid "PostgreSQL target confirmation failed. No inspection performed."
+msgstr "La confirmation de la base PostgreSQL a échoué. Aucune vérification effectuée."
+
+msgid "This audit requires its own outermost read-only transaction."
+msgstr "Cet audit nécessite sa propre transaction principale en lecture seule."
+
+msgid "Invalid audit scope or detail limit."
+msgstr "Périmètre d’audit ou limite de détails invalide."
+
+msgid "No request references, names, reasons, actors, financial values or connection details."
+msgstr "Aucune référence de demande, aucun nom, motif, acteur, montant financier ni détail de connexion."
+
+msgid "The read-only audit could not complete. Review database availability and schema; no repairs were attempted."
+msgstr "L’audit en lecture seule n’a pas pu aboutir. Vérifiez la disponibilité et le schéma de la base ; aucune réparation n’a été tentée."
+
+msgid "Amount in words"
+msgstr "Montant en lettres"
+
+msgid "Document actions"
+msgstr "Actions du document"
+
+msgid "Document preview"
+msgstr "Aperçu du document"
+
+msgid "If the print dialog does not open, use Print or the PDF viewer's print control."
+msgstr "Si la fenêtre d’impression ne s’ouvre pas, utilisez Imprimer ou la commande d’impression du lecteur PDF."
+
+msgid "JavaScript is required for this print preview. Return to the document to open its protected PDF."
+msgstr "JavaScript est nécessaire pour cet aperçu avant impression. Revenez au document pour ouvrir son PDF protégé."
+
+msgid "Documents use the current application language."
+msgstr "Les documents utilisent la langue actuelle de l’application."
+
+msgid "Outstanding quantities"
+msgstr "Quantités à régulariser"
+
+msgid "Fully returned to central stock. No usage destination is required."
+msgstr "Entièrement retourné au stock central. Aucune destination d’utilisation n’est requise."
+
+msgid "Company"
+msgstr "Société"
+
+msgid "Download PDF"
+msgstr "Télécharger PDF"

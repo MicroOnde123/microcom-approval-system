@@ -35,7 +35,7 @@
 
     </div>
 
-    <a href="{{ back_url }}" class="btn btn-secondary">
+    <a href="{{ back_url }}" class="btn btn-tertiary">
         {% trans "Back to Request Detail" %}
     </a>
 
@@ -344,7 +344,7 @@
         </details>
     </div>
 
-    <div class="submit-row">
+    <div class="submit-row form-actions">
         {% if request_obj.status == "DRAFT" %}
             <button type="submit" name="action" value="save_draft" class="btn btn-secondary">
                 {% trans "Save Draft" %}

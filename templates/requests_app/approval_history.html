@@ -19,145 +19,138 @@
 
     </div>
 
-    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+    <a href="{% url 'dashboard' %}" class="btn btn-tertiary">
         {% trans "Back to Dashboard" %}
     </a>
 
 </div>
 
-<form method="get" style="margin-bottom: 20px;">
-    <label for="history-department">{% trans "Request For Department" %}</label>
-    <select id="history-department" name="department">
-        <option value="">{% trans "All Departments" %}</option>
-        {% for department in departments %}
-            {% with department_id=department.id|stringformat:"s" %}
-            <option value="{{ department.id }}" {% if selected_department == department_id %}selected{% endif %}>{{ department.name }}</option>
-            {% endwith %}
-        {% endfor %}
-    </select>
-    <button type="submit" class="btn">{% trans "Filter" %}</button>
-    <a href="{% url 'approval_history' %}" class="btn btn-secondary">{% trans "Clear" %}</a>
-</form>
+{% include "requests_app/partials/list_filters.html" with history_dates=True %}
 
-<div class="table-wrap" tabindex="0">
+<div id="live-filter-results" aria-live="off">
+    <div class="table-wrap" tabindex="0">
 
-    <table class="data-table">
+        <table class="data-table">
 
-        <thead>
+            <thead>
 
-            <tr>
+                <tr>
 
-                <th class="table-id">{% trans "Request Number" %}</th>
-                <th class="table-description">{% trans "Description" %}</th>
-                <th class="table-type">{% trans "Request Type" %}</th>
-                <th class="table-department">{% trans "Request For Department" %}</th>
-                <th class="table-status">{% trans "Status" %}</th>
-                <th class="table-status">{% trans "Your Action" %}</th>
-                <th class="table-date">{% trans "Acted At" %}</th>
-                <th class="table-actions">{% trans "Actions" %}</th>
+                    <th class="table-id">{% trans "Request Number" %}</th>
+                    <th class="table-description">{% trans "Description" %}</th>
+                    <th class="table-type">{% trans "Request Type" %}</th>
+                    <th class="table-department">{% trans "Request For Department" %}</th>
+                    <th class="table-status">{% trans "Status" %}</th>
+                    <th class="table-status">{% trans "Your Action" %}</th>
+                    <th class="table-date">{% trans "Acted At" %}</th>
+                    <th class="table-actions">{% trans "Actions" %}</th>
 
-            </tr>
+                </tr>
 
-        </thead>
+            </thead>
 
-        <tbody>
+            <tbody>
 
-            {% for approval in approvals %}
+                {% for approval in approvals %}
 
-            <tr>
+                <tr>
 
-                <td class="table-id">
-                    {{ approval.request.request_number }}
-                </td>
+                    <td class="table-id">
+                        {{ approval.request.request_number }}
+                    </td>
 
-                <td class="table-description">
-                    {{ approval.request.description|truncatechars:60 }}
-                </td>
+                    <td class="table-description">
+                        {{ approval.request.description|truncatechars:60 }}
+                    </td>
 
-                <td class="table-type">
-                    {{ approval.request.request_type }}
-                </td>
+                    <td class="table-type">
+                        {{ approval.request.request_type }}
+                    </td>
 
-                <td class="table-department">{{ approval.request.request_for_department }}</td>
+                    <td class="table-department">{{ approval.request.request_for_department }}</td>
 
-                <td class="table-status">
+                    <td class="table-status">
 
-                    <span class="status-badge status-{{ approval.request.status }}">
-                        {{ approval.request.status }}
-                    </span>
+                        <span class="status-badge status-{{ approval.request.status }}">
+                            {% trans approval.request.get_status_display %}
+                        </span>
 
-                </td>
+                    </td>
 
-                <td class="table-status">
+                    <td class="table-status">
 
-                    <span class="status-badge status-{{ approval.status }}">
-                        {{ approval.status }}
-                    </span>
+                        <span class="status-badge status-{{ approval.status }}">
+                            {% trans approval.get_status_display %}
+                        </span>
 
-                </td>
+                    </td>
 
-                <td class="table-date">
+                    <td class="table-date">
 
-                    {% if approval.acted_at %}
+                        {% if approval.acted_at %}
 
                         {{ approval.acted_at|date:"Y-m-d H:i" }}
 
-                    {% else %}
+                        {% else %}
 
                         -
 
-                    {% endif %}
+                        {% endif %}
 
-                </td>
+                    </td>
 
-                <td class="table-actions">
+                    <td class="table-actions">
 
-                    <div class="actions-inline">
+                        <div class="actions-inline">
 
-                        <a href="{% url 'request_detail' approval.request.id %}?next={{ current_list_url|urlencode }}" class="btn btn-secondary">
-                            {% trans "View" %}
-                        </a>
+                            <a href="{% url 'request_detail' approval.request.id %}?next={{ current_list_url|urlencode }}"
+                                class="btn btn-secondary">
+                                {% trans "View" %}
+                            </a>
 
-                        {% if approval.request.status == "APPROVED" %}
+                            {% if approval.request.status == "APPROVED" %}
 
                             {% if approval.request.metadata_json.permission_group %}
 
-                                <a href="{% url 'permission_document' approval.request.id %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">
-                                    {% trans "Permission Document" %}
-                                </a>
+                            <a href="{% url 'permission_document' approval.request.id %}?next={{ current_list_url|urlencode }}"
+                                class="btn btn-secondary" target="_blank">
+                                {% trans "Permission Document" %}
+                            </a>
 
                             {% elif approval.request.material_items.exists %}
 
-                                <a href="{% url 'approved_document' approval.request.id %}?next={{ current_list_url|urlencode }}" class="btn" target="_blank">
-                                    {% trans "Approved Document" %}
-                                </a>
+                            <a href="{% url 'approved_document' approval.request.id %}?next={{ current_list_url|urlencode }}"
+                                class="btn btn-secondary" target="_blank">
+                                {% trans "Approved Document" %}
+                            </a>
 
                             {% endif %}
 
-                        {% endif %}
+                            {% endif %}
 
-                    </div>
+                        </div>
 
-                </td>
+                    </td>
 
-            </tr>
+                </tr>
 
-            {% empty %}
+                {% empty %}
 
-            <tr>
+                <tr>
 
-                <td colspan="7">
-                    {% trans "No approval history available." %}
-                </td>
+                    <td colspan="8">
+                        {% trans "No approval history available." %}
+                    </td>
 
-            </tr>
+                </tr>
 
-            {% endfor %}
+                {% endfor %}
 
-        </tbody>
+            </tbody>
 
-    </table>
+        </table>
 
+    </div>
+    {% include "requests_app/partials/list_pagination.html" %}
 </div>
-
 {% endblock %}

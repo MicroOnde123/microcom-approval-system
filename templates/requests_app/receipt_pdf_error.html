@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% load i18n %}
+{% block content %}<h1>{% trans "PDF unavailable" %}</h1>
+<p role="alert">{% trans "The PDF could not be generated. Return to receipt history and retry." %}</p>
+<p>{{ receipt.reference }}</p>
+<a class="btn btn-secondary" href="{% url 'material_outcomes' receipt.request_id %}?tab=returns">{% trans "Return to receipt history" %}</a>
+<form method="post" action="{% url 'return_receipt_pdf' receipt.pk %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">{% trans "Retry PDF" %}</button></form>{% endblock %}

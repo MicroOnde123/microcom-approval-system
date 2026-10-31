@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from accounts.forms import CustomPasswordResetForm
+from requests_app import material_outcome_views
 
 from requests_app.views import (
     create_request,
@@ -28,6 +29,9 @@ from requests_app.views import (
 )
 
 urlpatterns = [
+    path("requests/<int:request_id>/material-outcomes/", material_outcome_views.workspace, name="material_outcomes"),
+    path("return-receipts/<int:receipt_id>/pdf/", material_outcome_views.receipt_pdf, name="return_receipt_pdf"),
+    path("return-receipt-artifacts/<int:artifact_id>/", material_outcome_views.receipt_artifact, name="return_receipt_artifact"),
     path("requests/<int:request_id>/material-documents/<str:kind>/", material_document, name="material_document"),
     path("invoices/", include("invoicing.urls")),
     # LANGUAGE SWITCHER

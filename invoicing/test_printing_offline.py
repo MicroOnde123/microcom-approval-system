@@ -37,13 +37,13 @@ class InvoicePrintingTests(unittest.TestCase):
             text = "\n".join(page.extract_text() or "" for page in reader.pages)
             self.assertIn(label + snapshot["branch"]["name"], text)
             self.assertIn(title, text)
-            for hidden in (*snapshot["company"].values(), snapshot["branch"]["physical_address"].splitlines()[0]):
+            for hidden in snapshot["company"].values():
                 self.assertNotIn(hidden, text)
             self.assertNotIn("Succursale:", text)
             self.assertNotIn("Succursale :", text)
             self.assertFalse(reader.metadata.author)
             for value in (snapshot["number"], snapshot["issue_date"], snapshot["request_reference"],
-                          snapshot["lines"][0]["description"], "2.00 USD", snapshot["amount_words_fr"]):
+                          snapshot["lines"][0]["description"], "2.00 USD", snapshot["amount_words_fr"] if language == "fr" else "two US dollars", snapshot["branch"]["physical_address"].splitlines()[0]):
                 self.assertIn(value, text)
             self.assertEqual(snapshot, before)
 
@@ -65,11 +65,13 @@ class InvoicePrintingTests(unittest.TestCase):
                 self.assertEqual(views._print_language(), expected)
         request = self.request(data={"language": "en"})
         with override("fr"), patch.object(views, "_invoice", return_value=SimpleNamespace(status="FINALIZED")), \
-                patch.object(views, "generate_pdf", return_value=SimpleNamespace(pk=9)) as generate:
+                patch.object(views, "generate_pdf", return_value=SimpleNamespace(pk=9)) as generate, \
+                patch.object(views, "download_pdf", return_value=(None, io.BytesIO(self.pdf("single")))):
             response = views.invoice_print(request, 1)
         generate.assert_called_once_with(1, request.user, language="fr")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("invoicing:download", args=[9]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"data-pdf-frame", response.content)
+        self.assertIn(b"invoice-1-fr.pdf", response.content)
 
     def test_download_is_authenticated_authorized_inline_and_private(self):
         request = self.request("get")
@@ -156,7 +158,8 @@ class InvoicePrintingTests(unittest.TestCase):
                 patch.object(views, "prepare_filtered_print", return_value=self.pdf("combined")) as prepare:
             response = views.invoice_bulk_print(request)
         prepare.assert_called_once_with(request.POST, request.user, language="fr")
-        self.assertIn('inline;', response["Content-Disposition"]); self.assertIn("invoices-fr.pdf", response["Content-Disposition"])
+        self.assertIn(b"data-pdf-frame", response.content); self.assertIn(b"invoices-fr.pdf", response.content)
+        self.assertIn("no-store", response["Cache-Control"])
         response.close()
 
     def test_merge_rejects_invalid_and_oversized_documents_safely(self):

@@ -11,7 +11,7 @@
         <p class="muted">{% trans "Approve, reject, or return this request." %}</p>
     </div>
 
-    <a href="{{ back_url }}" class="btn btn-secondary">
+    <a href="{{ back_url }}" class="btn btn-tertiary">
         {% trans "Back to Pending Approvals" %}
     </a>
 </div>
@@ -46,9 +46,9 @@
 
     {{ form.as_p }}
 
-    <button type="submit" class="btn">
+    <div class="form-actions"><button type="submit" class="btn">
         {% trans "Submit" %}
-    </button>
+    </button></div>
 
 </form>
 

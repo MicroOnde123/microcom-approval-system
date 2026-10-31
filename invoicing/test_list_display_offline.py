@@ -41,7 +41,7 @@ class InvoiceListOfflineTests(unittest.TestCase):
 
     def test_complete_pricing_and_translated_reference(self):
         self.assertIn("Draft #1", self.render(self.invoice()))
-        self.assertIn("80.00 USD — Provisional", self.render(self.invoice()))
+        self.assertIn("80.00 USD — Provisional", " ".join(self.render(self.invoice()).split()))
         french = self.render(self.invoice(), "fr")
         self.assertIn("Brouillon n° 1", french)
         self.assertIn("Provisoire", french)
@@ -55,12 +55,12 @@ class InvoiceListOfflineTests(unittest.TestCase):
             self.assertIn("Tarification incomplète", self.render(invoice, "fr"))
 
     def test_zero_price_is_complete(self):
-        self.assertIn("0.00 USD — Provisional", self.render(self.invoice(list_provisional_total=Decimal("0.00"))))
+        self.assertIn("0.00 USD — Provisional", " ".join(self.render(self.invoice(list_provisional_total=Decimal("0.00"))).split()))
 
     def test_sum_of_rounded_lines_is_displayed_without_recalculation(self):
         # Two stored .01 increments must display .02, not a re-rounded raw product.
         invoice = self.invoice(list_line_count=2, list_priced_line_count=2, list_provisional_total=Decimal("0.02"))
-        self.assertIn("0.02 USD — Provisional", self.render(invoice))
+        self.assertIn("0.02 USD — Provisional", " ".join(self.render(invoice).split()))
 
     def test_finalized_uses_official_number_and_header_total(self):
         invoice = self.invoice(status="FINALIZED", number="FAC/0042/2026", total=Decimal("123.45"),

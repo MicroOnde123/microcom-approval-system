@@ -43,8 +43,14 @@ def authorize_return_note(user, request_id, *, issue=False, preview=False, docum
         permissions.append("add_materialreturnnote")
     if document:
         permissions.append("view_materialreturnnote_document")
-    if not (actor and actor.is_active and actor.is_staff and
-            all(actor.has_perm("invoicing." + action) for action in permissions)):
+    if not (
+        actor
+        and actor.is_active
+        and all(
+            actor.has_perm("invoicing." + action)
+            for action in permissions
+        )
+    ):
         raise PermissionDenied(_("You do not have permission to perform this material return note action."))
     if not request_scope(actor).filter(pk=request_id).exists():
         raise PermissionDenied(_("This material return note is outside your stock-review assignments."))

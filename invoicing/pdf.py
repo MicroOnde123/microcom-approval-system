@@ -17,7 +17,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 
-RENDERER_VERSION = "invoice-a4-v4-rl5.1.0"
+from .document_presentation import amount_words
+
+RENDERER_VERSION = "invoice-a4-v5-rl5.1.0"
 _FONT_LOCK = Lock()
 _FONTS = Path(reportlab.__file__).parent / "fonts"
 # SimpleDocTemplate's frame has 6pt internal padding on each side.
@@ -83,6 +85,8 @@ def render_pdf(snapshot, language):
         story.extend([p(_("Invoice"), title), metadata,
                       p(_("Client: %(name)s") % {"name": branch["name"]}),
                       p(_("Material request reference") + ": " + snapshot["request_reference"]), Spacer(1, 9)])
+        if branch.get("physical_address"):
+            story.extend([p(_("Succursale physical address"), bold), p(branch["physical_address"]), Spacer(1, 6)])
         headings = [_('Material'), _('Quantity'), _('Unit price'), _('Line total')]
         numeric_heading = ParagraphStyle("numeric-heading", parent=cell_bold, alignment=2)
         rows = [[p(label, cell_bold if index == 0 else numeric_heading) for index,label in enumerate(headings)]]
@@ -103,7 +107,7 @@ def render_pdf(snapshot, language):
         stock_style = ParagraphStyle("invoice-stock", parent=bold, alignment=2)
         summary = [Spacer(1, 10), p(_("Total amount payable") + ": " + display_decimal(snapshot["total"], minimum_places=2) + " " + snapshot["currency"], total_style),
                       p(_("Currency") + ": " + snapshot["currency"]),
-                      p("Nous disons : " + snapshot["amount_words_fr"]), Spacer(1, 7), p(_("Comments"), bold),
+                      p(_("Amount in words") + ": " + amount_words(snapshot["total"], snapshot["currency"], language, snapshot["amount_words_fr"])), Spacer(1, 7), p(_("Comments"), bold),
                       p(snapshot["note"] or "—"), Spacer(1, 12), p(_("Stock Department"), stock_style)]
         story.extend([table, KeepTogether(summary)])
         output = io.BytesIO()

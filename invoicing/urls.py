@@ -9,6 +9,7 @@ urlpatterns = [
     path("<int:invoice_id>/return-notes/preview/", return_notes.preview, name="return_note_preview"),
     path("<int:invoice_id>/return-notes/issue/", return_notes.issue, name="return_note_issue"),
     path("return-notes/<int:note_id>/", return_notes.detail, name="return_note_detail"),
+    path("return-notes/<int:note_id>/print/", return_notes.pdf, name="return_note_print"),
     path("return-notes/<int:note_id>/pdf/<str:language>/", return_notes.pdf, name="return_note_pdf"),
     path("return-note-documents/<int:artifact_id>/download/", return_notes.download, name="return_note_download"),
     path("",views.invoice_list,name="list"),

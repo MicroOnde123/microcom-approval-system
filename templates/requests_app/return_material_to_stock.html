@@ -1,11 +1,13 @@
 {% extends "base.html" %}
-{% load i18n return_note_navigation %}
+{% load i18n return_note_navigation static %}
 
 {% block title %}{% trans "Return to Stock" %}{% endblock %}
 
 {% block page_layout %}app-container--reading{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/material_operations.css' %}">
+<div class="material-operations">
 <div class="page-header">
     <div>
         <h1>{% trans "Return to Stock" %}</h1>
@@ -14,12 +16,13 @@
         </p>
     </div>
 
-    <a href="{{ back_url }}" class="btn btn-secondary">
-        {% trans "Back to Material Reports" %}
+    <a href="{{ back_url }}" class="btn btn-tertiary">
+        {% trans "Back" %}
     </a>
 </div>
 
-<div class="detail-grid">
+{% if not can_return and not return_error %}<p class="ops-empty" role="status">{% trans "All issued quantities have already been returned. No further stock return is available." %}</p>{% endif %}
+<section class="ops-card"><div class="detail-grid">
     <div class="detail-item">
         <strong>{% trans "Request Number" %}</strong>
         {{ request_obj.request_number }}
@@ -50,19 +53,24 @@
         {{ material.stock_quantity }} {{ material.unit }}
     </div>
 </div>
+<p><a href="{% url 'material_outcomes' request_obj.pk %}?tab=returns">{% trans "Material Management" %}</a> · <a href="{% url 'request_detail' request_obj.pk %}">{% trans "Back to request" %}</a></p>
 
 {% if return_error %}<p role="alert">{{ return_error }}</p>{% endif %}
-{% return_note_links request.user request_obj.pk as return_note_nav %}
-{% if return_note_nav.can_read %}<p class="muted">{% trans "A material return note can optionally value returns already recorded in stock." %}</p>{% endif %}
-{% include "invoicing/return_notes/links.html" %}
+{{ form.non_field_errors }}
+{% if can_return %}
+<p class="ops-hint">{% trans "Record a return only after receiving the material. Stock is restored once on confirmation." %}</p>
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ back_url }}">
-
-    {{ form.as_p }}
-
-    <button type="submit" class="btn" {% if return_error or remaining_quantity == 0 %}disabled{% endif %}>
-        {% trans "Return to Stock" %}
-    </button>
+    {{ form.operation_token }}{{ form.operation_token.errors }}
+    <div class="ops-reason"><label for="{{ form.quantity.id_for_label }}">{{ form.quantity.label }}</label>{{ form.quantity }}{{ form.quantity.errors }}</div>
+    <div class="ops-reason"><label for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>{{ form.reason }}{{ form.reason.errors }}</div>
+    <div class="form-actions"><button type="submit" class="btn">{% trans "Confirm return to stock" %}</button></div>
 </form>
+{% endif %}
+</section>
+{% return_note_links request.user request_obj.pk as return_note_nav %}
+{% if return_note_nav.can_read %}<p class="muted">{% trans "A material return note can optionally value returns already recorded in stock." %}</p>{% endif %}
+{% include "invoicing/return_notes/links.html" %}
+</div>
 {% endblock %}

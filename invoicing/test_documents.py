@@ -79,7 +79,7 @@ class InvoiceDocumentTests(LifecycleFixtures, TransactionTestCase):
                 data = artifact_bytes(artifact)
                 text = pdf_text(data)
                 for value in (title, total, department, invoice.number, "20.00", "2.00", "10", "USD",
-                              "Câble électrique € & <test>", "Nous disons : " + invoice.amount_words_fr,
+                              "Câble électrique € & <test>", ("Montant en lettres : " + invoice.amount_words_fr) if language == "fr" else "Amount in words: twenty US dollars",
                               invoice.succursale_snapshot["name"],
                               invoice.request_reference_snapshot, "Synthetic invoice"):
                     self.assertIn(re.sub(r"\s+", "", value), re.sub(r"\s+", "", text))
@@ -291,7 +291,7 @@ class InvoiceDocumentTests(LifecycleFixtures, TransactionTestCase):
         artifact = generate_pdf(invoice.pk,self.user,language="en")
         text = pdf_text(artifact_bytes(artifact))
         self.assertIn("0.00 EUR",text)
-        self.assertIn("Nous disons : zéro euro",text)
+        self.assertIn("Amount in words: zero euros",text)
 
     def test_storage_failure_is_retryable_without_changing_financial_state(self):
         invoice = self.final_document()

@@ -1,0 +1,8 @@
+{% load i18n %}
+{% if page_obj.has_other_pages %}
+<nav class="actions-inline request-list-pagination" aria-label="{% trans 'Pagination' %}">
+    {% if page_obj.has_previous %}<a class="btn btn-secondary" href="?{{ active_querystring }}&amp;page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
+    <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="btn btn-secondary" href="?{{ active_querystring }}&amp;page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}
+</nav>
+{% endif %}

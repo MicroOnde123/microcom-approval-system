@@ -225,19 +225,24 @@ class RequestReferencePostgreSQLTests(TransactionTestCase):
         from django.db.migrations.executor import MigrationExecutor
         from django.db.migrations.exceptions import IrreversibleError
         current = [("requests_app", "0018_ordinary_request_references")]
+        leaves = MigrationExecutor(connection).loader.graph.leaf_nodes()
         previous = [("requests_app", "0017_request_classification_request_classified_at_and_more")]
         try:
             MigrationExecutor(connection).migrate(previous)
         finally:
-            MigrationExecutor(connection).migrate(current)
+            MigrationExecutor(connection).migrate(leaves)
         with allocation_clock(self.moment):
             request, _ = self.create()
-        with self.assertRaises(IrreversibleError):
-            MigrationExecutor(connection).migrate(previous)
+        try:
+            with self.assertRaises(IrreversibleError):
+                MigrationExecutor(connection).migrate(previous)
+        finally:
+            MigrationExecutor(connection).migrate(leaves)
         # A rejected reversal must leave every safeguard and evidence row intact.
         self.assertTrue(RequestCreationReceipt.objects.filter(request=request).exists())
         self.assertEqual(RequestReferenceSequence.objects.get().last_counter, 1)
         self.assertIn(current[0], MigrationExecutor(connection).loader.applied_migrations)
+        self.assertTrue(set(leaves).issubset(MigrationExecutor(connection).loader.applied_migrations))
 
     def test_submit_failure_rolls_back_and_success_creates_one_workflow(self):
         with allocation_clock(self.moment), self.assertRaises(ValidationError):

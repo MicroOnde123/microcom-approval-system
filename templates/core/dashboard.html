@@ -26,7 +26,7 @@
         <strong>{% trans "Create Request" %}</strong>
         {% trans "Start a new material, payment, or general permission request." %}
 
-        <div style="margin-top:12px;">
+        <div class="card-actions">
             <a href="{% url 'create_request' %}" class="btn">
                 {% trans "New Request" %}
             </a>
@@ -37,7 +37,7 @@
         <strong>{% trans "My Requests" %}</strong>
         {% trans "Track the status and approval progress of your submissions." %}
 
-        <div style="margin-top:12px;">
+        <div class="card-actions">
             <a href="{% url 'my_requests' %}" class="btn btn-secondary">
                 {% trans "View My Requests" %}
             </a>
@@ -48,7 +48,7 @@
         <strong>{% trans "Pending Approvals" %}</strong>
         {% trans "Review requests currently assigned to you for action." %}
 
-        <div style="margin-top:12px;">
+        <div class="card-actions">
             <a href="{% url 'pending_approvals' %}" class="btn btn-secondary">
                 {% trans "Open Approvals" %}
             </a>

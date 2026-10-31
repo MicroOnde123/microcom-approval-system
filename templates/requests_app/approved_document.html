@@ -1,6 +1,6 @@
 {% load i18n %}
 <!DOCTYPE html>
-<html>
+{% get_current_language as document_language %}<html lang="{{ document_language }}">
 
 <head>
     <title>{% trans "Approved Document" %} - {{ request_obj.request_number }}</title>

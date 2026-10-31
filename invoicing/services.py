@@ -48,7 +48,7 @@ _INTEGRITY_GUARDS = {
 }
 
 
-def _log_integrity_error(error):
+def _log_integrity_error(error, *, guards=None, diagnostic_logger=None):
     """Best-effort metadata only; diagnostic/logging failures must not mask errors."""
     def attribute(obj, name):
         try:
@@ -71,8 +71,8 @@ def _log_integrity_error(error):
         diag = attribute(original, "diag")
         constraint = token(attribute(diag, "constraint_name"), r"[A-Za-z_][A-Za-z0-9_$]{0,62}")
         primary = attribute(diag, "message_primary")
-        guard = _INTEGRITY_GUARDS.get(primary, "unavailable") if type(primary) is str else "unavailable"
-        logger.warning("Financial integrity failure: exception_class=%s sqlstate=%s constraint=%s guard=%s",
+        guard = (_INTEGRITY_GUARDS if guards is None else guards).get(primary, "unavailable") if type(primary) is str else "unavailable"
+        (logger if diagnostic_logger is None else diagnostic_logger).warning("Financial integrity failure: exception_class=%s sqlstate=%s constraint=%s guard=%s",
             exception_class, sqlstate, constraint, guard)
     except Exception:
         # Never fall back to logging the exception, its attributes or a traceback.

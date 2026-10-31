@@ -52,7 +52,7 @@ class DocumentSequenceAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self,request,obj=None):
         result = list(self.readonly_fields)
-        if obj and (obj.invoice_documents.filter(status="FINALIZED").exists() or obj.creditnote_documents.filter(status="FINALIZED").exists()):
+        if obj and (obj.invoice_documents.filter(status="FINALIZED").exists() or obj.creditnote_documents.filter(status="FINALIZED").exists() or obj.materialreturnnote_documents.filter(status="FINALIZED").exists()):
             result += ["document_type","year","series","number_format","starting_value","verification_evidence"]
         return result
 

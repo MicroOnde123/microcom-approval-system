@@ -414,6 +414,9 @@ class FinancialSchemaTests(FinancialFixtures, TestCase):
                 quantity=1, unit_price_snapshot=2, line_total=2, description_snapshot="Synthetic")
 
     def test_final_credit_immutability_and_global_reference_uniqueness(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT number,document_type,document_id FROM invoicing_finalreference")
+            registry_before = cursor.fetchall()
         invoice = self.draft()
         allocation = self.allocation(self.line(invoice,price=2))
         self.finalize_fixture(invoice)
@@ -434,7 +437,7 @@ class FinancialSchemaTests(FinancialFixtures, TestCase):
         self.expect_db_rejection("DELETE FROM invoicing_creditallocation WHERE id=%s",[item.pk])
         with connection.cursor() as cursor:
             cursor.execute("SELECT number,document_type,document_id FROM invoicing_finalreference ORDER BY document_type")
-            self.assertCountEqual(cursor.fetchall(),[(invoice.number,"INVOICE",invoice.pk),(credit.number,"CREDIT",credit.pk)])
+            self.assertCountEqual(cursor.fetchall(),registry_before + [(invoice.number,"INVOICE",invoice.pk),(credit.number,"CREDIT",credit.pk)])
         self.expect_db_rejection("DELETE FROM invoicing_finalreference WHERE number=%s",[invoice.number])
 
     def test_postinvoice_returns_cannot_exceed_net_invoiced_credit_cap(self):

@@ -1,0 +1,5 @@
+{% if filter_validation_errors %}
+<ul class="errorlist" role="alert">
+    {% for message in filter_validation_errors %}<li>{{ message }}</li>{% endfor %}
+</ul>
+{% endif %}

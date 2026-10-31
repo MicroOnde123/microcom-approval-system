@@ -1,7 +1,7 @@
 {% load i18n static %}
 
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+{% get_current_language as active_application_language %}<html lang="{{ active_application_language }}">
 
 <head>
     <meta charset="UTF-8">
@@ -567,6 +567,7 @@
         {% endif %}
     </style>
     <link rel="stylesheet" href="{% static 'css/app-layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/action_layout.css' %}">
 </head>
 
 <body>
@@ -668,6 +669,8 @@
                 .catch(error => console.error("Notification count error:", error));
         }, 30000);
     </script>
+
+    <script src="{% static 'js/auto_filters.js' %}" defer></script>
 </body>
 
 </html>

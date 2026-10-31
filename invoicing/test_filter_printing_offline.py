@@ -168,5 +168,7 @@ class InvoiceFilterPrintingTests(unittest.TestCase):
                     "active_filters": self.filters(), "invoice_print_limit": 20}))
                 self.assertIn(label, content); self.assertIn('type="date"', content)
                 self.assertIn('value="2026-01-01"', content)
-                self.assertNotIn("<script>", content)
-                self.assertIn("&lt;script&gt;", content)
+                # Legitimate synchronization scripts are part of this page;
+                # the user-supplied attack must remain escaped, not executable.
+                self.assertNotIn("<script>alert(1)</script>", content)
+                self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", content)

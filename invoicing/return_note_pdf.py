@@ -17,7 +17,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 
-RENDERER_VERSION = "return-note-a4-v1-rl5.1.0"
+from .document_presentation import amount_words
+
+RENDERER_VERSION = "return-note-a4-v2-rl5.1.0"
 _FONT_LOCK = Lock()
 _FONTS = Path(reportlab.__file__).parent / "fonts"
 # SimpleDocTemplate's frame has 6pt internal padding on each side.
@@ -48,8 +50,6 @@ def render_pdf(snapshot, language):
                                  textColor=colors.HexColor("#202020"), spaceAfter=4)
         bold = ParagraphStyle("invoice-bold", parent=regular, fontName="InvoiceVeraBold")
         title = ParagraphStyle("invoice-title", parent=bold, fontSize=15, leading=20, alignment=1, spaceAfter=10)
-        company_title = ParagraphStyle("company-title", parent=bold, fontSize=16, leading=21, alignment=1, spaceAfter=5)
-        company_detail = ParagraphStyle("company-detail", parent=regular, alignment=1, spaceAfter=2)
         right = ParagraphStyle("invoice-right", parent=regular, alignment=2)
         cell = ParagraphStyle("invoice-cell", parent=regular, spaceAfter=0)
         cell_right = ParagraphStyle("invoice-cell-right", parent=right, spaceAfter=0)
@@ -63,11 +63,9 @@ def render_pdf(snapshot, language):
                 raise ValidationError(_("The frozen material return note contains characters unsupported by the PDF font. Administrator review is required."))
             return Paragraph(escape(value).replace("\n", "<br/>"), style)
 
-        company = snapshot["company"]
         branch = snapshot["branch"]
         branding = snapshot["branding"]
         story = []
-        company_block = [p(company["company_name"], company_title), p(company["company_address"], company_detail), p(company["contact_details"], company_detail)]
         if branding["strategy"] == "embedded-content":
             if len(branding["content_base64"]) > 2800000:
                 raise ValidationError(_("The frozen company logo is incomplete or damaged. Administrator review is required."))
@@ -79,19 +77,18 @@ def render_pdf(snapshot, language):
                     or mime is None or mime != branding["content_type"]):
                 raise ValidationError(_("The frozen company logo is incomplete or damaged. Administrator review is required."))
         # Retain frozen-asset integrity checks, but v2 deliberately draws no logo.
-        header = Table([[company_block]], colWidths=[_CONTENT_WIDTH], hAlign="LEFT")
-        header.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"),
-                                   ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
         metadata = Table([[p(_("Document number") + ": " + snapshot["number"], bold),
                            p(_("Issue date") + ": " + snapshot["issue_date"], right)]],
                          colWidths=[_CONTENT_WIDTH-200,200], hAlign="LEFT")
         metadata.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"TOP"),
                                      ("LEFTPADDING",(0,0),(-1,-1),0), ("RIGHTPADDING",(0,0),(-1,-1),0)]))
-        story.extend([header, Spacer(1, 10), p(_("Material return note"), title), metadata,
-                      p(_("Succursale") + ": " + branch["code"] + " — " + branch["name"]),
+        story.extend([p(_("Material return note"), title), metadata,
+                      p(_("Client: %(name)s") % {"name": branch["name"]}),
                       p(_("Original invoice") + ": " + snapshot["original"]["number"] + " — " + snapshot["original"]["issue_date"]),
                       p(_("Material request reference") + ": " + snapshot["request_reference"]),
                       p(_("Internal valuation of materials already returned to stock. No payment, refund or credit adjustment.")), Spacer(1, 9)])
+        if branch.get("physical_address"):
+            story.extend([p(_("Succursale physical address"), bold), p(branch["physical_address"]), Spacer(1, 6)])
         headings = [_('Material'), _('Returned quantity'), _('Original unit price'), _('Returned value')]
         numeric_heading = ParagraphStyle("numeric-heading", parent=cell_bold, alignment=2)
         rows = [[p(label, cell_bold if index == 0 else numeric_heading) for index,label in enumerate(headings)]]
@@ -117,14 +114,14 @@ def render_pdf(snapshot, language):
                    p(_("Original invoice value") + ": " + money(snapshot["original"]["total"])),
                    p(_("Cumulative returned value as of this note") + ": " + money(snapshot["cumulative_returned_value"])),
                    p(_("Adjusted net material value as of this note") + ": " + money(snapshot["adjusted_net_value"])),
-                   p(_("Amount in French words") + ": " + snapshot["amount_words_fr"]),
+                   p(_("Amount in words") + ": " + amount_words(snapshot["total"], snapshot["currency"], language, snapshot["amount_words_fr"])),
                    Spacer(1, 7), p(_("Operation reason"), bold), p(snapshot["reason"]),
                    Spacer(1, 12), p(_("Stock Department"), stock_style)]
         story.extend([table, KeepTogether(summary)])
         output = io.BytesIO()
         document = SimpleDocTemplate(output, pagesize=A4, leftMargin=42, rightMargin=42,
                                      topMargin=38, bottomMargin=48, title=snapshot["number"],
-                                     author=company["company_name"],
+                                     author="",
                                      subject=(_FONTS / "bitstream-vera-license.txt").read_text(encoding="utf-8"))
 
         def footer(canvas, doc):

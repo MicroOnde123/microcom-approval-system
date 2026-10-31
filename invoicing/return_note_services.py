@@ -1,6 +1,7 @@
 """Internal return valuation only. Never calls a stock operation or renders files."""
 import hashlib
 import json
+import logging
 import time
 from decimal import Decimal, ROUND_HALF_UP, localcontext
 from uuid import UUID, uuid4
@@ -15,7 +16,7 @@ from .configuration import business_date
 from .models import (CreditAllocation, DocumentSequence, Invoice, InvoiceReturnExclusion, MaterialReturnNote,
                      MaterialReturnNoteAudit, MaterialReturnNoteLine)
 from .permissions import authorize_return_note
-from .services import database_now
+from .services import database_now, _log_integrity_error
 from .words import amount_in_french
 
 SALT = "invoicing.material_return_note.confirmation.v1"
@@ -23,6 +24,26 @@ MAX_AGE = 7200
 POLICY = "RETURN_CUMULATIVE_HALF_UP_2_V1"
 CENT = Decimal("0.01")
 MAX_ID = 9223372036854775807
+logger = logging.getLogger(__name__)
+# Exact static messages only; never log driver messages or financial payloads.
+_DATABASE_GUARDS = {
+    "Backdated or future issuance prohibited": "return_note_timestamp_window",
+    "Return note numbering must use the current business year": "return_note_business_date",
+    "Verified RETURN_NOTE sequence required": "return_note_sequence_verification",
+    "Return note identity is immutable": "return_note_identity",
+    "A current return note operation is required": "return_note_operation",
+    "Return documentation requires READ COMMITTED": "return_note_isolation",
+    "Invoice financial ledgers are exclusive; administrator review required": "return_note_credit_exclusivity",
+    "Invalid return attribution, frozen valuation or quantity cap": "return_note_provenance",
+    "Ambiguous historical stock evidence; administrator review required": "return_note_stock_history",
+    "Return note construction must complete atomically before commit": "return_note_atomic_construction",
+    "Return note snapshots must match the original finalized invoice": "return_note_snapshots",
+    "Invalid cumulative return note totals": "return_note_totals",
+}
+
+
+def _diagnose(error):
+    _log_integrity_error(error, guards=_DATABASE_GUARDS, diagnostic_logger=logger)
 
 
 def _invalid():
@@ -224,6 +245,7 @@ def eligible_return_movements(invoice_id, user):
     except DatabaseError as error:
         # An invalid existing ledger aborts the complete listing; it must not
         # return partially assessed candidates or expose a raw SQL exception.
+        _diagnose(error)
         raise _unsafe() from error
 
 
@@ -243,6 +265,7 @@ def preview_material_return_note(invoice_id, user, *, return_movement_ids, reaso
                     "succursale_snapshot": invoice.succursale_snapshot, "branding_snapshot": invoice.branding_snapshot,
                     "issuance_token": token, "confirmation": signing.dumps(binding, salt=SALT)}
     except DatabaseError as error:
+        _diagnose(error)
         raise _unsafe() from error
 
 
@@ -308,7 +331,7 @@ def _issue(invoice_id, user, ids, reason, series, token, confirmation):
         note.status, note.finalized_by, note.finalized_at, note.issue_date = "FINALIZED", actor, moment, day
         sequence.next_counter = counter + 1
         sequence.save(update_fields=["next_counter"])
-        note.save()
+        note.save(_finalize_at_statement_time=True)
         note.refresh_from_db()
         return note
 
@@ -328,6 +351,7 @@ def issue_material_return_note(invoice_id, user, *, return_movement_ids, reason,
         try:
             return _issue(invoice_id, user, ids, reason, series, token, confirmation)
         except DatabaseError as error:
+            _diagnose(error)
             code = getattr(error.__cause__, "pgcode", None) or getattr(error.__cause__, "sqlstate", None)
             if code not in {"40P01", "40001"} or attempt == 2:
                 raise _unsafe() from error

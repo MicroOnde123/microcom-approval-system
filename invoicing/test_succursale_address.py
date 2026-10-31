@@ -47,9 +47,8 @@ class InvoiceAddressTests(LifecycleFixtures, TransactionTestCase):
         invoice.refresh_from_db(); self.assertEqual(invoice.succursale_snapshot, frozen)
         for language in ("en", "fr"):
             text = pdf_text(render_pdf(_snapshot(invoice), language=language))
-            # Approved client-only layout omits physical addresses, while the
-            # immutable address evidence remains in the snapshot.
-            self.assertNotIn("12, avenue Équateur", text); self.assertNotIn("NEW LIVE ADDRESS", text)
+            # Address is drawn only from the immutable snapshot.
+            self.assertIn("12, avenue Équateur", text); self.assertNotIn("NEW LIVE ADDRESS", text)
             self.assertIn(frozen["name"], text)
             self.assertEqual(_snapshot(invoice)["branch"]["physical_address"], frozen["physical_address"])
         invoice.succursale_snapshot = {key: value for key, value in frozen.items() if key != "physical_address"}

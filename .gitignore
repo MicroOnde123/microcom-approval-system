@@ -8,3 +8,6 @@ media/
 staticfiles/
 .DS_Store
 .vscode/
+
+# Local development and test evidence
+local_artifacts/

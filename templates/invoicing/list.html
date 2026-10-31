@@ -1,39 +1,197 @@
-{% extends "base.html" %}{% load i18n %}
+
+{% extends "base.html" %}
+{% load i18n %}
+
 {% block title %}{% trans "Invoices" %}{% endblock %}
 {% block page_layout %}app-container--wide{% endblock %}
+
 {% block content %}
-<div class="page-header"><div><h1>{% trans "Invoices" %}</h1>
-<p class="muted">{% trans "Dates filter official invoice issue dates. Drafts have no issue date and are excluded by date filters." %}</p></div>
-<a href="{% url 'dashboard' %}" class="btn btn-secondary">{% trans "Back to Dashboard" %}</a></div>
-<form method="get" style="margin-bottom:20px;">
-{{ filter_form.non_field_errors }}
-<div class="form-grid">
-{% for field in filter_form %}<div>{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+<div class="page-header">
+    <div>
+        <h1>{% trans "Invoices" %}</h1>
+        <p class="muted">
+            {% trans "Dates filter official invoice issue dates. Drafts have no issue date and are excluded by date filters." %}
+        </p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-tertiary">
+        {% trans "Back to Dashboard" %}
+    </a>
 </div>
-<div style="margin-top:12px;"><button type="submit" class="btn">{% trans "Filter" %}</button>
-<a href="{% url 'invoicing:list' %}" class="btn btn-secondary">{% trans "Clear" %}</a></div>
+
+<form id="invoice-filter-form"
+      method="get"
+      data-auto-filters="true"
+      data-searching-label="{% trans 'Searching...' %}"
+      data-validation-label="{% trans 'Review the filter errors.' %}"
+      data-updated-label="{% trans 'Results updated.' %}"
+      data-error-label="{% trans 'Results could not be updated. Select Filter to reload the page.' %}"
+      style="margin-bottom:20px;">
+
+    {{ filter_form.non_field_errors }}
+
+    <div class="form-grid">
+        {% for field in filter_form %}
+            <div>
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="actions-inline filter-actions" style="margin-top:12px;">
+        <button type="submit" class="btn">{% trans "Filter" %}</button>
+        <a data-filter-reset href="{% url 'invoicing:list' %}" class="btn btn-secondary">
+            {% trans "Clear" %}
+        </a>
+    </div>
 </form>
-<form method="post" action="{% url 'invoicing:bulk_print' %}" target="_blank" rel="noopener">
-{% csrf_token %}
-{% for name,value in active_filters.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-<div class="actions-inline" style="margin-bottom:15px;"><button class="btn" type="submit">{% trans "Print Filtered Invoices" %}</button>
-<span class="muted">{% blocktrans with limit=invoice_print_limit|default:20 %}Apply both issue dates first. Print all matching finalized invoices across all pages, up to {{ limit }} invoices.{% endblocktrans %}</span></div>
+
+<form id="invoice-bulk-print-form" data-filter-dependent
+      method="post"
+      action="{% url 'invoicing:bulk_print' %}"
+      target="_blank">
+    {% csrf_token %}
+
+    <div id="invoice-print-filters">
+        {% for name, value in active_filters.items %}
+            <input type="hidden" name="{{ name }}" value="{{ value }}">
+        {% endfor %}
+    </div>
+
+    <div class="actions-inline filter-actions" style="margin-bottom:15px;">
+        <button class="btn btn-secondary" type="submit">
+            {% trans "Print Filtered Invoices" %}
+        </button>
+
+        <span class="muted">
+            {% blocktrans with limit=invoice_print_limit|default:20 %}Apply both issue dates first. Print all matching finalized invoices across all pages, up to {{ limit }} invoices.{% endblocktrans %}
+        </span>
+    </div>
 </form>
-<div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Document number" %}</th><th>{% trans "Request" %}</th><th>{% trans "Issue date" %}</th><th>{% trans "Status" %}</th><th>{% trans "Total" %}</th></tr></thead><tbody>
-{% for invoice in page_obj %}
-<tr>
-<td><a href="{% url 'invoicing:detail' invoice.pk %}">{% if invoice.status == 'DRAFT' %}{% blocktrans with draft_id=invoice.pk %}Draft #{{ draft_id }}{% endblocktrans %}{% else %}{{ invoice.number }}{% endif %}</a></td>
-<td>{{ invoice.request_reference_snapshot|default:invoice.request.request_number }}</td>
-<td>{{ invoice.issue_date|date:"Y-m-d"|default:"—" }}</td>
-<td>{{ invoice.get_status_display }}</td>
-<td>{% if invoice.status == 'DRAFT' %}
-    {% if invoice.list_line_count and invoice.list_priced_line_count == invoice.list_line_count %}
-        {{ invoice.list_provisional_total|floatformat:"2" }} {{ invoice.currency }} — {% trans "Provisional" %}
-    {% else %}{% trans "Incomplete pricing" %}{% endif %}
-{% else %}{{ invoice.total|default_if_none:"—" }} {{ invoice.currency }}{% endif %}</td>
-</tr>
-{% empty %}<tr><td colspan="5">{% trans "No authorized invoices are available." %}</td></tr>{% endfor %}
-</tbody></table></div>
-<p>{% if page_obj.has_previous %}<a href="?{{ active_querystring }}&amp;page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>{% endif %} {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} {% if page_obj.has_next %}<a href="?{{ active_querystring }}&amp;page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>{% endif %}</p>
-{% if candidate_requests %}<h2>{% trans "Requests available for invoice review" %}</h2><p class="muted">{% trans "Eligibility is checked before a draft is saved." %}</p><ul>{% for source in candidate_requests %}<li><a href="{% url 'invoicing:create' source.pk %}">{{ source.request_number }}</a></li>{% endfor %}</ul>{% endif %}
+
+<div id="live-filter-results" aria-live="off">
+    <div class="table-wrap" tabindex="0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Document number" %}</th>
+                    <th>{% trans "Request" %}</th>
+                    <th>{% trans "Issue date" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Total" %}</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for invoice in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'invoicing:detail' invoice.pk %}">
+                                {% if invoice.status == 'DRAFT' %}
+                                    {% blocktrans with draft_id=invoice.pk %}Draft #{{ draft_id }}{% endblocktrans %}
+                                {% else %}
+                                    {{ invoice.number }}
+                                {% endif %}
+                            </a>
+                        </td>
+
+                        <td>{{ invoice.request_reference_snapshot|default:invoice.request.request_number }}</td>
+                        <td>{{ invoice.issue_date|date:"Y-m-d"|default:"—" }}</td>
+                        <td>{{ invoice.get_status_display }}</td>
+
+                        <td>
+                            {% if invoice.status == 'DRAFT' %}
+                                {% if invoice.list_line_count and invoice.list_priced_line_count == invoice.list_line_count %}
+                                    {{ invoice.list_provisional_total|floatformat:"2" }} {{ invoice.currency }}
+                                    — {% trans "Provisional" %}
+                                {% else %}
+                                    {% trans "Incomplete pricing" %}
+                                {% endif %}
+                            {% else %}
+                                {{ invoice.total|default_if_none:"—" }} {{ invoice.currency }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            {% trans "No authorized invoices are available." %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions-inline request-list-pagination" style="margin-top:12px;">
+        {% if page_obj.has_previous %}
+            <a class="btn btn-secondary"
+               href="?{{ active_querystring }}&amp;page={{ page_obj.previous_page_number }}">
+                {% trans "Previous" %}
+            </a>
+        {% endif %}
+
+        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a class="btn btn-secondary"
+               href="?{{ active_querystring }}&amp;page={{ page_obj.next_page_number }}">
+                {% trans "Next" %}
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if candidate_requests %}
+    <h2>{% trans "Requests available for invoice review" %}</h2>
+    <p class="muted">{% trans "Eligibility is checked before a draft is saved." %}</p>
+
+    <ul>
+        {% for source in candidate_requests %}
+            <li>
+                <a href="{% url 'invoicing:create' source.pk %}">
+                    {{ source.request_number }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filterForm = document.getElementById("invoice-filter-form");
+    const printForm = document.getElementById("invoice-bulk-print-form");
+    const printFilters = document.getElementById("invoice-print-filters");
+
+    if (!filterForm || !printForm || !printFilters) return;
+
+    function synchronizePrintFilters() {
+        const formData = new FormData(filterForm);
+        printFilters.replaceChildren();
+
+        for (const [name, value] of formData.entries()) {
+            if (!name || name === "page") continue;
+
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = name;
+            input.value = value;
+            printFilters.appendChild(input);
+        }
+    }
+
+    filterForm.addEventListener("auto-filters:updated", synchronizePrintFilters);
+    filterForm.addEventListener("input", synchronizePrintFilters);
+    filterForm.addEventListener("change", synchronizePrintFilters);
+    filterForm.addEventListener("submit", synchronizePrintFilters);
+    printForm.addEventListener("submit", synchronizePrintFilters);
+
+    window.addEventListener("popstate", function () {
+        window.setTimeout(synchronizePrintFilters, 0);
+    });
+
+    synchronizePrintFilters();
+});
+</script>
 {% endblock %}

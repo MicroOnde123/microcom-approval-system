@@ -389,3 +389,83 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f"{self.material} - {self.movement_type} - {self.quantity}"
+
+
+class ReturnReceiptSequence(models.Model):
+    year = models.PositiveSmallIntegerField(unique=True)
+    last_counter = models.PositiveBigIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(year__gte=1, year__lte=9999), name="receipt_year_valid")]
+
+
+class ReturnReceipt(models.Model):
+    request = models.ForeignKey(Request, on_delete=models.PROTECT, related_name="return_receipts")
+    reference = models.CharField(max_length=32, unique=True, editable=False)
+    year = models.PositiveSmallIntegerField()
+    counter = models.PositiveBigIntegerField()
+    issued_at = models.DateTimeField()
+    issued_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    token = models.UUIDField(unique=True, editable=False)
+    payload_digest = models.CharField(max_length=64, editable=False)
+    snapshot = models.JSONField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["year", "counter"], name="receipt_allocation_unique"),
+                       models.CheckConstraint(condition=models.Q(counter__gte=1), name="receipt_counter_positive")]
+
+
+class ReturnReceiptLine(models.Model):
+    receipt = models.ForeignKey(ReturnReceipt, on_delete=models.PROTECT, related_name="lines")
+    movement = models.OneToOneField(StockMovement, on_delete=models.PROTECT)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    snapshot = models.JSONField()
+
+
+class ReturnReceiptArtifact(models.Model):
+    receipt = models.ForeignKey(ReturnReceipt, on_delete=models.PROTECT, related_name="artifacts")
+    language = models.CharField(max_length=2, choices=[("en", "English"), ("fr", "French")])
+    renderer_version = models.CharField(max_length=40)
+    file_reference = models.CharField(max_length=40)
+    checksum = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+
+class MaterialReconciliation(models.Model):
+    request = models.ForeignKey(Request, on_delete=models.PROTECT, related_name="reconciliations")
+    previous = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT)
+    revision = models.PositiveIntegerField()
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="recorded_reconciliations")
+    reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="reported_reconciliations")
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    token = models.UUIDField(unique=True, editable=False)
+    payload_digest = models.CharField(max_length=64)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["request", "revision"], name="reconciliation_revision_unique"),
+                       models.CheckConstraint(condition=models.Q(revision__gte=1), name="reconciliation_revision_positive")]
+
+
+class MaterialReconciliationLine(models.Model):
+    class Outcome(models.TextChoices):
+        CLIENT = "CLIENT", _("CLIENT-installed")
+        MICROCOM = "MICROCOM", _("MICROCOM-used")
+        RETAINED = "RETAINED", _("Retained / testing")
+        RETURNED = "RETURNED", _("Physically returned")
+
+    reconciliation = models.ForeignKey(MaterialReconciliation, on_delete=models.PROTECT, related_name="lines")
+    item = models.ForeignKey(RequestMaterialItem, on_delete=models.PROTECT)
+    outcome = models.CharField(max_length=10, choices=Outcome.choices)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    snapshot = models.JSONField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["reconciliation", "item", "outcome"], name="reconciliation_item_outcome_unique"),
+                       models.CheckConstraint(condition=models.Q(quantity__gt=0, outcome__in=["CLIENT", "MICROCOM", "RETAINED", "RETURNED"]), name="reconciliation_line_valid")]
+
+
+class MaterialReconciliationReturnLink(models.Model):
+    line = models.ForeignKey(MaterialReconciliationLine, on_delete=models.PROTECT, related_name="return_links")
+    movement = models.OneToOneField(StockMovement, on_delete=models.PROTECT)

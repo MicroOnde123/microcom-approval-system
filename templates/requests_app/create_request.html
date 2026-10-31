@@ -12,7 +12,7 @@
         <p class="muted">{% trans "Submit a new internal request for approval." %}</p>
     </div>
 
-    <a href="{% url 'my_requests' %}" class="btn btn-secondary">
+    <a href="{% url 'my_requests' %}" class="btn btn-tertiary">
         {% trans "Back to My Requests" %}
     </a>
 </div>
@@ -228,7 +228,7 @@
         </details>
     </div>
 
-    <div class="submit-row">
+    <div class="submit-row form-actions">
         <button type="submit" name="action" value="save_draft" class="btn btn-secondary">{% trans "Save as Draft" %}</button>
         <button type="submit" name="action" value="submit" class="btn" id="request-submit-button">{% trans "Submit Request" %}</button>
     </div>

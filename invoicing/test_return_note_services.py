@@ -3,6 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 from unittest.mock import patch, PropertyMock
 from uuid import uuid4
+import time
 
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.core import signing
@@ -354,19 +355,91 @@ class ReturnNoteServiceTests(ReturnNoteServiceFixtures):
         self.assertFalse(MaterialReturnNoteAudit.objects.exists())
         with transaction.atomic(), self.assertRaises(ValidationError): self.issue(preview)
 
-    def test_staff_explicit_permissions_and_scope_required_without_cached_grants(self):
+    def test_explicit_permissions_and_scope_required_without_cached_grants(self):
         self.setup_invoice(); self.return_sequence(); preview = self.preview()
         self.user.has_perm("invoicing.issue_materialreturnnote")
         self.user.user_permissions.remove(Permission.objects.get(codename="issue_materialreturnnote"))
         with self.assertRaises(PermissionDenied): self.issue(preview)
         self.grant(self.user)
         self.user.is_staff = False; self.user.save(update_fields=["is_staff"])
-        with self.assertRaises(PermissionDenied): self.preview()
+        preview = self.preview()
+        note = self.issue(preview)
+        self.assertEqual(self.issue(preview).pk, note.pk)
         with self.assertRaises(PermissionDenied): self.preview(user=AnonymousUser())
         self.grant(self.other)
         with self.assertRaises(PermissionDenied): self.preview(user=self.other)
         self.req.approvals.update(alternate_approver_user=self.other)
-        self.preview(user=self.other)
+        # The movement is already documented; authorization still succeeds.
+        service.authorize_return_note(self.other, self.req.pk, issue=True)
+
+    def test_delay_after_sequence_operations_uses_update_statement_time(self):
+        self.partial_history(price="50"); sequence = self.return_sequence(); preview = self.preview()
+        source, financial = self.source_snapshot(), self.financial_snapshot()
+        original = DocumentSequence.save
+        def delayed(sequence, *args, **kwargs):
+            result = original(sequence, *args, **kwargs)
+            if sequence.document_type == "RETURN_NOTE" and kwargs.get("update_fields") == ["next_counter"]:
+                time.sleep(6)
+            return result
+        with patch.object(DocumentSequence, "save", delayed):
+            note = self.issue(preview)
+        self.assertEqual(note.total, Decimal("50"))
+        self.assertEqual(note.adjusted_net_value, Decimal("100"))
+        self.assertEqual(source, self.source_snapshot()); self.assertEqual(financial, self.financial_snapshot())
+        sequence.refresh_from_db(); self.assertEqual(sequence.next_counter, 8)
+
+    def test_delay_inside_final_model_validation_uses_update_statement_time(self):
+        self.setup_invoice(); self.return_sequence(); preview = self.preview()
+        original = MaterialReturnNote.full_clean
+        def delayed(note, *args, **kwargs):
+            result = original(note, *args, **kwargs)
+            if note.status == "FINALIZED": time.sleep(6)
+            return result
+        with patch.object(MaterialReturnNote, "full_clean", delayed):
+            note = self.issue(preview)
+        self.assertEqual(note.status, "FINALIZED")
+        self.assertEqual(self.issue(preview).pk, note.pk)
+        self.assertEqual(MaterialReturnNoteAudit.objects.count(), 1)
+
+    def test_finance_permissions_without_stock_scope_cannot_issue(self):
+        self.setup_invoice(); self.return_sequence(); preview = self.preview()
+        self.grant(self.other)
+        with self.assertRaises(PermissionDenied): self.issue(preview, user=self.other)
+        self.assertFalse(MaterialReturnNoteAudit.objects.exists())
+
+    def test_midnight_and_year_rollover_after_preview_fail_closed(self):
+        from datetime import date
+        self.setup_invoice(); sequence = self.return_sequence(); preview = self.preview()
+        original = service.business_date
+        today = self.invoice.issue_date
+        for changed in (today + timedelta(days=1), date(today.year + 1, 1, 1)):
+            calls = []
+            def rollover(moment, zone):
+                calls.append(True)
+                return changed if len(calls) == 3 else original(moment, zone)
+            with patch.object(service, "business_date", side_effect=rollover), self.assertRaises(ValidationError):
+                self.issue(preview)
+            sequence.refresh_from_db(); self.assertEqual(sequence.next_counter, 7)
+            self.assertFalse(MaterialReturnNoteAudit.objects.exists())
+            self.assertFalse(MaterialReturnNote.objects.exists())
+
+    def test_database_business_date_guard_still_rolls_back_final_update(self):
+        self.setup_invoice(); sequence = self.return_sequence(); preview = self.preview()
+        source, financial = self.source_snapshot(), self.financial_snapshot()
+        original = MaterialReturnNote.save
+        def crossed_boundary(note, *args, **kwargs):
+            if note.status == "FINALIZED": note.issue_date += timedelta(days=1)
+            return original(note, *args, **kwargs)
+        with patch.object(MaterialReturnNote, "save", crossed_boundary), \
+                self.assertLogs(service.logger, level="WARNING") as logs, self.assertRaises(ValidationError) as caught:
+            self.issue(preview)
+        self.assertEqual(caught.exception.code, "outcome_uncertain")
+        self.assertIn("guard=return_note_business_date", logs.output[0])
+        sequence.refresh_from_db(); self.assertEqual(sequence.next_counter, 7)
+        self.assertFalse(MaterialReturnNoteAudit.objects.exists())
+        self.assertFalse(MaterialReturnNoteLine.objects.exists())
+        self.assertEqual(source, self.source_snapshot()); self.assertEqual(financial, self.financial_snapshot())
+        self.assertEqual(self.issue(preview).sequence_counter, 7)
 
     def test_each_permission_inactive_staff_global_scope_and_replay_authorization(self):
         self.setup_invoice(); self.return_sequence()

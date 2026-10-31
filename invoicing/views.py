@@ -1,3 +1,5 @@
+from .document_presentation import amount_words
+from .print_delivery import print_response, active_language
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -92,6 +94,7 @@ def invoice_detail(request,pk):
         for event in invoice.invoiceauditevent_set.select_related("actor").order_by("occurred_at","pk")]
     return render(request,"invoicing/detail.html",{"invoice":invoice,"lines":lines,
         "audit_history":history,
+        "display_amount_words": amount_words(invoice.total, invoice.currency, active_language(), invoice.amount_words_fr) if invoice.status == "FINALIZED" else "",
         "return_note_nav":return_note_navigation(request.user, invoice=invoice),
         "can_edit":invoice.status=="DRAFT" and request.user.has_perm("invoicing.change_invoice"),
         "can_finalize":invoice.status=="DRAFT" and request.user.has_perm("invoicing.finalize_invoice")})
@@ -161,7 +164,7 @@ def invoice_finalize(request,pk):
 def invoice_pdf(request, pk, language):
     try:
         _invoice(request.user, pk)
-        artifact = generate_pdf(pk, request.user, language=language)
+        artifact = generate_pdf(pk, request.user, language=active_language())
     except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
         return _print_error(request, error)
     return redirect("invoicing:download", artifact_id=artifact.pk)
@@ -211,7 +214,14 @@ def invoice_print(request, pk):
         artifact = generate_pdf(pk, request.user, language=_print_language())
     except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
         return _print_error(request, error)
-    return redirect("invoicing:download", artifact_id=artifact.pk)
+    try:
+        verified_artifact, stream = download_pdf(artifact.pk, request.user)
+        try:
+            return print_response(request, stream.read(), f"invoice-{pk}-{_print_language()}.pdf")
+        finally:
+            stream.close()
+    except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
+        return _print_error(request, error)
 
 
 @transaction.non_atomic_requests
@@ -224,4 +234,4 @@ def invoice_bulk_print(request):
         content = prepare_filtered_print(request.POST, request.user, language=_print_language())
     except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
         return _print_error(request, error)
-    return _inline_pdf(io.BytesIO(content), "invoices-" + _print_language() + ".pdf")
+    return print_response(request, content, "invoices-" + _print_language() + ".pdf")

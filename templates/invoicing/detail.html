@@ -1,6 +1,11 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% trans "Invoice detail" %}{% endblock %}
-{% block content %}<div class="page-header"><h1>{% trans "Invoice detail" %}</h1><div class="actions-inline"><a class="btn btn-secondary" href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% if can_edit %}<a class="btn" href="{% url 'invoicing:edit' invoice.pk %}">{% trans "Edit invoice draft" %}</a>{% endif %}{% if can_finalize %}<a class="btn" href="{% url 'invoicing:finalize' invoice.pk %}">{% trans "Finalize invoice" %}</a>{% endif %}</div></div>
+{% block content %}<div class="page-header"><h1>{% trans "Invoice detail" %}</h1><div class="actions-inline"><a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% if can_edit %}<a class="btn btn-secondary" href="{% url 'invoicing:edit' invoice.pk %}">{% trans "Edit invoice draft" %}</a>{% endif %}{% if can_finalize %}<a class="btn" href="{% url 'invoicing:finalize' invoice.pk %}">{% trans "Finalize invoice" %}</a>{% endif %}</div></div>
+{% if invoice.status == 'FINALIZED' %}<nav class="context-toolbar" aria-label="{% trans 'Document actions' %}">{% include "invoicing/return_notes/links.html" %}
+<div class="actions-inline">
+<form method="post" action="{% url 'invoicing:print' invoice.pk %}" target="_blank" rel="noopener">{% csrf_token %}<button class="btn btn-secondary" type="submit">{% trans "Print Invoice" %}</button></form>
+</div>
+</nav>{% endif %}
 <p><strong>{% trans "Status" %}:</strong> {{ invoice.get_status_display }}</p>
 {% if invoice.status == 'FINALIZED' %}
 <p><strong>{% trans "Document number" %}:</strong> {{ invoice.number }}</p><p><strong>{% trans "Issue date" %}:</strong> {{ invoice.issue_date|date:"Y-m-d" }} ({{ invoice.business_timezone }})</p>
@@ -8,13 +13,9 @@
 <p><strong>{% trans "Succursale" %}:</strong> {{ invoice.succursale_snapshot.code }} — {{ invoice.succursale_snapshot.name }}</p><p>{{ invoice.request_reference_snapshot }}</p>
 <p class="message info">{% trans "This finalized invoice is read-only. Its financial information is frozen." %}</p>
 {% if invoice.succursale_snapshot.physical_address %}<p><strong>{% trans "Succursale physical address" %}:</strong><br>{{ invoice.succursale_snapshot.physical_address|linebreaksbr }}</p>{% endif %}
-{% include "invoicing/return_notes/links.html" %}
-<div class="actions-inline">
-<form method="post" action="{% url 'invoicing:print' invoice.pk %}" target="_blank" rel="noopener">{% csrf_token %}<button class="btn" type="submit">{% trans "Print Invoice" %}</button></form>
-</div>
 {% else %}<p>{{ invoice.request.request_number }} — {{ invoice.succursale }}</p>{% endif %}
-<table><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th><th>{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td>{{ line.material_code_snapshot }} — {{ line.description_snapshot }} ({{ line.unit_snapshot }})</td><td>{{ line.quantity }}</td><td>{{ line.unit_price|default_if_none:"—" }} {{ line.currency }}</td><td>{{ line.line_total|default_if_none:"—" }} {{ line.currency }}</td></tr>{% endfor %}</tbody></table>
-{% if invoice.status == 'FINALIZED' %}<p><strong>{% trans "Total" %}:</strong> {{ invoice.total }} {{ invoice.currency }}</p><p>{{ invoice.amount_words_fr }}</p>{% endif %}
+<div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th><th>{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td>{{ line.material_code_snapshot }} — {{ line.description_snapshot }} ({{ line.unit_snapshot }})</td><td>{{ line.quantity }}</td><td>{{ line.unit_price|default_if_none:"—" }} {{ line.currency }}</td><td>{{ line.line_total|default_if_none:"—" }} {{ line.currency }}</td></tr>{% endfor %}</tbody></table></div>
+{% if invoice.status == 'FINALIZED' %}<p><strong>{% trans "Total" %}:</strong> {{ invoice.total }} {{ invoice.currency }}</p><p>{{ display_amount_words }}</p>{% endif %}
 {% if invoice.audit_metadata.note %}<p>{{ invoice.audit_metadata.note|linebreaksbr }}</p>{% endif %}
 <h2>{% trans "Invoice history" %}</h2>
 <div class="table-wrap" tabindex="0"><table class="data-table">
