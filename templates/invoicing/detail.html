@@ -1,11 +1,28 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n static %}
 {% block title %}{% trans "Invoice detail" %}{% endblock %}
 {% block content %}<div class="page-header"><h1>{% trans "Invoice detail" %}</h1><div class="actions-inline"><a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% if can_edit %}<a class="btn btn-secondary" href="{% url 'invoicing:edit' invoice.pk %}">{% trans "Edit invoice draft" %}</a>{% endif %}{% if can_finalize %}<a class="btn" href="{% url 'invoicing:finalize' invoice.pk %}">{% trans "Finalize invoice" %}</a>{% endif %}</div></div>
-{% if invoice.status == 'FINALIZED' %}<nav class="context-toolbar" aria-label="{% trans 'Document actions' %}">{% include "invoicing/return_notes/links.html" %}
-<div class="actions-inline">
-<form method="post" action="{% url 'invoicing:print' invoice.pk %}" target="_blank" rel="noopener">{% csrf_token %}<button class="btn btn-secondary" type="submit">{% trans "Print Invoice" %}</button></form>
-</div>
-</nav>{% endif %}
+{% if invoice.status == 'FINALIZED' %}
+<link rel="stylesheet" href="{% static 'css/invoice_actions.css' %}">
+<nav class="invoice-actions" aria-label="{% trans 'Document actions' %}">
+    <div class="invoice-actions__documents">
+        <form method="post" action="{% url 'invoicing:print' invoice.pk %}" target="_blank" rel="noopener">
+            {% csrf_token %}<button class="btn" type="submit">{% trans "Print Invoice" %}</button>
+        </form>
+        <form method="post" action="{% url 'invoicing:download_invoice' invoice.pk %}">
+            {% csrf_token %}<button class="btn btn-secondary" type="submit">{% trans "Download PDF" %}</button>
+        </form>
+    </div>
+    {% if return_note_nav.can_read %}
+    <div class="invoice-actions__returns" aria-label="{% trans 'Material return notes' %}">
+        {% if return_note_nav.can_issue %}
+        <a class="btn btn-secondary" href="{% url 'invoicing:return_note_select' return_note_nav.invoice_id %}">{% trans "Issue material return note" %}</a>
+        {% endif %}
+        <a class="btn btn-tertiary invoice-actions__history" href="{% url 'invoicing:return_note_history' return_note_nav.invoice_id %}">{% trans "Material return note history" %}</a>
+    </div>
+    {% endif %}
+</nav>
+{% if return_note_nav.unavailable %}<p class="muted">{% trans "Material return note valuation requires a finalized internal facture. Recording a physical return does not create a facture or a return note." %}</p>{% endif %}
+{% endif %}
 <p><strong>{% trans "Status" %}:</strong> {{ invoice.get_status_display }}</p>
 {% if invoice.status == 'FINALIZED' %}
 <p><strong>{% trans "Document number" %}:</strong> {{ invoice.number }}</p><p><strong>{% trans "Issue date" %}:</strong> {{ invoice.issue_date|date:"Y-m-d" }} ({{ invoice.business_timezone }})</p>

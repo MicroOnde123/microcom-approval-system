@@ -20,6 +20,8 @@ urlpatterns = [
     path("<int:pk>/refresh/",views.invoice_refresh,name="refresh"),
     path("<int:pk>/finalize/",views.invoice_finalize,name="finalize"),
     path("<int:pk>/print/",views.invoice_print,name="print"),
+    path("<int:pk>/download/",views.invoice_print,{"attachment": True},name="download_invoice"),
     path("<int:pk>/pdf/<str:language>/",views.invoice_pdf,name="pdf"),
     path("documents/<int:artifact_id>/download/",views.invoice_download,name="download"),
+    path("documents/<int:artifact_id>/file/",views.invoice_download,{"attachment": True},name="download_file"),
 ]

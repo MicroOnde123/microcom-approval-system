@@ -69,9 +69,8 @@ class InvoicePrintingTests(unittest.TestCase):
                 patch.object(views, "download_pdf", return_value=(None, io.BytesIO(self.pdf("single")))):
             response = views.invoice_print(request, 1)
         generate.assert_called_once_with(1, request.user, language="fr")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"data-pdf-frame", response.content)
-        self.assertIn(b"invoice-1-fr.pdf", response.content)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("invoicing:download", args=[9]))
 
     def test_download_is_authenticated_authorized_inline_and_private(self):
         request = self.request("get")
@@ -158,7 +157,9 @@ class InvoicePrintingTests(unittest.TestCase):
                 patch.object(views, "prepare_filtered_print", return_value=self.pdf("combined")) as prepare:
             response = views.invoice_bulk_print(request)
         prepare.assert_called_once_with(request.POST, request.user, language="fr")
-        self.assertIn(b"data-pdf-frame", response.content); self.assertIn(b"invoices-fr.pdf", response.content)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertIn("invoices-fr.pdf", response["Content-Disposition"])
+        self.assertTrue(b"".join(response.streaming_content).startswith(b"%PDF-"))
         self.assertIn("no-store", response["Cache-Control"])
         response.close()
 
@@ -249,7 +250,7 @@ class InvoicePrintingTests(unittest.TestCase):
     def test_routes_and_print_templates(self):
         self.assertEqual(resolve(reverse("invoicing:print", args=[1])).func, views.invoice_print)
         self.assertEqual(resolve(reverse("invoicing:bulk_print")).func, views.invoice_bulk_print)
-        engine = Engine(libraries={"i18n": "django.templatetags.i18n", "return_note_navigation": "invoicing.templatetags.return_note_navigation"})
+        engine = Engine(libraries={"i18n": "django.templatetags.i18n", "static": "django.templatetags.static", "return_note_navigation": "invoicing.templatetags.return_note_navigation"})
         for name in ("list", "detail", "pdf_error"):
             engine.from_string(Path("templates/invoicing/" + name + ".html").read_text(encoding="utf-8"))
         detail = Path("templates/invoicing/detail.html").read_text(encoding="utf-8")

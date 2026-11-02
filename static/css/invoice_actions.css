@@ -1,0 +1,36 @@
+/* Invoice screen controls only. Document/PDF rendering stays unchanged. */
+.app-container .invoice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 16px 0;
+    margin: 0 0 24px;
+    border-block: 1px solid var(--border);
+}
+.app-container .invoice-actions__documents,
+.app-container .invoice-actions__returns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+}
+.app-container .invoice-actions form { margin: 0; min-width: 0; max-width: 100%; }
+.app-container .invoice-actions .btn {
+    margin: 0;
+    min-height: 44px;
+    padding: 10px 16px;
+    line-height: 1.4;
+}
+.app-container .invoice-actions .invoice-actions__history { border-color: var(--border); }
+@media screen and (max-width: 600px) {
+    .app-container .invoice-actions { align-items: stretch; gap: 14px; }
+    .app-container .invoice-actions__documents,
+    .app-container .invoice-actions__returns { flex: 1 1 100%; align-items: stretch; }
+    .app-container .invoice-actions form { flex: 1 1 10rem; }
+    .app-container .invoice-actions form .btn { width: 100%; }
+    .app-container .invoice-actions__returns .btn { flex: 1 1 100%; }
+}
+@media print { .invoice-actions { display: none !important; } }

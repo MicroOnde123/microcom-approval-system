@@ -1,5 +1,5 @@
 from .document_presentation import amount_words
-from .print_delivery import print_response, active_language
+from .print_delivery import active_language
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -173,7 +173,7 @@ def invoice_pdf(request, pk, language):
 @login_required
 @never_cache
 @require_GET
-def invoice_download(request, artifact_id):
+def invoice_download(request, artifact_id, *, attachment=False):
     try:
         require_permission(request.user, "view_invoice")
         artifact, stream = download_pdf(artifact_id, request.user)
@@ -181,13 +181,14 @@ def invoice_download(request, artifact_id):
         raise Http404 from None
     except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
         return _print_error(request, error)
-    return _inline_pdf(stream, f"invoice-{artifact.invoice_id}-{artifact.language}.pdf")
+    return _inline_pdf(stream, f"invoice-{artifact.invoice_id}-{artifact.language}.pdf", attachment=attachment)
 
 
-def _inline_pdf(stream, filename):
-    response = FileResponse(stream, as_attachment=False, filename=filename, content_type="application/pdf")
+def _inline_pdf(stream, filename, *, attachment=False):
+    response = FileResponse(stream, as_attachment=attachment, filename=filename, content_type="application/pdf")
     response["Cache-Control"] = "private, no-store"
     response["X-Content-Type-Options"] = "nosniff"
+    response["Referrer-Policy"] = "no-referrer"
     return response
 
 
@@ -206,7 +207,7 @@ def _print_error(request, error):
 @login_required
 @never_cache
 @require_POST
-def invoice_print(request, pk):
+def invoice_print(request, pk, *, attachment=False):
     try:
         invoice = _invoice(request.user, pk)
         if invoice.status != "FINALIZED":
@@ -214,14 +215,11 @@ def invoice_print(request, pk):
         artifact = generate_pdf(pk, request.user, language=_print_language())
     except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
         return _print_error(request, error)
-    try:
-        verified_artifact, stream = download_pdf(artifact.pk, request.user)
-        try:
-            return print_response(request, stream.read(), f"invoice-{pk}-{_print_language()}.pdf")
-        finally:
-            stream.close()
-    except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
-        return _print_error(request, error)
+    # Top-level authenticated GET works without Blob URLs, embedded viewers,
+    # static JavaScript or a cross-frame print() call. The delivery endpoint
+    # rechecks current permissions and checksum on every open/download.
+    return redirect("invoicing:download_file" if attachment else "invoicing:download",
+                    artifact_id=artifact.pk)
 
 
 @transaction.non_atomic_requests
@@ -234,4 +232,4 @@ def invoice_bulk_print(request):
         content = prepare_filtered_print(request.POST, request.user, language=_print_language())
     except (ValidationError, ImproperlyConfigured, DatabaseError, OSError) as error:
         return _print_error(request, error)
-    return print_response(request, content, "invoices-" + _print_language() + ".pdf")
+    return _inline_pdf(io.BytesIO(content), "invoices-" + _print_language() + ".pdf")
