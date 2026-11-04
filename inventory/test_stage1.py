@@ -1,4 +1,4 @@
-"""Phase 2 Stage 1: synthetic catalogue, admin and compatibility regressions."""
+﻿"""Phase 2 Stage 1: synthetic catalogue, admin and compatibility regressions."""
 from decimal import Decimal
 
 from django.contrib.auth.models import Permission
@@ -109,7 +109,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
 
     def test_negative_prices_rejected_by_validation_and_database(self):
         for language, text in (("en", "Unit price cannot be negative."),
-                               ("fr", "Le prix unitaire ne peut pas être négatif.")):
+                               ("fr", "Le prix unitaire ne peut pas Ãªtre nÃ©gatif.")):
             with override(language), self.assertRaisesMessage(ValidationError, text):
                 self.priced_material(unit_price=Decimal("-0.01"), currency="USD").full_clean()
         with self.assertRaises(IntegrityError), transaction.atomic():
@@ -146,6 +146,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
         resubmit_request(self.req, self.other)
         self.assertFalse(RequestApproval.objects.filter(pk=previous.pk).exists())
         current = self.req.approvals.get()
+        self.req.refresh_from_db()
         self.assertEqual(current.approver_user_id, self.user.pk)
         self.assertEqual(self.req.current_step_order, current.step_order)
         self.assertFalse(StockMovement.objects.exists())
@@ -155,7 +156,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
     def test_admin_pricing_and_validation_in_both_languages(self):
         self.administrator()
         for language, label, error in (("en", "Unit price", "Unit price cannot be negative."),
-                                       ("fr", "Prix unitaire", "Le prix unitaire ne peut pas être négatif.")):
+                                       ("fr", "Prix unitaire", "Le prix unitaire ne peut pas Ãªtre nÃ©gatif.")):
             url = reverse("admin:inventory_material_change", args=[self.material.pk])
             response = self.client.get(url, HTTP_ACCEPT_LANGUAGE=language)
             self.assertContains(response, label)
@@ -183,7 +184,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
         with self.assertRaises(IntegrityError), transaction.atomic():
             CompanyDocumentSettings.objects.create(pk=2)
         settings.default_currency = "ZZZ"
-        with override("fr"), self.assertRaisesMessage(ValidationError, "Sélectionnez une devise prise en charge"):
+        with override("fr"), self.assertRaisesMessage(ValidationError, "SÃ©lectionnez une devise prise en charge"):
             settings.full_clean()
 
     def test_document_preferences_validate_without_issuing_documents(self):
@@ -200,7 +201,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
     def test_bilingual_new_admin_interfaces_and_singleton_add_control(self):
         self.administrator()
         for language, branch_label, settings_label in (("en", "Succursale name", "Verified company address"),
-                                                       ("fr", "Nom de la succursale", "Adresse vérifiée de l’entreprise")):
+                                                       ("fr", "Nom de la succursale", "Adresse vÃ©rifiÃ©e de lâ€™entreprise")):
             self.assertContains(self.client.get(reverse("admin:inventory_succursale_add"), HTTP_ACCEPT_LANGUAGE=language), branch_label)
             self.assertContains(self.client.get(reverse("admin:core_companydocumentsettings_add"), HTTP_ACCEPT_LANGUAGE=language), settings_label)
         data = {"company_name": "Synthetic company", "company_address": "Synthetic address",

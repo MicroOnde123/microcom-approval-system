@@ -84,3 +84,37 @@ class Material(models.Model):
         Unit = self.unit or ""
         return f"{self.name} | Code: {self.code} | Category: {self.category.name} | Stock: {stock} {Unit}"
     
+
+
+class MaterialReceipt(models.Model):
+    """A durable receipt and idempotency claim, committed with its stock movement."""
+    operation_token = models.UUIDField(unique=True, editable=False)
+    reference = models.CharField(max_length=40, unique=True, editable=False)
+    payload_hash = models.CharField(max_length=64, editable=False)
+    received_on = models.DateField()
+    supplier = models.CharField(max_length=200, blank=True)
+    delivery_reference = models.CharField(max_length=200, blank=True)
+    notes = models.TextField(blank=True)
+    created_by = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    transaction_type = models.CharField(
+        max_length=10, choices=[("new", _("New material")), ("existing", _("Existing material"))],
+        null=True, blank=True, editable=False)
+
+    class Meta:
+        indexes = [models.Index(fields=["-received_on", "-id"], name="receipt_date_order_idx")]
+        constraints = [models.CheckConstraint(
+            condition=models.Q(transaction_type__isnull=True) | models.Q(transaction_type__in=["new", "existing"]),
+            name="receipt_transaction_type_valid")]
+
+
+class MaterialReceiptLine(models.Model):
+    receipt = models.ForeignKey(MaterialReceipt, on_delete=models.PROTECT, related_name='lines')
+    material = models.ForeignKey(Material, on_delete=models.PROTECT)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    stock_after = models.DecimalField(max_digits=10, decimal_places=2)
+    movement = models.OneToOneField('requests_app.StockMovement', on_delete=models.PROTECT)
+    material_snapshot = models.JSONField(null=True, blank=True, editable=False)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(quantity__gt=0), name='material_receipt_positive_quantity')]

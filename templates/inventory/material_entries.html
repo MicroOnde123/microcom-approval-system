@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "Material Entries" %}{% endblock %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/entry_dates.css' %}">
+<script src="{% static 'js/entry_dates.js' %}" defer></script>
+<link rel="stylesheet" href="{% static 'css/material_entries.css' %}">
+<div class="page-header entry-page-header"><div><h1>{% trans "Material Entries" %}</h1><p class="muted">{% trans "Enter receipt details, verify, then confirm." %}</p></div></div>
+{% include "inventory/entry_tabs.html" %}
+{% include "inventory/entry_progress.html" %}
+{% if result %}
+<section role="status" class="entry-success"><h2>{% trans "Receipt completed" %}</h2><p class="entry-reference">{{ result.reference }}</p>
+{% for line in result.lines.all %}<p><strong>{{ line.material.name }} ({{ line.material.code }})</strong><br>
+{% trans "Quantity received" %}: {{ line.quantity }} {{ line.material.unit }}<br>
+{% trans "Stock after receipt" %}: {{ line.stock_after }} {{ line.material.unit }}<br>
+{% trans "Current stock" %}: {{ line.material.stock_quantity }} {{ line.material.unit }}</p>{% endfor %}
+<a class="btn btn-secondary" href="{% url 'material_receipt_detail' result.pk %}">{% trans "View receipt details" %}</a>
+</section>
+{% endif %}
+{% if receipt_form.errors or material_form.errors %}
+<div class="message error entry-errors" role="alert" tabindex="-1" autofocus>
+<h2>{% trans "Review the errors below." %}</h2>
+{{ receipt_form.non_field_errors }}{{ material_form.non_field_errors }}
+<ul>{% for field in material_form %}{% for error in field.errors %}<li><a href="#{{ field.id_for_label }}">{{ field.label }}: {{ error }}</a></li>{% endfor %}{% endfor %}
+{% for field in receipt_form %}{% for error in field.errors %}<li><a href="#{{ field.id_for_label }}">{{ field.label }}: {{ error }}</a></li>{% endfor %}{% endfor %}</ul>
+</div>
+{% endif %}
+{% if review %}
+{% include "inventory/entry_review.html" %}
+{% else %}
+<p class="entry-required-note">{% trans "Fields marked * are required." %}</p>
+<form method="post" novalidate id="material-entry-form">
+{% csrf_token %}<input type="hidden" name="mode" value="{{ mode }}">{{ receipt_form.token }}
+{% if mode == 'new' %}
+<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">01</span>{% trans "Material Information" %}</legend>
+<p class="entry-section-help">{% trans "Identify the material and choose its category and unit." %}</p>
+<div class="form-grid">
+{% include "inventory/entry_field.html" with field=material_form.name %}
+{% include "inventory/entry_field.html" with field=material_form.code %}
+{% include "inventory/entry_field.html" with field=material_form.category %}
+{% include "inventory/entry_field.html" with field=material_form.unit %}
+{% include "inventory/entry_field.html" with field=material_form.description %}
+</div>
+</fieldset>
+<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">02</span>{% trans "Stock settings" %}</legend>
+<p class="entry-section-help">{% trans "Set the opening quantity, stock threshold and optional purchase price." %}</p>
+<div class="form-grid">{% include "inventory/entry_field.html" with field=receipt_form.quantity %}
+{% for field in material_form %}{% if field.name == 'minimum_stock_level' or field.name == 'unit_price' or field.name == 'currency' or field.name == 'is_active' %}{% include "inventory/entry_field.html" %}{% endif %}{% endfor %}</div>
+</fieldset>
+{% else %}
+<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">01</span>{% trans "Material and stock" %}</legend>
+<p class="entry-section-help">{% trans "Select a material, then enter the quantity received." %}</p>
+<div class="entry-field-heading"><label for="id_material">{{ receipt_form.material.label }}<span class="entry-required" aria-hidden="true"> *</span></label></div>
+{% include "inventory/search_select.html" with select_field=receipt_form.material %}
+{{ receipt_form.material.errors }}
+<div class="entry-stock-flow entry-stock-flow--form">
+<div class="entry-stock-cell"><span class="entry-metric-label">{% trans "Current stock" %}</span><strong><output id="current-stock" aria-live="polite">{% if current_stock != None %}{{ current_stock }} {{ selected_material.unit }}{% else %}&mdash;{% endif %}</output></strong></div>
+<div class="entry-stock-cell entry-stock-cell--received">{% include "inventory/entry_field.html" with field=receipt_form.quantity %}</div>
+<div class="entry-stock-cell entry-stock-cell--estimated"><span class="entry-metric-label">{% trans "Estimated stock after receipt" %}</span><strong><output id="estimated-stock" aria-live="polite">{% if estimated_stock != None %}{{ estimated_stock }} {{ selected_material.unit }}{% else %}&mdash;{% endif %}</output></strong></div>
+</div><p class="entry-estimate-note">{% trans "Estimates may change. The final stock balance is calculated when you confirm." %}</p>
+</fieldset>
+{% endif %}
+<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">{% if mode == 'new' %}03{% else %}02{% endif %}</span>{% trans "Delivery information" %}</legend>
+<p class="entry-section-help">{% trans "Record the delivery date, supplier and supporting reference." %}</p>
+<div class="form-grid">{% for field in receipt_form.visible_fields %}{% if field.name != 'material' and field.name != 'quantity' %}{% include "inventory/entry_field.html" %}{% endif %}{% endfor %}</div>
+</fieldset>
+<div class="entry-action-bar"><p>{% trans "You can review and modify the details before saving." %}</p><button class="btn entry-primary" type="submit" name="action" value="verify">{% trans "Verify details" %}<span aria-hidden="true"> &rarr;</span></button></div>
+</form>
+{% if mode == 'new' %}{% include "inventory/category_dialog.html" %}{% endif %}
+{% if mode == 'existing' %}{{ stock_options|json_script:"material-stock-options" }}{% endif %}
+<script src="{% static 'js/entry_selectors.js' %}" defer></script>
+{% endif %}
+{% endblock %}

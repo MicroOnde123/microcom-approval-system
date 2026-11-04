@@ -1,0 +1,1 @@
+{% load i18n %}{% get_current_language as receipt_language %}{% if receipt_language == 'fr' %}{{ value|date:'d/m/Y' }}{% else %}{{ value|date:'Y-m-d' }}{% endif %}

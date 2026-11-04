@@ -1,0 +1,10 @@
+{% load i18n %}<span class="entry-date" data-entry-date data-language="{{ date_language }}">
+{% include "django/forms/widgets/input.html" %}
+<span class="entry-date-format" id="{{ date_hint_id }}">{{ date_format }}</span>
+<button type="button" class="btn btn-secondary entry-calendar-open" hidden aria-haspopup="dialog" aria-controls="{{ widget.attrs.id }}-calendar">{% trans "Choose date" %}</button>
+<dialog class="entry-calendar" id="{{ widget.attrs.id }}-calendar" aria-label="{% trans 'Choose date' %}">
+<div class="entry-calendar-header"><button type="button" data-month="-1" aria-label="{% trans 'Previous month' %}">&lsaquo;</button><strong data-month-label aria-live="polite"></strong><button type="button" data-month="1" aria-label="{% trans 'Next month' %}">&rsaquo;</button></div>
+<div class="entry-calendar-days"></div>
+<p class="entry-calendar-help">{% trans "Use arrow keys to move between days, Page Up or Page Down to change month, and Enter to select. Escape closes the calendar." %}</p>
+<button type="button" class="btn btn-secondary" data-calendar-close>{% trans "Close calendar" %}</button>
+</dialog></span>

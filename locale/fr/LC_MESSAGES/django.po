@@ -3207,3 +3207,526 @@ msgstr "Société"
 
 msgid "Download PDF"
 msgstr "Télécharger PDF"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Material Entries"
+msgstr "Entrées de stock"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Register New Material"
+msgstr "Enregistrer un nouveau matériel"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Receive Existing Material"
+msgstr "Réceptionner du matériel existant"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Material Information"
+msgstr "Informations sur le matériel"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Initial Stock Entry"
+msgstr "Entrée de stock initiale"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Quantity received"
+msgstr "Quantité reçue"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Receipt date"
+msgstr "Date de réception"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Supplier"
+msgstr "Fournisseur"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Delivery/reference number"
+msgstr "Numéro de livraison / référence"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Notes"
+msgstr "Remarques"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Material name"
+msgstr "Nom du matériel"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Unique material code"
+msgstr "Code unique du matériel"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Unit of measurement"
+msgstr "Unité de mesure"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Minimum stock level"
+msgstr "Seuil minimal de stock"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Active status"
+msgstr "Statut actif"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Receipt completed"
+msgstr "Réception enregistrée"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Stock after receipt"
+msgstr "Stock après réception"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Current stock"
+msgstr "Stock actuel"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Save receipt"
+msgstr "Enregistrer la réception"
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Invalid receipt form. Open a new form."
+msgstr "Formulaire de réception invalide. Ouvrez un nouveau formulaire."
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "This receipt form has already been used with different data."
+msgstr "Ce formulaire de réception a déjà été utilisé avec des données différentes."
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "Select a valid material."
+msgstr "Sélectionnez un matériel valide."
+
+#: inventory/entry_forms.py inventory/entry_services.py inventory/entry_views.py templates/inventory/material_entries.html templates/base.html
+msgid "The receipt could not be saved. Check the material code and retry."
+msgstr "La réception n’a pas pu être enregistrée. Vérifiez le code du matériel et réessayez."
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "+ New Category"
+msgstr "+ Nouvelle catégorie"
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "New Category"
+msgstr "Nouvelle catégorie"
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Category name"
+msgstr "Nom de la catégorie"
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Unique category code"
+msgstr "Code unique de la catégorie"
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Close category dialog"
+msgstr "Fermer la fenêtre de catégorie"
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Create a category without leaving this material entry."
+msgstr "Créez une catégorie sans quitter cette entrée de stock."
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Unable to save the category. Please retry."
+msgstr "Impossible d’enregistrer la catégorie. Veuillez réessayer."
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Saving category..."
+msgstr "Enregistrement de la catégorie..."
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Category created and selected."
+msgstr "Catégorie créée et sélectionnée."
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "Save category"
+msgstr "Enregistrer la catégorie"
+
+#: inventory/entry_forms.py inventory/entry_services.py templates/inventory/category_dialog.html templates/inventory/material_entries.html
+msgid "A category with this code already exists. Choose a different code."
+msgstr "Une catégorie avec ce code existe déjà. Choisissez un autre code."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Enter receipt details, verify, then confirm."
+msgstr "Saisissez les informations de réception, vérifiez, puis confirmez."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Review the errors below."
+msgstr "Vérifiez les erreurs ci-dessous."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Fields marked * are required."
+msgstr "Les champs marqués * sont obligatoires."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Estimated stock after receipt"
+msgstr "Stock estimé après réception"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Estimates may change. The final stock balance is calculated when you confirm."
+msgstr "Les estimations peuvent changer. Le stock final est calculé lors de la confirmation."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Receipt details"
+msgstr "Informations de réception"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Verify details"
+msgstr "Vérifier les informations"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Review receipt details"
+msgstr "Vérifier les informations de réception"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Nothing has been saved yet. Confirm to record this receipt."
+msgstr "Aucune donnée n’a encore été enregistrée. Confirmez pour enregistrer cette réception."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Modify"
+msgstr "Modifier"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Confirm and Save"
+msgstr "Confirmer et enregistrer"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "No matching results."
+msgstr "Aucun résultat correspondant."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Matching results"
+msgstr "Résultats correspondants"
+
+#, python-format
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Search %(label)s"
+msgstr "Rechercher : %(label)s"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Search by name or code"
+msgstr "Rechercher par nom ou code"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Use standard selector"
+msgstr "Utiliser la liste standard"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Use searchable selector"
+msgstr "Utiliser la liste avec recherche"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "The reviewed details have changed or are invalid. Verify the details again before confirming."
+msgstr "Les informations vérifiées ont changé ou sont invalides. Vérifiez-les à nouveau avant de confirmer."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Verify the details before confirming the receipt."
+msgstr "Vérifiez les informations avant de confirmer la réception."
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Yes,No"
+msgstr "Oui,Non"
+
+#: inventory/entry_review.py inventory/entry_views.py templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/search_select.html
+msgid "Cancel"
+msgstr "Annuler"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Receipt progress"
+msgstr "Progression de la réception"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Entry"
+msgstr "Saisie"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Verification"
+msgstr "Vérification"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Confirmation"
+msgstr "Confirmation"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Stock settings"
+msgstr "Paramètres de stock"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Material and stock"
+msgstr "Matériel et stock"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Delivery information"
+msgstr "Informations de livraison"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Identify the material and choose its category and unit."
+msgstr "Identifiez le matériel et choisissez sa catégorie et son unité."
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Set the opening quantity, stock threshold and optional purchase price."
+msgstr "Définissez la quantité initiale, le seuil de stock et le prix d’achat facultatif."
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Select a material, then enter the quantity received."
+msgstr "Sélectionnez un matériel, puis saisissez la quantité reçue."
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Record the delivery date, supplier and supporting reference."
+msgstr "Renseignez la date de livraison, le fournisseur et la référence du document."
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "You can review and modify the details before saving."
+msgstr "Vous pourrez vérifier et modifier les informations avant de les enregistrer."
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Before you save"
+msgstr "Avant l’enregistrement"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Receipt verification"
+msgstr "Vérification de la réception"
+
+#: templates/inventory/material_entries.html templates/inventory/entry_review.html templates/inventory/entry_progress.html
+msgid "Confirm these details to update inventory."
+msgstr "Confirmez ces informations pour mettre à jour le stock."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Receipt History"
+msgstr "Historique des réceptions"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "New material"
+msgstr "Nouveau matériel"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Existing material"
+msgstr "Matériel existant"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Search receipts"
+msgstr "Rechercher des réceptions"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Receipt date from"
+msgstr "Date de réception du"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Receipt date to"
+msgstr "Date de réception au"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Transaction type"
+msgstr "Type de transaction"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "All transaction types"
+msgstr "Tous les types de transaction"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "The end date must be on or after the start date."
+msgstr "La date de fin doit être égale ou postérieure à la date de début."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Find and review recorded stock receipts."
+msgstr "Recherchez et consultez les réceptions de stock enregistrées."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Reset filters"
+msgstr "Réinitialiser les filtres"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Receipt reference"
+msgstr "Référence de réception"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Received by"
+msgstr "Réception enregistrée par"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Current catalogue"
+msgstr "Catalogue actuel"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Recorded at"
+msgstr "Date d’enregistrement"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "View details"
+msgstr "Voir les détails"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "No receipts found"
+msgstr "Aucune réception trouvée"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Try another search or adjust the receipt filters."
+msgstr "Essayez une autre recherche ou modifiez les filtres de réception."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Recorded material receipts"
+msgstr "Réceptions de matériel enregistrées"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Current catalogue labels identify receipts without a recorded material snapshot. Their transaction type remains not recorded."
+msgstr "La mention Catalogue actuel signale les réceptions sans copie historique du matériel. Leur type de transaction reste non renseigné."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Receipt history pages"
+msgstr "Pages de l’historique des réceptions"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Page %(page)s of %(pages)s"
+msgstr "Page %(page)s sur %(pages)s"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Read-only receipt record"
+msgstr "Fiche de réception en lecture seule"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Back to receipt history"
+msgstr "Retour à l’historique des réceptions"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Recorded at receipt"
+msgstr "Informations enregistrées à la réception"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "No original material snapshot was recorded. The name, code, category, description and unit below are current catalogue information. Stock quantities are from the recorded receipt."
+msgstr "Aucune copie historique du matériel n’a été enregistrée. Le nom, le code, la catégorie, la description et l’unité ci-dessous proviennent du catalogue actuel. Les quantités de stock proviennent de la réception enregistrée."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Stock before receipt"
+msgstr "Stock avant réception"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Historical balances from this receipt; current stock is not used."
+msgstr "Soldes historiques de cette réception ; le stock actuel n’est pas utilisé."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Stock movement"
+msgstr "Mouvement de stock"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "Movement recorded at"
+msgstr "Date d’enregistrement du mouvement"
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "No receipt lines are available. Ask a stock administrator to review this record."
+msgstr "Aucune ligne de réception n’est disponible. Demandez à un responsable du stock de vérifier cette fiche."
+
+#: inventory/receipt_history.py templates/inventory/receipt_history.html templates/inventory/receipt_detail.html templates/inventory/entry_tabs.html
+msgid "View receipt details"
+msgstr "Voir les détails de la réception"
+
+#: templates/inventory/receipt_history.html
+#, python-format
+msgid "%(total)s receipt"
+msgid_plural "%(total)s receipts"
+msgstr[0] "%(total)s réception"
+msgstr[1] "%(total)s réceptions"
+
+# Project-owned fallbacks for standard Django validators. The installed framework
+# catalog may omit these entries; retain Django msgids and lazy gettext behavior.
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "This field is required."
+msgstr "Ce champ est obligatoire."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Enter a valid date."
+msgstr "Saisissez une date valide."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Enter a number."
+msgstr "Saisissez un nombre."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Select a valid choice. That choice is not one of the available choices."
+msgstr "Sélectionnez un choix valide. Ce choix ne fait pas partie des choix disponibles."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+#, python-format
+msgid "Select a valid choice. %(value)s is not one of the available choices."
+msgstr "Sélectionnez un choix valide. %(value)s ne fait pas partie des choix disponibles."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+#, python-format
+msgid "Ensure this value is greater than or equal to %(limit_value)s."
+msgstr "Assurez-vous que cette valeur est supérieure ou égale à %(limit_value)s."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+#, python-format
+msgid "Ensure this value is less than or equal to %(limit_value)s."
+msgstr "Assurez-vous que cette valeur est inférieure ou égale à %(limit_value)s."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Null characters are not allowed."
+msgstr "Les caractères nuls ne sont pas autorisés."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "A material with this code already exists."
+msgstr "Un matériel avec ce code existe déjà."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Receipt form token"
+msgstr "Jeton du formulaire de réception"
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Access denied"
+msgstr "Accès refusé"
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "You do not have permission to manage material entries."
+msgstr "Vous n’avez pas l’autorisation de gérer les entrées de stock."
+
+#: inventory/entry_forms.py inventory/entry_i18n.py
+msgid "Your form could not be verified. Reload the page and try again."
+msgstr "Votre formulaire n’a pas pu être vérifié. Rechargez la page et réessayez."
+
+#: inventory/entry_forms.py inventory/receipt_history.py
+#, python-format
+msgid "Ensure this value has at most %(limit_value)d character (it has %(show_value)d)."
+msgid_plural "Ensure this value has at most %(limit_value)d characters (it has %(show_value)d)."
+msgstr[0] "Assurez-vous que cette valeur comporte au plus %(limit_value)d caractère (elle en comporte %(show_value)d)."
+msgstr[1] "Assurez-vous que cette valeur comporte au plus %(limit_value)d caractères (elle en comporte %(show_value)d)."
+
+#: inventory/entry_forms.py inventory/receipt_history.py
+#, python-format
+msgid "Ensure that there are no more than %(max)s digit in total."
+msgid_plural "Ensure that there are no more than %(max)s digits in total."
+msgstr[0] "Assurez-vous qu’il n’y a pas plus de %(max)s chiffre au total."
+msgstr[1] "Assurez-vous qu’il n’y a pas plus de %(max)s chiffres au total."
+
+#: inventory/entry_forms.py inventory/receipt_history.py
+#, python-format
+msgid "Ensure that there are no more than %(max)s decimal place."
+msgid_plural "Ensure that there are no more than %(max)s decimal places."
+msgstr[0] "Assurez-vous qu’il n’y a pas plus de %(max)s chiffre après la virgule."
+msgstr[1] "Assurez-vous qu’il n’y a pas plus de %(max)s chiffres après la virgule."
+
+#: inventory/entry_forms.py inventory/receipt_history.py
+#, python-format
+msgid "Ensure that there are no more than %(max)s digit before the decimal point."
+msgid_plural "Ensure that there are no more than %(max)s digits before the decimal point."
+msgstr[0] "Assurez-vous qu’il n’y a pas plus de %(max)s chiffre avant la virgule."
+msgstr[1] "Assurez-vous qu’il n’y a pas plus de %(max)s chiffres avant la virgule."
+
+#: inventory/templates/inventory/widgets/entry_date.html
+msgid "Choose date"
+msgstr "Choisir une date"
+
+#: inventory/templates/inventory/widgets/entry_date.html
+msgid "Previous month"
+msgstr "Mois précédent"
+
+#: inventory/templates/inventory/widgets/entry_date.html
+msgid "Next month"
+msgstr "Mois suivant"
+
+#: inventory/templates/inventory/widgets/entry_date.html
+msgid "Close calendar"
+msgstr "Fermer le calendrier"
+
+#: inventory/templates/inventory/widgets/entry_date.html
+msgid "Use arrow keys to move between days, Page Up or Page Down to change month, and Enter to select. Escape closes the calendar."
+msgstr "Utilisez les flèches pour changer de jour, Page précédente ou Page suivante pour changer de mois, et Entrée pour sélectionner. Échap ferme le calendrier."

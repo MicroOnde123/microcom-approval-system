@@ -1,0 +1,15 @@
+{% load i18n %}
+<div class="entry-search" data-search-select data-select-id="{{ select_field.id_for_label }}"
+     data-empty="{% trans 'No matching results.' %}" data-count="{% trans 'Matching results' %}"
+     data-native="{% trans 'Use standard selector' %}" data-search="{% trans 'Use searchable selector' %}">
+    <div class="entry-search-enhanced" hidden>
+        <label class="entry-sr-only" for="{{ select_field.id_for_label }}-search">{% blocktrans with label=select_field.label %}Search {{ label }}{% endblocktrans %}</label>
+        <svg class="entry-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <input type="search" id="{{ select_field.id_for_label }}-search" autocomplete="off"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ select_field.id_for_label }}-results"
+               placeholder="{% trans 'Search by name or code' %}">
+        <ul id="{{ select_field.id_for_label }}-results" class="entry-search-results" role="listbox" hidden></ul>
+        <span class="entry-sr-only" role="status" aria-live="polite" data-search-status></span>
+    </div>
+    {{ select_field }}
+</div>

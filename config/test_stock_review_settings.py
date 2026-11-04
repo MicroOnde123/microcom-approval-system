@@ -47,3 +47,5 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 ADMINISTRATION_REPORT_REQUEST_TYPE_CODE = "AUTORISATION_GENERAL"
 MATERIAL_RETURN_NOTE_UI_ENABLED = False
+
+CSRF_FAILURE_VIEW = "inventory.entry_i18n.csrf_failure"

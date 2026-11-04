@@ -1,0 +1,7 @@
+{% load i18n %}
+<div class="entry-field{% if field.name == 'description' or field.name == 'notes' %} entry-field--wide{% endif %}">
+<div class="entry-field-heading"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="entry-required" aria-hidden="true"> *</span>{% endif %}</label>
+{% if field.name == 'category' %}<button type="button" class="btn btn-tertiary entry-category-action" id="new-category" aria-haspopup="dialog" aria-controls="category-dialog" hidden>{% trans "+ New Category" %}</button>{% endif %}</div>
+{% if field.name == 'category' %}{% include "inventory/search_select.html" with select_field=field %}{% else %}{{ field }}{% endif %}
+{{ field.errors }}
+</div>
