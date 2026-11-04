@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load i18n static %}
+{% block title %}{% trans "Receipt details" %} {{ receipt.reference }}{% endblock %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}<link rel="stylesheet" href="{% static 'css/material_entries.css' %}">
+<div class="page-header entry-page-header"><div><h1>{% trans "Material Entries" %}</h1><p class="muted">{% trans "Read-only receipt record" %}</p></div></div>
+{% include "inventory/entry_tabs.html" %}
+<div class="entry-receipt-detail-header"><h2>{% trans "Receipt details" %}</h2><a class="btn btn-secondary" href="{{ history_url }}">{% trans "Back to receipt history" %}</a></div>
+<p class="entry-reference entry-detail-reference">{{ receipt.reference }}</p>
+<section class="entry-review-section"><div class="entry-review-section-heading"><h3>{% trans "Delivery information" %}</h3><span class="entry-type-badge">{{ transaction_label }}</span></div>
+<dl class="entry-summary"><div><dt>{% trans "Supplier" %}</dt><dd>{{ receipt.supplier|default:'-' }}</dd></div><div><dt>{% trans "Delivery/reference number" %}</dt><dd>{{ receipt.delivery_reference|default:'-' }}</dd></div>
+<div><dt>{% trans "Receipt date" %}</dt><dd>{% include "inventory/receipt_date.html" with value=receipt.received_on %}</dd></div><div><dt>{% trans "Recorded at" %}</dt><dd>{% include "inventory/receipt_date.html" with value=receipt.created_at %} {{ receipt.created_at|date:'H:i:s T' }}</dd></div>
+<div><dt>{% trans "Received by" %}</dt><dd>{{ receipt.created_by.full_name|default:receipt.created_by.username }}</dd></div><div><dt>{% trans "Transaction type" %}</dt><dd>{{ transaction_label }}</dd></div>
+<div class="entry-summary--wide"><dt>{% trans "Notes" %}</dt><dd>{{ receipt.notes|default:'-' }}</dd></div></dl></section>
+{% for item in line_rows %}
+<section class="entry-review-section"><div class="entry-review-section-heading"><h3>{% trans "Material Information" %}</h3><span class="{% if item.snapshot_recorded %}entry-type-badge{% else %}entry-legacy-badge{% endif %}">{% if item.snapshot_recorded %}{% trans "Recorded at receipt" %}{% else %}{% trans "Current catalogue" %}{% endif %}</span></div>
+{% if not item.snapshot_recorded %}<p class="entry-legacy-note">{% trans "No original material snapshot was recorded. The name, code, category, description and unit below are current catalogue information. Stock quantities are from the recorded receipt." %}</p>{% endif %}
+<div class="entry-material-identity"><strong>{{ item.material.name }}</strong><span>{{ item.material.code }}</span></div>
+<dl class="entry-summary"><div><dt>{% trans "Category" %}</dt><dd>{{ item.material.category_name }} ({{ item.material.category_code }})</dd></div><div><dt>{% trans "Unit of measurement" %}</dt><dd>{{ item.material.unit|default:'-' }}</dd></div>
+<div class="entry-summary--wide"><dt>{% trans "Description" %}</dt><dd>{{ item.material.description|default:'-' }}</dd></div></dl>
+<div class="entry-stock-flow entry-detail-stock"><div class="entry-stock-cell"><span class="entry-metric-label">{% trans "Stock before receipt" %}</span><strong>{{ item.stock_before }} <small>{{ item.material.unit }}</small></strong></div>
+<div class="entry-stock-cell entry-stock-cell--received"><span class="entry-metric-label">{% trans "Quantity received" %}</span><strong>{{ item.line.quantity }} <small>{{ item.material.unit }}</small></strong></div>
+<div class="entry-stock-cell entry-stock-cell--estimated"><span class="entry-metric-label">{% trans "Stock after receipt" %}</span><strong>{{ item.line.stock_after }} <small>{{ item.material.unit }}</small></strong></div></div>
+<p class="entry-estimate-note">{% trans "Historical balances from this receipt; current stock is not used." %}</p>
+<dl class="entry-summary entry-movement-summary"><div><dt>{% trans "Stock movement" %}</dt><dd>#{{ item.line.movement_id }} &middot; {{ item.line.movement.movement_type }}</dd></div><div><dt>{% trans "Movement recorded at" %}</dt><dd>{% include "inventory/receipt_date.html" with value=item.line.movement.created_at %} {{ item.line.movement.created_at|date:'H:i:s T' }}</dd></div></dl>
+</section>{% empty %}<p class="message error">{% trans "No receipt lines are available. Ask a stock administrator to review this record." %}</p>{% endfor %}
+{% endblock %}

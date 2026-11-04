@@ -1,0 +1,31 @@
+{% load i18n static %}
+<link rel="stylesheet" href="{% static 'css/material_categories.css' %}">
+<dialog id="category-dialog" aria-labelledby="category-title" aria-describedby="category-help">
+    <div class="category-dialog-header">
+        <h2 id="category-title">{% trans "New Category" %}</h2>
+        <button type="button" class="btn btn-secondary" data-category-close aria-label="{% trans 'Close category dialog' %}">&times;</button>
+    </div>
+    <p id="category-help">{% trans "Create a category without leaving this material entry." %}</p>
+    <form id="category-form" method="post" action="{% url 'create_material_category' %}" novalidate
+          data-failure="{% trans 'Unable to save the category. Please retry.' %}"
+          data-saving="{% trans 'Saving category...' %}"
+          data-success="{% trans 'Category created and selected.' %}">
+        {% csrf_token %}
+        <div id="category-errors" role="alert" tabindex="-1"></div>
+        <fieldset id="category-fields">
+        {% for field in category_form %}
+            <div class="category-field">
+                {{ field.label_tag }}{{ field }}
+                <ul id="{{ field.id_for_label }}-errors" class="errorlist" hidden></ul>
+            </div>
+        {% endfor %}
+        </fieldset>
+        <div class="actions-inline">
+            <button type="submit" class="btn" id="category-save">{% trans "Save category" %}</button>
+            <button type="button" class="btn btn-secondary" data-category-close>{% trans "Cancel" %}</button>
+        </div>
+        <p id="category-progress" role="status" aria-live="polite"></p>
+    </form>
+</dialog>
+<p id="category-created" role="status" aria-live="polite"></p>
+<script src="{% static 'js/material_categories.js' %}" defer></script>

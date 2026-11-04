@@ -1,0 +1,14 @@
+.entry-date { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.entry-date > input { flex: 1 1 9rem; min-width: 0; width: 100%; }
+.entry-date-format { color: #52647b; font-size: .75rem; }
+.entry-calendar-open { white-space: nowrap; }
+.entry-calendar { border: 1px solid #cbd5e1; border-radius: .6rem; padding: 1rem; color: #172b4d; width: 22rem; max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); overflow: auto; box-shadow: 0 12px 40px #14274440; }
+.entry-calendar::backdrop { background: #10243e70; }
+.entry-calendar-header { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .6rem; }
+.entry-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .2rem; text-align: center; }
+.entry-calendar-days > span { font-size: .75rem; padding: .25rem 0; }
+.entry-calendar button { cursor: pointer; }
+.entry-calendar-days button, .entry-calendar-header button { min-height: 2.5rem; border: 1px solid #d7e0eb; border-radius: .25rem; background: white; color: #172b4d; }
+.entry-calendar button:focus-visible { outline: 3px solid #4679b5; outline-offset: 2px; }
+.entry-calendar-days button[aria-pressed="true"] { background: #172b4d; color: white; }
+.entry-calendar-help { font-size: .75rem; color: #52647b; margin: .7rem 0; }

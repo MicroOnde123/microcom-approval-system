@@ -1,0 +1,6 @@
+{% load i18n %}
+<nav class="entry-tabs" aria-label="{% trans 'Material Entries' %}">
+<a {% if mode == 'new' %}aria-current="page"{% endif %} href="{% url 'material_entries' %}?mode=new">{% trans "Register New Material" %}</a>
+<a {% if mode == 'existing' %}aria-current="page"{% endif %} href="{% url 'material_entries' %}?mode=existing">{% trans "Receive Existing Material" %}</a>
+<a {% if mode == 'history' %}aria-current="page"{% endif %} href="{% url 'material_receipt_history' %}">{% trans "Receipt History" %}</a>
+</nav>

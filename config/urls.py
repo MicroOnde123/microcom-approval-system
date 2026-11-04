@@ -28,7 +28,14 @@ from requests_app.views import (
     notification_count, return_material_to_stock, export_material_report_excel,
 )
 
+from inventory.entry_views import material_entries, create_material_category
+from inventory.receipt_history import receipt_history, receipt_detail
+
 urlpatterns = [
+    path("materials/entries/history/", receipt_history, name="material_receipt_history"),
+    path("materials/entries/receipts/<int:receipt_id>/", receipt_detail, name="material_receipt_detail"),
+    path("materials/categories/create/", create_material_category, name="create_material_category"),
+    path("materials/entries/", material_entries, name="material_entries"),
     path("requests/<int:request_id>/material-outcomes/", material_outcome_views.workspace, name="material_outcomes"),
     path("return-receipts/<int:receipt_id>/pdf/", material_outcome_views.receipt_pdf, name="return_receipt_pdf"),
     path("return-receipt-artifacts/<int:artifact_id>/", material_outcome_views.receipt_artifact, name="return_receipt_artifact"),
@@ -158,3 +165,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Localize Material Entries denials; all other paths retain Django defaults.
+handler403 = "inventory.entry_i18n.permission_denied"

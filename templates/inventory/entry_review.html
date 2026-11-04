@@ -1,0 +1,35 @@
+{% load i18n %}{% get_current_language as entry_language %}
+<section aria-labelledby="review-title" class="entry-review">
+<div class="entry-review-heading"><span class="entry-eyebrow">{% trans "Before you save" %}</span><h2 id="review-title" tabindex="-1" autofocus>{% trans "Receipt verification" %}</h2>
+<p>{% trans "Nothing has been saved yet. Confirm to record this receipt." %}</p></div>
+{% if mode == 'existing' %}
+<div class="entry-material-identity"><strong>{{ selected_material.name }}</strong><span>{{ selected_material.code }}</span></div>
+<div class="entry-stock-flow entry-stock-flow--review">
+<div class="entry-stock-cell"><span class="entry-metric-label">{% trans "Current stock" %}</span><strong>{{ current_stock }} <small>{{ selected_material.unit }}</small></strong></div>
+<span class="entry-flow-symbol" aria-hidden="true">+</span>
+<div class="entry-stock-cell entry-stock-cell--received"><span class="entry-metric-label">{% trans "Quantity received" %}</span><strong>{{ receipt_form.cleaned_data.quantity }} <small>{{ selected_material.unit }}</small></strong></div>
+<span class="entry-flow-symbol" aria-hidden="true">&rarr;</span>
+<div class="entry-stock-cell entry-stock-cell--estimated"><span class="entry-metric-label">{% trans "Estimated stock after receipt" %}</span><strong>{{ estimated_stock }} <small>{{ selected_material.unit }}</small></strong></div>
+</div><p class="entry-estimate-note">{% trans "Estimates may change. The final stock balance is calculated when you confirm." %}</p>
+{% else %}
+<section class="entry-review-section"><div class="entry-review-section-heading"><h3>{% trans "Material Information" %}</h3><span class="entry-type-label">{% trans "Register New Material" %}</span></div>
+<div class="entry-material-identity"><strong>{{ material_form.cleaned_data.name }}</strong><span>{{ material_form.cleaned_data.code }}</span></div>
+<dl class="entry-summary">
+<div><dt>{{ material_form.category.label }}</dt><dd>{{ material_form.cleaned_data.category }}</dd></div>
+<div><dt>{{ material_form.unit.label }}</dt><dd>{{ material_form.cleaned_data.unit }}</dd></div>
+<div class="entry-summary--wide"><dt>{{ material_form.description.label }}</dt><dd>{{ material_form.cleaned_data.description|default:'-' }}</dd></div>
+</dl></section>
+<section class="entry-review-section"><div class="entry-review-section-heading"><h3>{% trans "Stock settings" %}</h3></div>
+<div class="entry-quantity-highlight"><span>{% trans "Quantity received" %}</span><strong>{{ receipt_form.cleaned_data.quantity }} <small>{{ material_form.cleaned_data.unit }}</small></strong></div>
+<dl class="entry-summary">{% for field in material_form %}{% if field.name == 'minimum_stock_level' or field.name == 'unit_price' or field.name == 'currency' or field.name == 'is_active' %}<div><dt>{{ field.label }}</dt><dd>{% if field.name == 'is_active' %}{{ material_form.cleaned_data.is_active|yesno:_('Yes,No') }}{% else %}{{ field.value|default_if_none:'-'|default:'-' }}{% endif %}</dd></div>{% endif %}{% endfor %}</dl></section>
+{% endif %}
+<section class="entry-review-section"><div class="entry-review-section-heading"><h3>{% trans "Delivery information" %}</h3></div><dl class="entry-summary">
+{% for field in receipt_form.visible_fields %}{% if field.name != 'material' and field.name != 'quantity' %}<div {% if field.name == 'notes' %}class="entry-summary--wide"{% endif %}><dt>{{ field.label }}</dt><dd>{% if field.name == 'received_on' %}{% if entry_language == 'fr' %}{{ receipt_form.cleaned_data.received_on|date:'d/m/Y' }}{% else %}{{ receipt_form.cleaned_data.received_on|date:'Y-m-d' }}{% endif %}{% else %}{{ field.value|default_if_none:'-'|default:'-' }}{% endif %}</dd></div>{% endif %}{% endfor %}
+</dl></section>
+<form method="post" novalidate>
+{% csrf_token %}<input type="hidden" name="mode" value="{{ mode }}"><input type="hidden" name="review_proof" value="{{ review_proof }}">
+{% for field in receipt_form %}{{ field.as_hidden }}{% endfor %}
+{% if mode == 'new' %}{% for field in material_form %}{{ field.as_hidden }}{% endfor %}{% endif %}
+<div class="entry-action-bar entry-action-bar--review"><p>{% trans "Confirm these details to update inventory." %}</p><div class="entry-actions"><button class="btn btn-secondary" type="submit" name="action" value="modify">{% trans "Modify" %}</button>
+<button class="btn entry-primary" type="submit" name="action" value="confirm">{% trans "Confirm and Save" %}<span aria-hidden="true"> &rarr;</span></button></div></div>
+</form></section>

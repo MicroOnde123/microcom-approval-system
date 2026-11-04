@@ -234,3 +234,6 @@ INVOICE_DOCUMENT_ROOT = config("INVOICE_DOCUMENT_ROOT", default="")
 
 # Remains disabled until E-R2/E-R3 database validation and explicit activation.
 MATERIAL_RETURN_NOTE_UI_ENABLED = True
+
+# Material Entries uses localized CSRF errors; other modules retain Django defaults.
+CSRF_FAILURE_VIEW = "inventory.entry_i18n.csrf_failure"

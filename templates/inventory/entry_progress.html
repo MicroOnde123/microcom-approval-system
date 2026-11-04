@@ -1,0 +1,6 @@
+{% load i18n %}
+<ol class="entry-progress" aria-label="{% trans 'Receipt progress' %}">
+<li {% if not review and not result %}aria-current="step"{% endif %} class="{% if review or result %}is-complete{% endif %}"><span class="entry-step-number" aria-hidden="true">1</span><span>{% trans "Entry" %}</span></li>
+<li {% if review %}aria-current="step"{% endif %} class="{% if result %}is-complete{% endif %}"><span class="entry-step-number" aria-hidden="true">2</span><span>{% trans "Verification" %}</span></li>
+<li {% if result %}aria-current="step"{% endif %}><span class="entry-step-number" aria-hidden="true">3</span><span>{% trans "Confirmation" %}</span></li>
+</ol>
