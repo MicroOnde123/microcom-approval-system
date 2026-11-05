@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from .models import Request, RequestMaterialItem
+from .resubmission import is_general_permission
 from inventory.models import Material
 from accounts.models import Department
 
@@ -93,11 +94,12 @@ class RequestForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, user=None, draft=False, **kwargs):
+    def __init__(self, *args, user=None, draft=False, independent_permission_description=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.user = user
         self.draft = draft
+        self.permission_description_type_id = self.instance.request_type_id if independent_permission_description else None
         department_field = self.fields["request_for_department"]
         department_field.label = _("Request For Department")
         department_field.queryset = Department.objects.order_by("name")
@@ -109,6 +111,11 @@ class RequestForm(forms.ModelForm):
 
         # Needed because General Permission hides the normal description box.
         self.fields["description"].required = False
+        self.general_permission = bool(self.instance.pk and is_general_permission(self.instance))
+        if self.general_permission:
+            self.fields["description"].label = _("Description")
+            if self.instance.status == "RETURNED":
+                self.permission_description_type_id = self.instance.request_type_id
 
         metadata = getattr(self.instance, "metadata_json", None) or {}
 
@@ -131,6 +138,13 @@ class RequestForm(forms.ModelForm):
             if field_name in metadata:
                 self.fields[field_name].initial = metadata.get(field_name)
 
+        if self.general_permission and self.instance.status != "DRAFT":
+            # Django's disabled Field ignores submitted data during cleaning.
+            # Set form initial too, so callers cannot substitute another value.
+            self.fields["exit_reason"].disabled = True
+            self.initial["exit_reason"] = metadata.get("exit_reason")
+            self.fields["exit_reason"].help_text = _("The original authorization justification cannot be changed after submission.")
+
     def clean(self):
         cleaned_data = super().clean()
         request_type = cleaned_data.get("request_type")
@@ -138,6 +152,11 @@ class RequestForm(forms.ModelForm):
 
         if not request_type:
             return cleaned_data
+
+        independent_description = (request_type.pk == self.permission_description_type_id
+                                   and not request_type.requires_materials)
+        if independent_description and "description" not in self.data:
+            cleaned_data["description"] = self.instance.description
 
         if self.draft:
             return cleaned_data
@@ -150,7 +169,7 @@ class RequestForm(forms.ModelForm):
             permission_subgroup = cleaned_data.get("permission_subgroup")
             exit_reason = cleaned_data.get("exit_reason")
 
-            if exit_reason:
+            if exit_reason and not independent_description:
                 cleaned_data["description"] = exit_reason
 
             if not permission_group:

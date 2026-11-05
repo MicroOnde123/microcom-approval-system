@@ -651,7 +651,8 @@ class AlternateApproverWorkflowTests(TestCase):
         self.assertEqual(self.pending_count_for(self.alternate), 0)
 
     def test_submit_request_sends_email_to_primary_and_alternate(self):
-        self.make_submitted_request()
+        with self.captureOnCommitCallbacks(execute=True):
+            self.make_submitted_request()
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(

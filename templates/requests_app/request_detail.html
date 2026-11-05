@@ -517,7 +517,7 @@
 
         <tbody>
 
-            {% for log in request_obj.audit_logs.all %}
+            {% for log in audit_logs %}
 
             <tr>
 
@@ -530,7 +530,10 @@
                 </td>
 
                 <td class="table-description">
-                    {{ log.comment|default:"-" }}
+                    {% if log.action == 'APPROVAL_HISTORY_ARCHIVED' %}{% trans "See previous approval attempts." %}
+                    {% elif log.action == 'PERMISSION_BASELINE' %}{% trans "Approval comparison baseline recorded." %}
+                    {% elif log.action == 'PERMISSION_EDIT_SAVED' %}{% trans "Changes saved successfully." %}
+                    {% else %}{{ log.display_comment|default:"-" }}{% endif %}
                 </td>
 
                 <td class="table-date">
@@ -555,4 +558,5 @@
 
 </div>
 
+{% include "requests_app/partials/approval_attempts.html" %}
 {% endblock %}

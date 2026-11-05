@@ -3730,3 +3730,141 @@ msgstr "Fermer le calendrier"
 #: inventory/templates/inventory/widgets/entry_date.html
 msgid "Use arrow keys to move between days, Page Up or Page Down to change month, and Enter to select. Escape closes the calendar."
 msgstr "Utilisez les flèches pour changer de jour, Page précédente ou Page suivante pour changer de mois, et Entrée pour sélectionner. Échap ferme le calendrier."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Earlier approvals remain valid. Resumed at the step that returned the request."
+msgstr "Les approbations précédentes restent valides. La demande reprend à l’étape qui l’a retournée."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Approval-relevant information changed. Approval restarted from the first step."
+msgstr "Les informations pertinentes pour l’approbation ont changé. Le circuit reprend à la première étape."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "The approval workflow or assignments changed. Approval restarted from the first step."
+msgstr "Le circuit d’approbation ou les affectations ont changé. Le circuit reprend à la première étape."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Previous approval evidence is missing or unreliable. Approval restarted from the first step."
+msgstr "Les preuves des approbations précédentes sont absentes ou non fiables. Le circuit reprend à la première étape."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Returned"
+msgstr "Retournée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Rejected"
+msgstr "Rejetée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Skipped"
+msgstr "Ignorée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "This request is no longer available for submission."
+msgstr "Cette demande ne peut plus être soumise."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "An active authenticated user is required."
+msgstr "Un utilisateur authentifié et actif est requis."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Only the active request owner can resubmit this request."
+msgstr "Seul l’auteur actif de la demande peut la soumettre à nouveau."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Only returned requests can be resubmitted."
+msgstr "Seules les demandes retournées peuvent être soumises à nouveau."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "This approval is no longer active. Reload the request."
+msgstr "Cette approbation n’est plus active. Rechargez la demande."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Previous approval attempts"
+msgstr "Tentatives d’approbation précédentes"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Archived attempt"
+msgstr "Tentative archivée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Resumed approval step"
+msgstr "Étape de reprise de l’approbation"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "See previous approval attempts."
+msgstr "Consultez les tentatives d’approbation précédentes."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Approval comparison baseline recorded."
+msgstr "Référence de comparaison des approbations enregistrée."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Previous approval attempt pages"
+msgstr "Pages des tentatives d’approbation précédentes"
+
+#: requests_app/services.py
+msgid "Approval assignments must use active users."
+msgstr "Les approbateurs affectés doivent être des utilisateurs actifs."
+
+#: requests_app/services.py
+msgid "No applicable workflow found for this request."
+msgstr "Aucun circuit d’approbation applicable n’a été trouvé pour cette demande."
+
+#: requests_app/services.py
+msgid "Approval steps already exist for this request."
+msgstr "Des étapes d’approbation existent déjà pour cette demande."
+
+#: requests_app/services.py
+msgid "Request has no owning department assigned."
+msgstr "Aucun département responsable n’est affecté à cette demande."
+
+#: requests_app/services.py
+#, python-format
+msgid "No approver found for step %(step)s."
+msgstr "Aucun approbateur trouvé pour l’étape %(step)s."
+
+#: requests_app/services.py
+msgid "This request has already been submitted into a workflow."
+msgstr "Cette demande a déjà été soumise à un circuit d’approbation."
+
+#: requests_app/services.py
+msgid "This step has already been acted upon."
+msgstr "Une décision a déjà été prise pour cette étape."
+
+#: requests_app/services.py
+msgid "This request is no longer open for approval."
+msgstr "Cette demande n’est plus ouverte à l’approbation."
+
+#: requests_app/services.py
+msgid "You are not allowed to reject this step."
+msgstr "Vous n’êtes pas autorisé à rejeter cette étape."
+
+#: requests_app/services.py
+msgid "This request is no longer open for rejection."
+msgstr "Cette demande ne peut plus être rejetée."
+
+#: requests_app/services.py
+msgid "You are not allowed to return this step."
+msgstr "Vous n’êtes pas autorisé à retourner cette étape."
+
+#: requests_app/services.py
+msgid "This request is no longer open for return."
+msgstr "Cette demande ne peut plus être retournée."
+
+#: requests_app/services.py
+msgid "No approval steps are configured. Ask an administrator to configure the approval workflow."
+msgstr "Aucune étape d’approbation n’est configurée. Demandez à un administrateur de configurer le circuit d’approbation."
+
+#: requests_app/approval_attempts.py
+#, python-format
+msgid "Description changed from %(previous)s to %(updated)s."
+msgstr "Description modifiée de %(previous)s en %(updated)s."
+
+#: requests_app/forms.py
+msgid "Reason / Motif"
+msgstr "Motif"
+
+#: requests_app/forms.py
+msgid "The original authorization justification cannot be changed after submission."
+msgstr "Le motif initial de l’autorisation ne peut plus être modifié après soumission."

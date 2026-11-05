@@ -23,6 +23,8 @@ from .stock_forms import ReturnToStockForm
 from .stock_services import RETURN_TOKEN_SALT, material_return_totals, return_material_stock
 from .models import Request, RequestApproval, RequestAttachment, RequestMaterialItem, StockMovement, RequestAuditLog
 from .services import submit_request, approve_step, reject_step, return_step, resubmit_request
+from .resubmission import REASONS, is_general_permission, record_description_change
+from .approval_attempts import historical_participant, readable_attempts, readable_audit_logs, archived_attempt_page
 from .references import committed_creation, creation_digest, create_request_once
 from .material_documents import issue_document, validate_access as validate_material_document_access
 from django.utils.translation import get_language, gettext as _
@@ -544,7 +546,10 @@ def request_detail(request, request_id):
     ).exists()
     is_stock_user = is_stock_manager(request.user) and request_obj.material_items.exists()
     
-    if not is_submitter and not is_approver and not request.user.is_superuser and not is_stock_user:
+    is_historical_approver = False
+    if not (is_submitter or is_approver or request.user.is_superuser or is_stock_user):
+        is_historical_approver = historical_participant(request_obj, request.user)
+    if not is_submitter and not is_approver and not request.user.is_superuser and not is_stock_user and not is_historical_approver:
         return HttpResponseForbidden("You are not allowed to view this request.")
 
     if is_submitter:
@@ -578,6 +583,8 @@ def request_detail(request, request_id):
         "requests_app/request_detail.html",
         {
             "request_obj": request_obj,
+            "approval_attempts": readable_attempts(request_obj.audit_logs.filter(action="APPROVAL_HISTORY_ARCHIVED").order_by("created_at", "pk")),
+            "audit_logs": readable_audit_logs(request_obj),
             "back_url": back_url,
             "active_approval_for_user": active_approval_for_user,
             "can_cancel_request": can_cancel_request,
@@ -642,13 +649,18 @@ def update_material_issue_note(request, request_id):
 
 
 @login_required
+@transaction.atomic
 def edit_request(request, request_id):
-    request_obj = get_object_or_404(Request, id=request_id, submitted_by=request.user)
+    request_obj = get_object_or_404(Request.objects.select_for_update(), id=request_id, submitted_by=request.user)
+    if not request.user.is_active:
+        return HttpResponseForbidden(_("An active authenticated user is required."))
 
     if request_obj.status not in ["DRAFT", "RETURNED"]:
         messages.error(request, _("Only draft or returned requests can be edited."))
         return redirect("request_detail", request_id=request_obj.id)
 
+    previous_description = request_obj.description
+    independent_description = request_obj.status == "RETURNED" and is_general_permission(request_obj)
     submission_action = f"edit:{request_obj.id}"
     if request.method == "POST":
         action = request.POST.get("action", "resubmit")
@@ -665,6 +677,8 @@ def edit_request(request, request_id):
         if token_status != "pending":
             messages.error(request, _("This form has expired. Please submit it again."))
             return redirect("edit_request", request_id=request_obj.id)
+        if request_obj.audit_logs.filter(action="PERMISSION_EDIT_SAVED", comment=submission_token).exists():
+            return redirect("request_detail", request_id=request_obj.id)
 
         form = RequestForm(
             request.POST,
@@ -672,6 +686,7 @@ def edit_request(request, request_id):
             instance=request_obj,
             user=request.user,
             draft=is_draft_save,
+            independent_permission_description=independent_description,
         )
 
         if form.is_valid():
@@ -702,6 +717,10 @@ def edit_request(request, request_id):
                         else:
                             req.material_items.all().delete()
                         save_attachments(request, req)
+                        record_description_change(req, request.user, previous_description)
+                        if is_general_permission(req):
+                            RequestAuditLog.objects.create(request=req, action="PERMISSION_EDIT_SAVED",
+                                performed_by=request.user, comment=submission_token)
                 except ValidationError as exc:
                     form.add_error(None, exc)
                     return render(request, "requests_app/edit_request.html",
@@ -774,6 +793,7 @@ def edit_request(request, request_id):
             save_attachments(request, req)
 
             try:
+                record_description_change(req, request.user, previous_description)
                 if request_obj.status == "DRAFT":
                     req.status = "PENDING"
                     req.current_step_order = None
@@ -782,11 +802,13 @@ def edit_request(request, request_id):
                     submit_request(req)
                     success_message = _("Request submitted successfully.")
                 else:
-                    resubmit_request(req, request.user)
+                    routing = resubmit_request(req, request.user)
                     success_message = _("Request updated and resubmitted successfully.")
+                    if routing["reason"]:
+                        success_message = REASONS[routing["reason"]]
             except ValidationError as exc:
                 messages.error(request, exc.messages[0] if hasattr(exc, "messages") else str(exc))
-                return render(
+                response = render(
                     request,
                     "requests_app/edit_request.html",
                     request_form_context(
@@ -797,6 +819,8 @@ def edit_request(request, request_id):
                         back_url=reverse("request_detail", args=[request_obj.id]),
                     ),
                 )
+                transaction.set_rollback(True)
+                return response
 
             mark_submission_token_used(request, submission_token, req.id)
             messages.success(request, success_message)
@@ -809,7 +833,8 @@ def edit_request(request, request_id):
         )
 
     else:
-        form = RequestForm(instance=request_obj, user=request.user)
+        form = RequestForm(instance=request_obj, user=request.user,
+                           independent_permission_description=independent_description)
         formset = RequestMaterialItemFormSet(
             instance=request_obj,
             prefix=MATERIAL_FORMSET_PREFIX,
@@ -1060,12 +1085,29 @@ def approval_history(request):
     form = ApprovalHistoryFilterForm(request.GET)
     approvals = apply_filters(approvals, form, prefix="request__", date_field="acted_at")
     page = Paginator(approvals, 25).get_page(request.GET.get("page"))
+    archives = RequestAuditLog.objects.filter(action="APPROVAL_HISTORY_ARCHIVED").exclude(
+        request__status__in=["DRAFT", "CANCELLED"]).select_related("request").order_by("-created_at", "-pk")
+    if form.is_valid():
+        values = form.cleaned_data
+        if values["q"]:
+            archives = archives.filter(models.Q(request__request_number__icontains=values["q"])
+                                       | models.Q(request__description__icontains=values["q"]))
+        for field, lookup in (("department", "request_for_department"), ("request_type", "request_type"), ("status", "status")):
+            if values[field]:
+                archives = archives.filter(**{"request__" + lookup: values[field]})
+        attempt_page = archived_attempt_page(archives.iterator(chunk_size=50), request.user, values,
+                                             request.GET.get("attempt_page"))
+    else:
+        attempt_page = Paginator([], 25).get_page(request.GET.get("attempt_page"))
     query = request.GET.copy(); query.pop("page", None)
+    attempt_query = request.GET.copy(); attempt_query.pop("attempt_page", None)
     return render(
         request,
         "requests_app/approval_history.html",
         {
             "approvals": page, "page_obj": page, "filter_form": form,
+            "approval_attempts": attempt_page, "attempt_page": attempt_page,
+            "attempt_query": attempt_query.urlencode(),
             "active_querystring": query.urlencode(), "filter_reset_url": reverse("approval_history"),
             "current_list_url": current_path_with_query(request),
         },

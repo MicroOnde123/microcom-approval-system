@@ -265,11 +265,12 @@
 
             <div id="permission-reason-wrapper" style="display:none; margin-top:16px;">
 
-                <label>
+                <label for="{{ form.exit_reason.id_for_label }}">
                     {{ form.exit_reason.label }}
                 </label>
 
                 {{ form.exit_reason }}
+                {% if form.exit_reason.help_text %}<p class="muted" id="{{ form.exit_reason.id_for_label }}_helptext">{{ form.exit_reason.help_text }}</p>{% endif %}
 
             </div>
 
@@ -282,7 +283,7 @@
     <div class="form-section" id="description-section">
 
         <label for="{{ form.description.id_for_label }}">
-            {% trans "Description / Reason" %}
+            {% if form.general_permission %}{% trans "Description" %}{% else %}{% trans "Description / Reason" %}{% endif %}
         </label>
 
         {{ form.description }}
@@ -540,7 +541,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (behavior.is_permission_request) {
             permissionSection.style.display = "block";
-            descriptionSection.style.display = "none";
+            descriptionSection.style.display = selectedValue === "{{ form.permission_description_type_id|default_if_none:'' }}" ? "block" : "none";
         }
 
         updatePermissionFields();
