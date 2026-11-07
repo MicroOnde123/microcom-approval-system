@@ -1,0 +1,20 @@
+{% load i18n static %}
+<link rel="stylesheet" href="{% static 'css/entry_price.css' %}">
+<dialog id="entry-price-dialog" aria-labelledby="entry-price-title">
+<h2 id="entry-price-title">{% trans "Modify Price" %}</h2>
+<p>{% trans "Current Price" %}: <output id="dialog-current-price"></output></p>
+<form id="entry-price-form" method="post" novalidate
+ data-url="{% url 'material_entry_price' 0 %}"
+ data-failure="{% trans 'Unable to save the price. Reload and retry.' %}"
+ data-loading="{% trans 'Loading current price...' %}"
+ data-unknown="{% trans 'Unknown' %}">
+{% csrf_token %}
+<div id="entry-price-errors" role="alert" tabindex="-1"></div>
+<fieldset id="entry-price-fields">
+{% for field in price_form %}{% if field.is_hidden %}{{ field }}{% else %}<div class="form-group">{{ field.label_tag }}{{ field }}<ul id="{{ field.id_for_label }}-price-errors" class="errorlist" hidden></ul></div>{% endif %}{% endfor %}
+</fieldset>
+<div class="actions-inline"><button type="submit" class="btn" id="entry-price-save">{% trans "Save Price" %}</button><button type="button" class="btn btn-secondary" id="entry-price-cancel">{% trans "Cancel" %}</button></div>
+<p id="entry-price-progress" role="status" aria-live="polite"></p>
+</form>
+</dialog>
+<script src="{% static 'js/entry_price.js' %}" defer></script>

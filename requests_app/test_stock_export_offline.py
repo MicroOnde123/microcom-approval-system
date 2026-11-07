@@ -30,11 +30,32 @@ def fixture():
 
 
 class StockExportOfflineTests(TestCase):
+    def test_approved_analytics_never_claim_physical_issuance(self):
+        for language, dashboard, graphs, quantity, lines, top in (
+            ('en', 'Dashboard', 'Graphs', 'Approved Quantity', 'Approved Material Lines',
+             'Top 10 Materials by Approved Quantity'),
+            ('fr', 'Tableau de bord', 'Graphiques', 'Quantité approuvée', "Lignes d'articles approuvées",
+             'Top 10 des articles par quantité approuvée'),
+        ):
+            with self.subTest(language=language):
+                # Approved quantity exists, but there are no recorded OUT movements.
+                wb = self.render_export(language=language, movements=[])
+                self.assertEqual(wb[dashboard]['D16'].value, quantity)
+                self.assertEqual(wb[dashboard]['D17'].value, 2)
+                self.assertEqual(wb[dashboard]['D9'].value, lines)
+                self.assertEqual(wb[graphs]['Z1'].value, quantity)
+                self.assertEqual(wb[graphs]['AF1'].value, lines)
+                titles = [chart.title.tx.rich.p[0].r[0].t for chart in wb[graphs]._charts]
+                self.assertEqual(titles[0], top)
+                self.assertEqual(titles[2], lines + (' Over Time' if language == 'en' else ' dans le temps'))
+                self.assertFalse(any('issued' in title.lower() or 'sorties' in title.lower() or 'sortis' in title.lower()
+                                     for title in titles))
+
     def render_export(self,req=None,language='en',movements=None,params=None):
         req=req or fixture()
         request=RequestFactory().get('/materials/reports/export-excel/',params or {})
-        request.user=Obj(is_authenticated=True,is_superuser=False,can_manage_stock=True)
-        with override(language),patch('requests_app.views.get_filtered_material_report_requests',return_value=[req]),patch.object(export,'movement_scope',return_value=movements or []),patch.object(export,'enforce_size',return_value=100):
+        request.user=Obj(is_authenticated=True,is_active=True,is_superuser=False,can_manage_stock=True,has_perm=lambda permission: False)
+        with override(language),patch('requests_app.views.get_filtered_material_report_requests',return_value=[req]),patch.object(export,'movement_scope',return_value=movements or []),patch.object(export,'enforce_size',return_value=100),patch('requests_app.stock_report_inventory.load_current_inventory',return_value=[]),patch('requests_app.stock_report_entries.load_material_entries',return_value=[]),patch('requests_app.stock_report_reconciliation.load_issuance_returns',return_value=[]),patch('requests_app.stock_report_operational.load_warehouse_movements',return_value=([],0)):
             response=export_material_report_excel(request)
         self.assertEqual(response.status_code,200)
         return load_workbook(BytesIO(response.content))
@@ -42,7 +63,7 @@ class StockExportOfflineTests(TestCase):
     def test_original_sheets_and_four_charts_retained(self):
         wb=self.render_export()
         self.assertEqual(wb.sheetnames[:4],['Material Report','Dashboard','Graphs','Stock Movements'])
-        self.assertEqual(wb.sheetnames[4:],['Succursale Summary','Material Group Summary','Monthly Statistics'])
+        self.assertEqual(wb.sheetnames[4:],['Succursale Summary','Material Group Summary','Monthly Statistics','Current Stock Inventory','Material Entries','Issuance and Returns'])
         self.assertEqual(len(wb['Graphs']._charts),4)
         self.assertEqual(wb.active.max_column,20)
         self.assertEqual(wb.active.freeze_panes,'A5')

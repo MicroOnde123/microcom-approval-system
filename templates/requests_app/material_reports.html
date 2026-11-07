@@ -1,6 +1,6 @@
 
 {% extends "base.html" %}
-{% load i18n return_note_navigation tz %}
+{% load i18n static tz %}
 
 {% block title %}{% trans "Material Reports" %}{% endblock %}
 {% block page_layout %}app-container--wide{% endblock %}
@@ -86,7 +86,14 @@
 
     <input type="hidden" name="next" value="{{ current_list_url }}">
 
-    <div style="margin-bottom:15px;">
+    <div class="actions-inline" style="margin-bottom:15px;">
+        <span id="report-selection-count" role="status" aria-live="polite"
+              data-label-zero="{% blocktrans count selected=0 with count='%(count)s' %}{{ count }} request selected{% plural %}{{ count }} requests selected{% endblocktrans %}"
+              data-label-one="{% blocktrans count selected=1 with count='%(count)s' %}{{ count }} request selected{% plural %}{{ count }} requests selected{% endblocktrans %}"
+              data-label="{% blocktrans count selected=2 with count='%(count)s' %}{{ count }} request selected{% plural %}{{ count }} requests selected{% endblocktrans %}">{% blocktrans count count=0 %}{{ count }} request selected{% plural %}{{ count }} requests selected{% endblocktrans %}</span>
+        <button type="button" class="btn btn-secondary" id="report-clear-selection">{% trans "Clear Selection" %}</button>
+        <span id="report-selection-notice" role="status" data-cleared="{% trans 'Selection cleared because the report filters changed.' %}"></span>
+        <div id="report-selected-inputs" hidden></div>
         <button type="submit"
                 class="btn btn-secondary"
                 formaction="{% url 'bulk_print_material_documents' %}?copies=1">
@@ -101,12 +108,16 @@
     </div>
 
     <div id="live-filter-results" aria-live="off">
+        <div id="report-selection-context" data-context="{{ report_selection_context }}" data-scope="{{ report_scope }}"></div>
+        <input type="hidden" name="report_filter_scope" value="{{ report_filter_token }}">
+        <p class="muted">{% blocktrans count total=page_obj.paginator.count %}{{ total }} matching request{% plural %}{{ total }} matching requests{% endblocktrans %}</p>
+        <noscript><p>{% trans "JavaScript is required to keep selections across pages. Without it, print selections from the current page only." %}</p></noscript>
         {% include "requests_app/partials/filter_validation_errors.html" %}
         <div class="table-wrap" tabindex="0">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" id="select-all" aria-label="{% trans 'Select All' %}"></th>
+                        <th><label><input type="checkbox" id="select-all"> {% trans "Select all on this page" %}</label></th>
                         <th class="table-id">{% trans "Request Number" %}</th>
                         <th class="table-person">{% trans "Requester" %}</th>
                         <th class="table-department">{% trans "Submitted From Department" %}</th>
@@ -182,8 +193,7 @@
                         </td>
 
                         <td class="table-actions">
-                            {% return_note_links request.user req.id as return_note_nav %}
-                            {% include "invoicing/return_notes/links.html" %}
+                            {% include "invoicing/return_notes/links.html" with return_note_nav=req.report_return_note_nav %}
 
                             <div class="actions-inline filter-actions">
                                 <a href="{% url 'request_detail' req.id %}?next={{ current_list_url|urlencode }}"
@@ -220,33 +230,11 @@
                 </tbody>
             </table>
         </div>
+        {% include "requests_app/partials/material_report_pagination.html" %}
     </div>
 </form>
-
+<script src="{% static 'js/material_report_selection.js' %}" defer></script>
 <script>
-document.addEventListener("change", function (event) {
-    const bulkForm = document.getElementById("material-bulk-print-form");
-    if (!bulkForm || !bulkForm.contains(event.target)) return;
-
-    if (event.target.id === "select-all") {
-        bulkForm.querySelectorAll(".request-checkbox").forEach(function (checkbox) {
-            checkbox.checked = event.target.checked;
-        });
-    }
-
-    if (event.target.classList.contains("request-checkbox")) {
-        const selectAll = bulkForm.querySelector("#select-all");
-        const checkboxes = Array.from(bulkForm.querySelectorAll(".request-checkbox"));
-
-        if (selectAll) {
-            selectAll.checked = checkboxes.length > 0 &&
-                checkboxes.every(function (checkbox) {
-                    return checkbox.checked;
-                });
-        }
-    }
-});
-
 document.addEventListener("DOMContentLoaded", function () {
     const filterForm = document.querySelector('form[data-auto-filters="true"]');
     const bulkForm = document.getElementById("material-bulk-print-form");
@@ -269,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const nextField = bulkForm.querySelector('input[name="next"]');
         if (nextField) {
-            nextField.value = window.location.pathname + (query ? "?" + query : "");
+            nextField.value = window.location.pathname + window.location.search;
         }
     }
 

@@ -1,7 +1,19 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% trans "Finalize invoice" %}{% endblock %}
-{% block content %}<div class="page-header"><h1>{% trans "Finalize invoice" %}</h1></div><p>{{ invoice.request.request_number }} — {{ invoice.currency }}</p>
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}{% include "invoicing/workflow_styles.html" %}
+<section class="financial-document invoice-detail invoice-workflow">
+<div class="page-header"><div><h1>{% trans "Finalize invoice" %}</h1><p class="invoice-reference">{% blocktrans with draft_id=invoice.pk %}Draft #{{ draft_id }}{% endblocktrans %}</p></div><a class="btn btn-tertiary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back to invoice" %}</a></div>
 <p class="message warning">{% trans "Finalization permanently freezes the prices, quantities, company details and document number." %}</p>
-<div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th><th>{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td>{{ line.description_snapshot }}</td><td>{{ line.quantity }}</td><td>{{ line.unit_price|default_if_none:"—" }} {{ line.currency }}</td><td>{{ line.line_total|default_if_none:"—" }} {{ line.currency }}</td></tr>{% endfor %}</tbody></table></div>
+<section class="invoice-section" aria-labelledby="review-information-title"><h2 id="review-information-title">{% trans "Invoice information" %}</h2><dl class="document-summary"><dt>{% trans "Material request reference" %}</dt><dd>{{ invoice.request.request_number }}</dd><dt>{% trans "Currency" %}</dt><dd>{{ invoice.currency }}</dd></dl>
+{% include "invoicing/workflow_parties.html" with branch=invoice.request.succursale %}</section>
+<section class="invoice-section" aria-labelledby="review-lines-title"><h2 id="review-lines-title">{% trans "Invoice materials" %}</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="review-lines-title"><table class="data-table invoice-lines"><caption class="invoice-sr-only">{% trans "Invoice materials" %}</caption><thead><tr><th scope="col">{% trans "Material" %}</th><th scope="col">{% trans "Net billable quantity" %}</th><th scope="col">{% trans "Unit price" %}</th><th scope="col">{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td><strong class="invoice-code">{{ line.material_code_snapshot }}</strong>{{ line.description_snapshot }}</td><td>{{ line.quantity }} {{ line.unit_snapshot }}</td><td>{% if line.unit_price != None %}{{ line.unit_price }} {{ line.currency }}{% else %}{% trans "Unknown" %}{% endif %}</td><td>{% if line.line_total != None %}{{ line.line_total }} {{ line.currency }}{% else %}{% trans "Unknown" %}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+<dl class="document-summary invoice-total"><dt>{% trans "Total" %} &mdash; {% trans "Provisional" %}</dt><dd>{% if review_total != None %}{{ review_total }} {{ invoice.currency }}{% else %}{% trans "Incomplete pricing" %}{% endif %}</dd><dt>{% trans "Currency" %}</dt><dd>{{ invoice.currency }}</dd></dl>
+{% if invoice.audit_metadata.note %}<h3>{% trans "Invoice note" %}</h3><p>{{ invoice.audit_metadata.note|linebreaksbr }}</p>{% endif %}</section>
 {% if not sequences_available %}<p class="message error">{% trans "An administrator must configure and verify the invoice sequence for this business year and series." %}</p>{% endif %}
-<form method="post">{% csrf_token %}{{ form.as_p }}<div class="form-actions"><button type="submit" class="btn">{% trans "Finalize invoice" %}</button> <a class="btn btn-tertiary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back" %}</a></div></form>{% endblock %}
+<form method="post" novalidate class="document-form" id="invoice-finalize-form">{% csrf_token %}{{ form.revision }}{{ form.revision.errors }}{{ form.non_field_errors }}
+<section class="invoice-section" aria-labelledby="confirm-title"><h2 id="confirm-title">{% trans "Confirm finalization" %}</h2>
+{% include "invoicing/workflow_field.html" with field=form.series %}{% include "invoicing/workflow_field.html" with field=form.confirm %}
+<div class="document-actions"><button type="submit" class="btn">{% trans "Finalize invoice" %}</button><a class="btn btn-tertiary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back" %}</a></div></section></form>
+</section>{% endblock %}

@@ -27,7 +27,14 @@
 {% for field in receipt_form.visible_fields %}{% if field.name != 'material' and field.name != 'quantity' %}<div {% if field.name == 'notes' %}class="entry-summary--wide"{% endif %}><dt>{{ field.label }}</dt><dd>{% if field.name == 'received_on' %}{% if entry_language == 'fr' %}{{ receipt_form.cleaned_data.received_on|date:'d/m/Y' }}{% else %}{{ receipt_form.cleaned_data.received_on|date:'Y-m-d' }}{% endif %}{% else %}{{ field.value|default_if_none:'-'|default:'-' }}{% endif %}</dd></div>{% endif %}{% endfor %}
 </dl></section>
 <form method="post" novalidate>
-{% csrf_token %}<input type="hidden" name="mode" value="{{ mode }}"><input type="hidden" name="review_proof" value="{{ review_proof }}">
+{% csrf_token %}
+<input type="hidden" name="mode" value="{{ mode }}">
+<input type="hidden" name="review_proof" value="{{ review_proof }}">
+
+{% if draft %}
+<input type="hidden" name="draft_id" value="{{ draft.pk }}">
+<input type="hidden" name="version" value="{{ draft_version }}">
+{% endif %}
 {% for field in receipt_form %}{{ field.as_hidden }}{% endfor %}
 {% if mode == 'new' %}{% for field in material_form %}{{ field.as_hidden }}{% endfor %}{% endif %}
 <div class="entry-action-bar entry-action-bar--review"><p>{% trans "Confirm these details to update inventory." %}</p><div class="entry-actions"><button class="btn btn-secondary" type="submit" name="action" value="modify">{% trans "Modify" %}</button>

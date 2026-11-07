@@ -11,13 +11,15 @@ class Element {
     dispatchEvent(event) { for (const fn of this.listeners[event.type] || []) fn(event); }
     setAttribute(name, value) { this.attrs[name] = value; }
     removeAttribute(name) { delete this.attrs[name]; }
+    getAttribute(name) { return this.attrs[name] || null; }
     appendChild(node) { this.children.push(node); }
     querySelector() { return null; }
     querySelectorAll() { return []; }
     contains() { return false; }
 }
-function fixture() {
+function fixture(live = false) {
     const form = new Element(), results = new Element(), input = new Element(), select = new Element();
+    if (live) form.dataset.workflowLive = '';
     form.method = 'get'; form.action = '/list/'; form.dataset.searchingLabel = 'Recherche';
     form.dataset.updatedLabel = 'Actualisé'; form.dataset.errorLabel = 'Réessayer';
     Object.assign(input, {name:'q', type:'search', tagName:'INPUT', value:''});
@@ -186,4 +188,15 @@ test('material exports and bulk return URL use visible filters after updates', (
     values[0]=['q','new'];form.dispatchEvent({type:'auto-filters:updated'});
     assert.match(csv.href,/q=new/);assert.match(excel.href,/date_from=2026-10-01/);
     assert.equal(next.value,'/materials/?q=new&date_from=2026-10-01');
+});
+
+
+test('workflow refresh replaces bounded queue results without changing filters or browser history',async()=>{
+ const f=fixture(true);
+ f.window.location=new URL('https://example.invalid/list/?q=kept&page=2');
+ f.emit(f.form,'workflow:refresh');
+ assert.equal(f.requests.length,1);assert.match(f.requests[0].url,/q=kept&page=2/);
+ f.emit(f.form,'workflow:refresh');assert.equal(f.requests.length,1); // do not abort a pending response
+ await f.respond(0,'resolved row removed');
+ assert.equal(f.results.innerHTML,'resolved row removed');assert.equal(f.history.length,0);
 });

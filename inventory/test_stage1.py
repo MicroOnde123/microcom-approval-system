@@ -109,7 +109,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
 
     def test_negative_prices_rejected_by_validation_and_database(self):
         for language, text in (("en", "Unit price cannot be negative."),
-                               ("fr", "Le prix unitaire ne peut pas Ãªtre nÃ©gatif.")):
+                               ("fr", "Le prix unitaire ne peut pas être négatif.")):
             with override(language), self.assertRaisesMessage(ValidationError, text):
                 self.priced_material(unit_price=Decimal("-0.01"), currency="USD").full_clean()
         with self.assertRaises(IntegrityError), transaction.atomic():
@@ -156,7 +156,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
     def test_admin_pricing_and_validation_in_both_languages(self):
         self.administrator()
         for language, label, error in (("en", "Unit price", "Unit price cannot be negative."),
-                                       ("fr", "Prix unitaire", "Le prix unitaire ne peut pas Ãªtre nÃ©gatif.")):
+                                       ("fr", "Prix unitaire", "Le prix unitaire ne peut pas être négatif.")):
             url = reverse("admin:inventory_material_change", args=[self.material.pk])
             response = self.client.get(url, HTTP_ACCEPT_LANGUAGE=language)
             self.assertContains(response, label)
@@ -166,7 +166,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
             response = self.client.post(url, data, HTTP_ACCEPT_LANGUAGE=language)
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, error)
-            data.update(unit_price="0", currency="")
+            data.update(unit_price="0", currency="", price_change_reason="Synthetic catalogue correction")
             self.assertEqual(self.client.post(url, data, HTTP_ACCEPT_LANGUAGE=language).status_code, 302)
             self.material.refresh_from_db()
             self.assertEqual(self.material.unit_price, 0)
@@ -184,7 +184,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
         with self.assertRaises(IntegrityError), transaction.atomic():
             CompanyDocumentSettings.objects.create(pk=2)
         settings.default_currency = "ZZZ"
-        with override("fr"), self.assertRaisesMessage(ValidationError, "SÃ©lectionnez une devise prise en charge"):
+        with override("fr"), self.assertRaisesMessage(ValidationError, "Sélectionnez une devise prise en charge"):
             settings.full_clean()
 
     def test_document_preferences_validate_without_issuing_documents(self):
@@ -201,7 +201,7 @@ class Stage1Tests(StockSafetyFixtures, TestCase):
     def test_bilingual_new_admin_interfaces_and_singleton_add_control(self):
         self.administrator()
         for language, branch_label, settings_label in (("en", "Succursale name", "Verified company address"),
-                                                       ("fr", "Nom de la succursale", "Adresse vÃ©rifiÃ©e de lâ€™entreprise")):
+                                                       ("fr", "Nom de la succursale", "Adresse vérifiée de l’entreprise")):
             self.assertContains(self.client.get(reverse("admin:inventory_succursale_add"), HTTP_ACCEPT_LANGUAGE=language), branch_label)
             self.assertContains(self.client.get(reverse("admin:core_companydocumentsettings_add"), HTTP_ACCEPT_LANGUAGE=language), settings_label)
         data = {"company_name": "Synthetic company", "company_address": "Synthetic address",

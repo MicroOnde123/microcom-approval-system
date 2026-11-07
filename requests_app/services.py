@@ -13,22 +13,29 @@ from .stock_services import deduct_material_stock, validate_material_quantities
 from .resubmission import BASELINE_ACTION, is_general_permission, record_baseline, resume_decision
 
 
-def send_notification_email(subject, message, recipients):
+def send_notification_email(subject, message, recipients, *, recipient_ids=None):
     if not recipients:
         return
-
-    recipients = tuple(recipients)
-    # Retain recipients/content, but never send mail for a rolled-back decision.
-    transaction.on_commit(lambda: send_mail(subject, message, None, list(recipients), fail_silently=True), robust=True)
+    addresses = tuple(recipients)
+    ids = tuple(recipient_ids) if recipient_ids is not None else None
+    def deliver():
+        users = get_user_model().objects.filter(is_active=True, receive_email_notifications=True)
+        users = users.filter(pk__in=ids) if ids is not None else users.filter(email__in=addresses)
+        emails = list(dict.fromkeys(email for email in users.values_list("email",flat=True) if email))
+        if emails:
+            send_mail(subject,message,None,emails,fail_silently=True)
+    transaction.on_commit(deliver, robust=True)
 
 
 def log_action(request, action, user=None, comment=""):
-    RequestAuditLog.objects.create(
+    event = RequestAuditLog.objects.create(
         request=request,
         action=action,
         performed_by=user,
         comment=comment,
     )
+    from .notifications import record_event
+    record_event(event)
 
 
 def get_applicable_workflow(request):
@@ -156,6 +163,7 @@ def submit_request(request, *, notifications_on_commit=False):
                 subject="New Request Awaiting Your Approval",
                 message=f"Request {request.request_number} requires your approval.",
                 recipients=recipients,
+                recipient_ids=[pk for pk in (first_step.approver_user_id, first_step.alternate_approver_user_id) if pk],
             )
         if notifications_on_commit:
             transaction.on_commit(notify, robust=True)
@@ -237,6 +245,8 @@ def approve_step(approval, user, comment="", *, classification=None, succursale=
         request.current_step_order = next_step.step_order
         request.status = "IN_REVIEW"
         request.save()
+        from .notifications import notify_current
+        notify_current(request, "APPROVED_STEP")
 
         recipients = []
 
@@ -250,6 +260,7 @@ def approve_step(approval, user, comment="", *, classification=None, succursale=
             subject="Request Awaiting Your Approval",
             message=f"Request {request.request_number} is now awaiting your approval.",
             recipients=recipients,
+            recipient_ids=[pk for pk in (next_step.approver_user_id, next_step.alternate_approver_user_id) if pk],
         )
         return
 
@@ -267,6 +278,7 @@ def approve_step(approval, user, comment="", *, classification=None, succursale=
             subject="Request Approved",
             message=f"Your request {request.request_number} has been approved.",
             recipients=[request.submitted_by.email],
+            recipient_ids=[request.submitted_by_id],
         )
 
 
@@ -306,6 +318,7 @@ def reject_step(approval, user, comment=""):
             subject="Request Rejected",
             message=f"Your request {request.request_number} has been rejected.",
             recipients=[request.submitted_by.email],
+            recipient_ids=[request.submitted_by_id],
         )
 
 
@@ -344,6 +357,7 @@ def return_step(approval, user, comment=""):
             subject="Request Returned for Correction",
             message=f"Your request {request.request_number} was returned for correction.",
             recipients=[request.submitted_by.email],
+            recipient_ids=[request.submitted_by_id],
         )
 
 
@@ -393,7 +407,8 @@ def resubmit_request(request_obj, user):
         record_baseline(request_obj, workflow)
         recipients = [actor.email for actor in (target.approver_user, target.alternate_approver_user) if actor and actor.email]
         send_notification_email("New Request Awaiting Your Approval",
-                                f"Request {request_obj.request_number} requires your approval.", recipients)
+                                f"Request {request_obj.request_number} requires your approval.", recipients,
+                                recipient_ids=[pk for pk in (target.approver_user_id,target.alternate_approver_user_id) if pk])
         log_action(request_obj, "RESUBMITTED", user,
                    json.dumps({"version": 1, "reason": reason, "resumed_step": target.step_order}))
         return {"resumed": True, "reason": reason, "step": target.step_order}

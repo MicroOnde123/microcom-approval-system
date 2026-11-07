@@ -4,10 +4,10 @@ import json
 from uuid import uuid4
 from django.core import signing
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils.translation import gettext as _
 from .entry_forms import ReceiptForm, NewMaterialForm
-from .models import Material, MaterialReceipt, MaterialReceiptLine
+from .models import Material, MaterialReceipt, MaterialReceiptLine, MaterialEntryDraft
 from requests_app.models import StockMovement
 
 SALT = "inventory.material_receipt"
@@ -33,12 +33,34 @@ def decode_token(user, mode, token):
         raise ValidationError(_("Invalid receipt form. Open a new form."))
 
 
+def lock_receipt_operation(operation):
+    """Serialize draft creation/finalization before either durable row exists.
+
+    Keep the existing operation UUID authoritative. The advisory lock is only a
+    PostgreSQL transaction lock, not a second idempotency key or persisted state.
+    """
+    if connection.vendor == "postgresql":
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(%s)",
+                           [int.from_bytes(operation.bytes[:8], "big", signed=True)])
+
+
 @transaction.atomic
-def receive_stock(*, user, mode, token, receipt_data, material_id=None, material_data=None):
+def receive_stock(*, user, mode, token, receipt_data, material_id=None, material_data=None, draft_id=None):
     authorize(user)
     operation = decode_token(user, mode, token)
     if mode not in ("new", "existing"):
         raise ValidationError(_("Invalid receipt form. Open a new form."))
+    lock_receipt_operation(operation)
+    draft = MaterialEntryDraft.objects.select_for_update().filter(operation_token=operation).first()
+    if draft:
+        if draft.status == MaterialEntryDraft.Status.CANCELLED:
+            raise ValidationError(_("This draft was cancelled."))
+        if (draft.pk != draft_id or draft.owner_id != user.pk or draft.mode != mode
+                or draft.signed_token != token):
+            raise ValidationError(_("Resume the saved draft before confirming this receipt."))
+    elif draft_id is not None:
+        raise ValidationError(_("Draft not found."))
     form = ReceiptForm({**receipt_data, "token": token})
     if not form.is_valid():
         raise ValidationError(form.errors.as_text())

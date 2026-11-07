@@ -302,6 +302,17 @@ class PermissionResubmissionTests(PermissionFixtures, TestCase):
         self.assertEqual(self.req.approvals.filter(step_order=1).values().get(), first)
         self.assertFalse(self.req.audit_logs.filter(action="PERMISSION_DESCRIPTION_CHANGED").exists())
 
+    def test_existing_bon_access_administration_document_route_is_preserved(self):
+        for order in (1, 2, 3):
+            approve_step(self.req.approvals.get(step_order=order), self.people[order - 1])
+        self.owner.can_view_administration_reports = True
+        self.owner.save(update_fields=["can_view_administration_reports"])
+        self.client.force_login(self.owner)
+        self.client.cookies["django_language"] = "fr"
+        response = self.client.get(reverse("administration_report_document", args=[self.req.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "requests_app/permission_document.html")
+        self.assertEqual(response.context["back_url"], reverse("administration_reports"))
 
     @override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
                                 "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}})

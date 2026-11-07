@@ -17,6 +17,7 @@ from openpyxl.drawing.text import CharacterProperties, Paragraph, ParagraphPrope
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from .stock_report_export import reporting_time
+from .stock_report_foundations import reserve_generated
 
 
 def add_stock_report_analytics(workbook, requests, filters):
@@ -27,6 +28,7 @@ def add_stock_report_analytics(workbook, requests, filters):
 
     material_lines = 0
     materials = {}
+    material_requests = defaultdict(set)
     departments = {}
     months = defaultdict(lambda: [0, set()])
     missing_dates = set()
@@ -40,6 +42,7 @@ def add_stock_report_analytics(workbook, requests, filters):
         else:
             missing_dates.add(req.pk)
         for item in req.material_items.all():
+            material_requests[item.material_id].add(req.pk)
             material_lines += 1
             dept[2] += 1
             material = materials.setdefault(item.material_id,
@@ -50,6 +53,8 @@ def add_stock_report_analytics(workbook, requests, filters):
 
     top = sorted(materials.values(), key=lambda m: (-m[3], m[0], m[1]))[:10]
     depts = sorted(departments.values(), key=lambda d: (-len(d[1]), d[0]))
+    reserve_generated(workbook, summary_rows=len(top) + len(depts),
+                      chart_rows=len(top) + len(depts) + len(months))
     dashboard = workbook.create_sheet(tr("Dashboard", "Tableau de bord"))
     graphs = workbook.create_sheet(tr("Graphs", "Graphiques"))
     navy = "17365D"
@@ -100,9 +105,9 @@ def add_stock_report_analytics(workbook, requests, filters):
         cell.alignment = Alignment(wrap_text=True, vertical="center")
         graphs.row_dimensions[cell.row].height = 24
     labels = [tr("Total Approved Requests", "Total des demandes approuvées"),
-              tr("Material Lines Issued", "Lignes d'articles sorties"),
-              tr("Unique Materials", "Matériels distincts"),
-              tr("Departments Served", "Départements servis")]
+              tr("Approved Material Lines", "Lignes d'articles approuvées"),
+              tr("Unique Materials (selected requests)", "Matériels distincts (demandes sélectionnées)"),
+              tr("Destination Departments (selected requests)", "Départements destinataires (demandes sélectionnées)")]
     for index, (label, value) in enumerate(zip(labels, (len(requests), material_lines, len(materials), len(departments)))):
         col = index * 3 + 1
         for row, content in ((9, label), (10, value)):
@@ -114,8 +119,8 @@ def add_stock_report_analytics(workbook, requests, filters):
         dashboard.cell(10, col).number_format = "#,##0"
     dashboard.row_dimensions[9].height = 36
     dashboard.row_dimensions[10].height = 40
-    note = tr("Material Report is the detailed source. Both analytical sheets use the same filtered records.\nTime charts use Approved Date. Quantities are kept per material/unit; no global quantity total.",
-              "Le Rapport de matériel est la source détaillée. Les deux feuilles d’analyse utilisent les mêmes données filtrées.\nLes tendances utilisent la date d’approbation. Quantités par matériel/unité, sans total global.")
+    note = tr("Original demand tables use the same filtered records as Material Report. Additional sections use explicitly separate warehouse scopes.\nDemand time charts use Approved Date. Quantities are per material/unit; no global quantity total.",
+              "Les tableaux de demande initiaux utilisent les mêmes données filtrées que le Rapport de matériel. Les sections supplémentaires indiquent leurs périmètres d’entrepôt distincts.\nLes tendances de demande utilisent la date d’approbation. Quantités par matériel/unité, sans total global.")
     if missing_dates:
         note += "\n" + tr("Requests without Approved Date excluded from time charts: ", "Demandes sans date d’approbation exclues des graphiques temporels : ") + str(len(missing_dates))
     for sheet, region, coordinate in ((dashboard, "A12:L13", "A12"), (graphs, "A5:U6", "A5")):
@@ -127,7 +132,7 @@ def add_stock_report_analytics(workbook, requests, filters):
         cell.alignment = Alignment(wrap_text=True, vertical="center", indent=1)
         sheet.row_dimensions[cell.row].height = 30 if missing_dates else 24
         sheet.row_dimensions[cell.row + 1].height = 24
-    empty = tr("No stock data available for the selected filters.", "Aucune donnée de stock disponible pour les filtres sélectionnés.")
+    empty = tr("No approved-request demand for the selected filters. Independent warehouse indicators follow below.", "Aucune demande approuvée pour les filtres sélectionnés. Les indicateurs indépendants de l’entrepôt suivent ci-dessous.")
     if not materials:
         for sheet in (dashboard, graphs):
             sheet.merge_cells("A15:L16")
@@ -154,10 +159,10 @@ def add_stock_report_analytics(workbook, requests, filters):
                     cell.number_format = "#,##0.##"
 
     material_label = tr("Material", "Matériel")
-    quantity_label = tr("Quantity Issued", "Quantité sortie")
+    quantity_label = tr("Approved Quantity", "Quantité approuvée")
     dept_label = tr("Department", "Département")
     requests_label = tr("Approved Requests", "Demandes approuvées")
-    lines_label = tr("Material Lines", "Lignes d'articles")
+    lines_label = tr("Approved Material Lines", "Lignes d'articles approuvées")
     dashboard["A15"] = tr("TOP MATERIALS", "PRINCIPAUX MATÉRIELS")
     table(dashboard, 16, 1, [material_label, tr("Code", "Code"), tr("Unit", "Unité"), quantity_label], top)
     dashboard["F15"] = tr("DEPARTMENT SUMMARY", "SYNTHÈSE PAR DÉPARTEMENT")
@@ -284,10 +289,20 @@ def add_stock_report_analytics(workbook, requests, filters):
                                               showCatName=False, dLblPos="t", txPr=text_style(), numFmt="0")
         graphs.add_chart(obj, anchor)
 
-    chart(BarChart, tr("Top 10 Materials Issued", "Top 10 des articles sortis"), 25, len(top), "A8", quantity_label, [m[3] for m in top])
+    if len({m[2] for m in materials.values()}) > 1 or any(not m[2] for m in materials.values()):
+        demand = sorted(materials.items(), key=lambda pair: (-len(material_requests[pair[0]]), pair[1][1]))[:10]
+        reserve_generated(workbook, chart_rows=len(demand))
+        table(graphs, 1, 35, [material_label, requests_label],
+              [(material_category(m[0], m[1], m[2]), len(material_requests[pk])) for pk, m in demand])
+        for col in ('AI', 'AJ'):
+            graphs.column_dimensions[col].hidden = True
+        chart(BarChart, tr("Material Demand by Approved Request Count", "Demande de matériel par nombre de demandes approuvées"),
+              35, len(demand), "A8", requests_label, [len(material_requests[pk]) for pk, _m in demand])
+    else:
+        chart(BarChart, tr("Top 10 Materials by Approved Quantity", "Top 10 des articles par quantité approuvée"), 25, len(top), "A8", quantity_label, [m[3] for m in top])
     chart(BarChart, tr("Approved Material Requests by Department", "Demandes de matériel approuvées par département"),
           28, len(depts), "L8", requests_label, [len(d[1]) for d in depts])
-    chart(LineChart, tr("Material Lines Issued Over Time", "Lignes d'articles sorties dans le temps"),
+    chart(LineChart, tr("Approved Material Lines Over Time", "Lignes d'articles approuvées dans le temps"),
           31, len(timeline), "A27", lines_label, [t[1] for t in timeline])
     chart(LineChart, tr("Approved Material Requests Over Time", "Demandes de matériel approuvées au fil du temps"),
           31, len(timeline), "L27", requests_label, [t[2] for t in timeline], value_offset=2)

@@ -52,5 +52,10 @@ class User(AbstractUser):
         default=False, verbose_name=_("Can view administration reports"),
     )
 
+    receive_email_notifications = models.BooleanField(
+        default=True, db_default=True, verbose_name=_("Receive email notifications"),
+        help_text=_("Receive optional workflow emails. Security and account emails are unaffected."),
+    )
+
     def __str__(self):
         return self.full_name or self.username

@@ -1,0 +1,39 @@
+/* Notification navigation and inbox only. */
+.workflow-notification-menu { position:relative; }
+.workflow-notification-menu > summary { display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px; font-size:14px; }
+.workflow-notification-menu summary:focus-visible, .workflow-notification-menu button:focus-visible, .workflow-notification-menu a:focus-visible { outline:3px solid #90b9e2; outline-offset:3px; }
+.workflow-notification-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+    width: min(25rem, calc(100vw - 32px));
+    max-height: 75vh;
+    overflow: auto;
+    z-index: 100;
+    color: #1f2937;
+    background: #fff;
+    border: 1px solid #dfe6ee;
+    box-shadow: 0 8px 24px #123d6b30;
+    border-radius: 8px;
+    padding: 14px;
+}
+.workflow-notification-dropdown a {
+    color: var(--primary);
+}
+.workflow-notification-items { list-style:none; padding:0; margin:12px 0; }
+.workflow-notification-item { border:1px solid #dfe6ee; border-radius:8px; margin:0 0 12px; padding:14px 16px; overflow-wrap:anywhere; }
+.workflow-notification-item.is-unread { border-left:4px solid #123d6b; background:#f2f6fa; }
+.workflow-notification-item strong { color:#123d6b; font-size:14px; }
+.workflow-notification-item p { margin:7px 0; font-size:13px; }
+.workflow-notification-item time { color:#526175; font-size:12px; }
+.workflow-notification-reference { font-family:monospace; }
+.workflow-notification-unread { font-size:11px; padding:3px 6px; border-radius:4px; background:#e5edf6; color:#123d6b; }
+.workflow-notification-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.workflow-notification-actions form { margin:0; }
+.workflow-notification-actions .btn { font-size:12px; min-height:40px; }
+.workflow-notification-empty { padding:20px; color:#526175; text-align:center; }
+.workflow-notification-live-status { font-size:12px; margin:0; }
+.workflow-notification-live-status:empty { display:none; }
+.workflow-notification-dropdown [data-approval-controls] { border:0; padding:0; margin:0; min-width:0; }
+@media(max-width:650px) { .workflow-notification-menu { position:static; } .workflow-notification-dropdown { left:12px; top:auto; } .workflow-notification-actions { flex-direction:column; } .workflow-notification-actions button { width:100%; } }

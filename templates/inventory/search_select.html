@@ -1,6 +1,7 @@
 {% load i18n %}
 <div class="entry-search" data-search-select data-select-id="{{ select_field.id_for_label }}"
      data-empty="{% trans 'No matching results.' %}" data-count="{% trans 'Matching results' %}"
+     data-limited="{% trans 'Showing the first 30 matches. Refine your search to find more results.' %}"
      data-native="{% trans 'Use standard selector' %}" data-search="{% trans 'Use searchable selector' %}">
     <div class="entry-search-enhanced" hidden>
         <label class="entry-sr-only" for="{{ select_field.id_for_label }}-search">{% blocktrans with label=select_field.label %}Search {{ label }}{% endblocktrans %}</label>
@@ -9,7 +10,7 @@
                role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ select_field.id_for_label }}-results"
                placeholder="{% trans 'Search by name or code' %}">
         <ul id="{{ select_field.id_for_label }}-results" class="entry-search-results" role="listbox" hidden></ul>
-        <span class="entry-sr-only" role="status" aria-live="polite" data-search-status></span>
+        <span class="entry-search-status" role="status" aria-live="polite" data-search-status></span>
     </div>
     {{ select_field }}
 </div>

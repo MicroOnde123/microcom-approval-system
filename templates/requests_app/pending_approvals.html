@@ -20,7 +20,7 @@
     </a>
 </div>
 
-<form method="get" class="filter-form" data-auto-filters="true" data-searching-label="{% trans 'Searching...' %}"
+<form method="get" class="filter-form" data-auto-filters="true" data-workflow-live data-searching-label="{% trans 'Searching...' %}"
       data-validation-label="{% trans 'Review the filter errors.' %}"
       data-updated-label="{% trans 'Results updated.' %}"
       data-error-label="{% trans 'Results could not be updated. Select Filter to reload the page.' %}"
@@ -201,7 +201,7 @@
                 {% empty %}
 
                 <tr>
-                    <td colspan="7">
+                    <td colspan="8">
                         {% trans "No pending approvals." %}
                     </td>
                 </tr>
@@ -213,5 +213,7 @@
         </table>
 
     </div>
+<nav class="request-list-pagination" aria-label="{% trans 'Pending approval pages' %}">{% if pending_page.has_previous %}<a class="btn btn-secondary" href="?{{ pending_query }}&amp;page={{ pending_page.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}<span>{% blocktrans with page=pending_page.number pages=pending_page.paginator.num_pages %}Page {{ page }} of {{ pages }}{% endblocktrans %}</span>{% if pending_page.has_next %}<a class="btn btn-secondary" href="?{{ pending_query }}&amp;page={{ pending_page.next_page_number }}">{% trans "Next" %}</a>{% endif %}</nav>
+
 </div>
 {% endblock %}

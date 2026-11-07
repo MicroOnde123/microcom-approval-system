@@ -1,8 +1,21 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% trans "Edit invoice draft" %}{% endblock %}
-{% block content %}<div class="page-header"><h1>{% trans "Edit invoice draft" %}</h1></div>
-<p>{{ invoice.request.request_number }} — {{ invoice.currency }}</p><p>{% trans "Leave unknown prices blank. Zero is an explicit authorized price." %}</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}{{ prices.management_form }}{{ prices.non_form_errors }}
-<div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th></tr></thead><tbody>{% for row in prices %}<tr><td>{{ row.material_description }}{{ row.line_id }}{{ row.line_id.errors }}</td><td>{{ row.net_quantity }}</td><td>{{ row.unit_price }}{{ row.unit_price.errors }}</td></tr>{% endfor %}</tbody></table></div>
-<div class="form-actions"><button type="submit" class="btn">{% trans "Save draft prices" %}</button> <a class="btn btn-tertiary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back" %}</a></div></form>
-<form method="post" action="{% url 'invoicing:refresh' invoice.pk %}">{% csrf_token %}{{ form.revision }}<p>{% trans "Refresh quantities after new stock returns, then review the updated draft." %}</p><button class="btn btn-secondary" type="submit">{% trans "Refresh issued quantities" %}</button></form>{% endblock %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}{% include "invoicing/workflow_styles.html" %}
+<section class="financial-document invoice-detail invoice-workflow">
+<div class="page-header"><div><h1>{% trans "Edit invoice draft" %}</h1><p class="invoice-reference">{% blocktrans with draft_id=invoice.pk %}Draft #{{ draft_id }}{% endblocktrans %}</p></div><a class="btn btn-tertiary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back to invoice" %}</a></div>
+<form method="post" novalidate id="invoice-edit-form">{% csrf_token %}{{ form.revision }}{{ form.non_field_errors }}{{ form.revision.errors }}
+<section class="invoice-section" aria-labelledby="information-title"><h2 id="information-title">{% trans "Invoice information" %}</h2>
+<dl class="document-summary"><dt>{% trans "Material request reference" %}</dt><dd>{{ invoice.request.request_number }}</dd><dt>{% trans "Currency" %}</dt><dd>{{ invoice.currency }}</dd><dt>{% trans "Succursale" %}</dt><dd>{{ invoice.succursale.code }} &mdash; {{ invoice.succursale.name }}</dd></dl>
+{% include "invoicing/workflow_field.html" with field=form.note %}</section>
+<section class="invoice-section" aria-labelledby="prices-title"><h2 id="prices-title">{% trans "Material lines and unit prices" %}</h2>
+<p id="invoice-price-help">{% trans "Leave unknown prices blank. Zero is an explicit authorized price." %}</p>
+{{ prices.management_form }}{{ prices.non_form_errors }}
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="prices-title"><table class="data-table invoice-price-table"><caption class="invoice-sr-only">{% trans "Material lines and unit prices" %}</caption><thead><tr><th scope="col">{% trans "Material" %}</th><th scope="col">{% trans "Net billable quantity" %}</th><th scope="col">{% trans "Unit price" %}</th></tr></thead><tbody>{% for row in prices %}<tr><td><strong class="invoice-code">{{ row.material_code }}</strong>{{ row.material_description }}{{ row.line_id }}{{ row.line_id.errors }}{{ row.non_field_errors }}</td><td>{{ row.net_quantity }} {{ row.material_unit }}</td><td><label class="invoice-sr-only" for="{{ row.unit_price.id_for_label }}">{{ row.unit_price.label }}</label>{{ row.unit_price }}<span class="invoice-sr-only" id="{{ row.unit_price.auto_id }}_helptext">{{ row.unit_price.help_text }}</span> <span>{{ row.currency }}</span>{{ row.unit_price.errors }}</td></tr>{% endfor %}</tbody></table></div></section>
+</form>
+<section class="invoice-section invoice-refresh-section" aria-labelledby="refresh-title"><h2 id="refresh-title">{% trans "Quantity refresh" %}</h2><p>{% trans "Refresh quantities after new stock returns, then review the updated draft." %}</p><p class="muted">{% trans "This separate action does not save unsaved price or note changes. Save those changes first." %}</p>
+<form method="post" action="{% url 'invoicing:refresh' invoice.pk %}" id="invoice-refresh-form">{% csrf_token %}<input type="hidden" name="revision" value="{{ form.revision.value|default_if_none:'' }}"><button class="btn btn-secondary" type="submit">{% trans "Refresh issued quantities" %}</button></form></section>
+<section class="invoice-section" aria-labelledby="save-title"><h2 id="save-title">{% trans "Save and review" %}</h2><p class="muted">{% trans "Save your changes before opening the finalization review. Saving prices does not refresh quantities." %}</p>
+<div class="document-actions"><button form="invoice-edit-form" type="submit" class="btn">{% trans "Save draft prices" %}</button><a class="btn btn-secondary" href="{% url 'invoicing:detail' invoice.pk %}">{% trans "Back to invoice" %}</a>{% if perms.invoicing.finalize_invoice %}<a class="btn btn-tertiary" href="{% url 'invoicing:finalize' invoice.pk %}">{% trans "Finalize invoice" %}</a>{% endif %}</div></section>
+
+</section>{% endblock %}

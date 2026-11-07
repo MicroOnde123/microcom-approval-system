@@ -12,6 +12,7 @@ from django.db import DatabaseError, transaction
 from django.db.models import Count, DecimalField, Q, Sum
 from django.http import FileResponse, Http404
 import io
+from decimal import Decimal
 
 from core.models import CompanyDocumentSettings
 from requests_app.models import Request
@@ -24,7 +25,7 @@ from .services import create_draft, edit_draft, refresh_draft, finalize_invoice,
 from .return_note_access import navigation as return_note_navigation
 from .audit_presentation import format_event
 from .printing import MAX_PRINT_INVOICES, prepare_filtered_print
-from .filters import InvoiceFilterForm, apply_invoice_filters
+from .filters import InvoiceFilterForm, InvoiceCandidateFilterForm, apply_invoice_filters
 
 
 def _invoice(user,pk,action="view_invoice"):
@@ -46,7 +47,7 @@ def invoice_list(request):
     filters = InvoiceFilterForm(request.GET)
     invoices = Invoice.objects.filter(request_id__in=scope.values("pk"))
     invoices = apply_invoice_filters(invoices, filters.cleaned_data) if filters.is_valid() else invoices.none()
-    invoices = invoices.select_related("request").annotate(
+    invoices = invoices.select_related("request", "succursale", "company_verification").annotate(
         list_line_count=Count("lines", filter=Q(status="DRAFT")),
         list_priced_line_count=Count("lines", filter=Q(status="DRAFT",
             lines__unit_price__isnull=False, lines__line_total__isnull=False)),
@@ -56,14 +57,23 @@ def invoice_list(request):
     candidates = scope.filter(status="APPROVED",classification="MICROCOM",stock_deducted=True,invoice__isnull=True).order_by("-pk")
     if not request.user.has_perm("invoicing.add_invoice"):
         candidates = Request.objects.none()
+    candidate_form = InvoiceCandidateFilterForm(request.GET)
+    if candidate_form.is_valid():
+        if candidate_form.cleaned_data["candidate_q"]:
+            candidates = candidates.filter(request_number__icontains=candidate_form.cleaned_data["candidate_q"])
+    else:
+        candidates = Request.objects.none()
+    candidate_rows = list(candidates[:51])
     params = request.GET.copy()
     # Only supported filters survive pagination and the print form.
     active = {name: request.GET.get(name, "") for name in filters.fields}
     for name in list(params):
-        if name not in filters.fields:
+        if name not in {*filters.fields, "candidate_q"}:
             params.pop(name)
     return render(request,"invoicing/list.html",{"page_obj":Paginator(invoices,25).get_page(request.GET.get("page")),
-        "candidate_requests":candidates[:50], "invoice_print_limit": MAX_PRINT_INVOICES,
+        "candidate_requests":candidate_rows[:50], "candidate_has_more":len(candidate_rows) > 50,
+        "candidate_form":candidate_form, "can_create_invoice":request.user.has_perm("invoicing.add_invoice"),
+        "invoice_print_limit": MAX_PRINT_INVOICES,
         "filter_form": filters, "active_querystring": params.urlencode(), "active_filters": active})
 
 
@@ -82,7 +92,9 @@ def invoice_create(request,request_id):
         else:
             messages.success(request,_("Invoice draft created. No document number has been allocated."))
             return redirect("invoicing:detail",pk=invoice.pk)
-    return render(request,"invoicing/create.html",{"form":form,"source_request":source})
+    return render(request,"invoicing/create.html",{"form":form,"source_request":source,
+        "company": CompanyDocumentSettings.objects.filter(pk=1).first(),
+        "source_lines": source.material_items.select_related("material").order_by("pk")})
 
 
 @login_required
@@ -92,7 +104,14 @@ def invoice_detail(request,pk):
     line_labels = {line.pk: line.material_code_snapshot + " — " + line.description_snapshot for line in lines}
     history = [{"event": event, "presentation": format_event(event.event_type, event.details, line_labels)}
         for event in invoice.invoiceauditevent_set.select_related("actor").order_by("occurred_at","pk")]
+    # Presentation only: sum already-recorded draft line totals, never reprice lines.
+    draft_total = sum((line.line_total for line in lines), Decimal("0")) if (
+        lines and all(line.unit_price is not None and line.line_total is not None for line in lines)) else None
+    finalization_success = invoice.status == "FINALIZED" and any(
+        message.extra_tags == f"invoice-finalized-{invoice.pk}"
+        for message in messages.get_messages(request))
     return render(request,"invoicing/detail.html",{"invoice":invoice,"lines":lines,
+        "draft_total": draft_total, "finalization_success": finalization_success,
         "audit_history":history,
         "display_amount_words": amount_words(invoice.total, invoice.currency, active_language(), invoice.amount_words_fr) if invoice.status == "FINALIZED" else "",
         "return_note_nav":return_note_navigation(request.user, invoice=invoice),
@@ -153,9 +172,15 @@ def invoice_finalize(request,pk):
         except ValidationError as error:
             _errors(form,error)
         else:
-            messages.success(request,_("Invoice finalized. Its number and financial snapshots are now permanent."))
+            messages.success(request,_("Invoice finalized. Its number and financial snapshots are now permanent."),
+                             extra_tags=f"invoice-finalized-{invoice.pk}")
             return redirect("invoicing:detail",pk=pk)
-    return render(request,"invoicing/finalize.html",{"invoice":invoice,"form":form,"lines":lines,"sequences_available":bool(sequences)})
+    # Review sums recorded line totals only. Finalization still revalidates in its service.
+    review_total = sum((line.line_total for line in lines), Decimal("0")) if (
+        lines and all(line.unit_price is not None and line.line_total is not None for line in lines)) else None
+    return render(request,"invoicing/finalize.html",{"invoice":invoice,"form":form,"lines":lines,
+        "company": CompanyDocumentSettings.objects.filter(pk=1).first(),
+        "review_total": review_total, "sequences_available":bool(sequences)})
 
 
 @transaction.non_atomic_requests

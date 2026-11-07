@@ -142,8 +142,10 @@ class ReturnNoteServiceTests(ReturnNoteServiceFixtures):
         self.setup_invoice(price="2")
         self.return_sequence()
         preview = self.preview()
-        self.material.unit_price = Decimal("999"); self.material.currency = "EUR"
         self.material.name = "Changed"; self.material.save()
+        from inventory.pricing import update_price, price_state
+        self.material = update_price(self.material.pk, self.admin, price=Decimal("999"), currency="EUR",
+            reason="Synthetic catalogue correction", expected_state=price_state(self.material))
         self.configuration.company_name = "Changed company"; self.configuration.save()
         self.branch.physical_address = "Changed current address"; self.branch.save(update_fields=["physical_address"])
         note = self.issue(preview)

@@ -1,5 +1,15 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% trans "Create invoice draft" %}{% endblock %}
-{% block content %}<div class="page-header"><h1>{% trans "Create invoice draft" %}</h1></div>
-<p>{{ source_request.request_number }}</p><p>{% trans "Prices in another currency remain unknown. No currency conversion is performed." %}</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}<div class="form-actions"><button class="btn" type="submit">{% trans "Create invoice draft" %}</button> <a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Back" %}</a></div></form>{% endblock %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}{% include "invoicing/workflow_styles.html" %}
+<section class="financial-document invoice-detail invoice-workflow">
+<div class="page-header"><h1>{% trans "Create invoice draft" %}</h1><a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a></div>
+<section class="invoice-section" aria-labelledby="source-title"><h2 id="source-title">{% trans "Material request reference" %}</h2><p class="invoice-reference">{{ source_request.request_number }}</p>
+{% include "invoicing/workflow_parties.html" with branch=source_request.succursale %}
+<div class="table-wrap" tabindex="0" role="region" aria-label="{% trans 'Requested materials' %}"><table class="data-table"><caption>{% trans "Requested materials" %}</caption><thead><tr><th scope="col">{% trans "Material" %}</th><th scope="col">{% trans "Approved quantity" %}</th></tr></thead><tbody>{% for item in source_lines %}<tr><td><strong class="invoice-code">{{ item.material.code }}</strong>{{ item.material.name }}</td><td>{{ item.quantity }} {{ item.material.unit }}</td></tr>{% endfor %}</tbody></table></div>
+<p class="muted">{% trans "Requested quantities are shown for context. Draft quantities are validated against recorded issuance and returns." %}</p></section>
+<form method="post" novalidate class="document-form" id="invoice-create-form">{% csrf_token %}{{ form.non_field_errors }}
+<section class="invoice-section" aria-labelledby="create-title"><h2 id="create-title">{% trans "Create invoice draft" %}</h2><p>{% trans "Prices in another currency remain unknown. No currency conversion is performed." %}</p>
+{% include "invoicing/workflow_field.html" with field=form.currency %}<p class="muted">{% trans "Create a draft first. A permanent document number is allocated only at finalization." %}</p>
+<div class="document-actions"><button class="btn" type="submit">{% trans "Create invoice draft" %}</button><a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Back" %}</a></div></section></form>
+</section>{% endblock %}

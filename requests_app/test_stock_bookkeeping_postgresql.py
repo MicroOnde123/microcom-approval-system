@@ -11,9 +11,11 @@ from openpyxl import load_workbook
 
 from invoicing.test_lifecycle import LifecycleFixtures
 from invoicing.models import Invoice, InvoiceLine, DocumentSequence, InvoiceAuditEvent
+from inventory.pricing import price_state, update_price
 from requests_app.services import approve_step
 from requests_app.models import MaterialDocument, MaterialDocumentSequence
 from .views import export_material_report_excel
+from .test_stock_bookkeeping_offline import financial_rows
 
 
 class BookkeepingExportTests(LifecycleFixtures, TestCase):
@@ -30,7 +32,9 @@ class BookkeepingExportTests(LifecycleFixtures, TestCase):
 
     def test_authorized_frozen_values_not_live_catalogue(self):
         invoice=self.finalized();line=invoice.lines.get();old_branch=invoice.succursale_snapshot['name']
-        self.material.unit_price=Decimal('999');self.material.currency='EUR';self.material.name='Changed current name';self.material.save()
+        self.material = update_price(self.material.pk, self.admin, price=Decimal('999'), currency='EUR',
+            reason='Synthetic historical invoice preservation test', expected_state=price_state(self.material))
+        self.material.name='Changed current name';self.material.save(update_fields=['name'])
         self.branch.name='Changed current branch';self.branch.save()
         wb=self.page();sheet=wb['Bookkeeping']
         self.assertEqual(sheet['A3'].value,invoice.number)
@@ -38,7 +42,7 @@ class BookkeepingExportTests(LifecycleFixtures, TestCase):
         self.assertEqual(sheet['E3'].value,line.description_snapshot)
         self.assertEqual(sheet['I3'].value,2);self.assertEqual(sheet['J3'].value,'USD');self.assertEqual(sheet['K3'].value,20)
         self.assertEqual(wb.sheetnames[:4],['Material Report','Dashboard','Graphs','Stock Movements'])
-        self.assertEqual(len(wb['Graphs']._charts),4);self.assertEqual(len(wb.sheetnames),8)
+        self.assertEqual(len(wb['Graphs']._charts[:4]),4);self.assertEqual(len(wb.sheetnames),11)
 
     def test_stock_access_without_invoice_permission_has_no_financial_content(self):
         invoice=self.finalized()
@@ -66,7 +70,7 @@ class BookkeepingExportTests(LifecycleFixtures, TestCase):
         self.finalized()
         req,_=self.make_request(2);approve_step(req.approvals.get(),self.user,classification='MICROCOM',succursale=self.branch)
         self.req=req;self.finalized('3',currency='EUR')
-        wb=self.page();rows=list(wb['Monthly Statistics'].values)
+        wb=self.page();rows=list(wb['Monthly Statistics'].values) + financial_rows(wb, 'Monthly Statistics')
         totals={(row[2],row[3]) for row in rows[2:] if row[1]=='Known Authorized Invoice Totals'}
         self.assertEqual(totals,{('USD',20),('EUR',6)})
 
@@ -76,7 +80,8 @@ class BookkeepingExportTests(LifecycleFixtures, TestCase):
         self.assertEqual(sheet['L3'].value,'Finalized')
 
     def test_missing_finalized_valuation_not_current_price(self):
-        self.material.unit_price=Decimal('500');self.material.currency='USD';self.material.save()
+        self.material = update_price(self.material.pk, self.admin, price=Decimal('500'), currency='USD',
+            reason='Synthetic missing finalized valuation test', expected_state=price_state(self.material))
         self.create()  # Unpriced/priced editable draft is not financial evidence.
         sheet=self.page()['Bookkeeping']
         self.assertEqual(sheet['I3'].value,'Unknown');self.assertEqual(sheet['L3'].value,'Invoice not issued or not finalized (on demand)')
@@ -89,7 +94,7 @@ class BookkeepingExportTests(LifecycleFixtures, TestCase):
         client=next(row for row in rows if row[2]==req.request_number)
         self.assertEqual(client[11],'Internal invoice not applicable')
         self.assertEqual(client[8],'Not applicable')
-        monthly=list(wb['Monthly Statistics'].values)[2:]
+        monthly=list(wb['Monthly Statistics'].values)[2:] + financial_rows(wb, 'Monthly Statistics')
         self.assertEqual(sum(row[3] for row in monthly if row[1]=='MICROCOM invoices not issued or not finalized (on demand)'),1)
         self.assertFalse(any(row[1]=='Missing Frozen Values' for row in monthly))
         self.assertEqual(sum(row[3] for row in monthly if row[1]=='Approved Material Requests'),2)

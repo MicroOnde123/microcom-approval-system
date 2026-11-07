@@ -250,7 +250,7 @@ class InvoicePrintingTests(unittest.TestCase):
     def test_routes_and_print_templates(self):
         self.assertEqual(resolve(reverse("invoicing:print", args=[1])).func, views.invoice_print)
         self.assertEqual(resolve(reverse("invoicing:bulk_print")).func, views.invoice_bulk_print)
-        engine = Engine(libraries={"i18n": "django.templatetags.i18n", "static": "django.templatetags.static", "return_note_navigation": "invoicing.templatetags.return_note_navigation"})
+        engine = Engine(libraries={"i18n": "django.templatetags.i18n", "static": "django.templatetags.static", "tz": "django.templatetags.tz", "return_note_navigation": "invoicing.templatetags.return_note_navigation"})
         for name in ("list", "detail", "pdf_error"):
             engine.from_string(Path("templates/invoicing/" + name + ".html").read_text(encoding="utf-8"))
         detail = Path("templates/invoicing/detail.html").read_text(encoding="utf-8")

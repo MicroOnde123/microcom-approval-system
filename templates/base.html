@@ -312,6 +312,7 @@
         }
 
         {% if show_drc_match_banner %}
+
         .drc-match-ribbon {
             position: relative;
             overflow: hidden;
@@ -365,14 +366,12 @@
             z-index: -2;
             inset: -45% -8%;
             background:
-                linear-gradient(
-                    128deg,
+                linear-gradient(128deg,
                     #0077c8 0 42%,
                     #f7d116 42% 48%,
                     #ce1021 48% 60%,
                     #f7d116 60% 66%,
-                    #0077c8 66% 100%
-                );
+                    #0077c8 66% 100%);
             animation: drc-match-colors-drift 18s ease-in-out infinite alternate;
         }
 
@@ -472,30 +471,57 @@
         }
 
         @keyframes drc-match-ticker {
-            from { transform: translateX(0); }
-            to { transform: translateX(-33.333%); }
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-33.333%);
+            }
         }
 
         @keyframes drc-match-banner-enter {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes drc-match-colors-drift {
-            from { transform: translate3d(-2%, 0, 0) scale(1.03); }
-            to { transform: translate3d(2%, 1%, 0) scale(1.07); }
+            from {
+                transform: translate3d(-2%, 0, 0) scale(1.03);
+            }
+
+            to {
+                transform: translate3d(2%, 1%, 0) scale(1.07);
+            }
         }
 
         @keyframes drc-match-mascot-float {
-            0%, 100% { transform: translateY(0) rotate(-1deg); }
-            50% { transform: translateY(-8px) rotate(1deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-1deg);
+            }
+
+            50% {
+                transform: translateY(-8px) rotate(1deg);
+            }
         }
 
         @keyframes drc-match-football-spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
+
             .drc-match-ribbon__track,
             .drc-match-banner,
             .drc-match-banner::before,
@@ -505,7 +531,8 @@
             }
 
         }
-        {% endif %}
+
+            {% endif %}
 
         @media (max-width: 700px) {
             .detail-grid {
@@ -523,7 +550,8 @@
                 align-items: flex-start;
             }
 
-            {% if show_drc_match_banner %}
+                {% if show_drc_match_banner %}
+
             .drc-match-banner__content {
                 padding: 24px 20px;
             }
@@ -553,24 +581,32 @@
             .drc-match-ribbon__message {
                 padding: 0 28px;
             }
-            {% endif %}
+
+                {% endif %}
         }
 
-        {% if show_drc_match_banner %}
+            {% if show_drc_match_banner %}
+
         @media print {
+
             .drc-match-banner,
             .drc-match-ribbon,
             .drc-match-mascot {
                 display: none !important;
             }
         }
-        {% endif %}
-    </style>
+    {% endif %}
+</style>
     <link rel="stylesheet" href="{% static 'css/app-layout.css' %}">
     <link rel="stylesheet" href="{% static 'css/action_layout.css' %}">
 </head>
 
 <body>
+    {% if user.is_authenticated %}
+    <link rel="stylesheet" href="{% static 'css/workflow_notifications.css' %}">
+    <script src="{% static 'js/workflow_notifications.js' %}" defer data-live-url="{% url 'notification_snapshot' %}"
+        data-refresh-error="{% trans 'Notifications could not be refreshed. Please retry.' %}"
+        data-handled="{% trans 'Already handled' %}"></script>{% endif %}
     <div class="navbar">
         <div class="nav-left">
             <div class="brand">{% trans "Microcom Approval System" %}</div>
@@ -579,20 +615,12 @@
 
             <a href="{% url 'create_request' %}">{% trans "Create Request" %}</a>
 
-            {% if perms.invoicing.view_invoice %}<a href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% endif %}
-            <a href="{% url 'my_requests' %}">
-                {% trans "My Requests" %}
-                <span class="nav-badge" id="returned-request-count">
-                    {{ returned_requests_count }}
-                </span>
-            </a>
+            {% if perms.invoicing.view_invoice %}
+                <a href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>
+            {% endif %}
+            <a href="{% url 'my_requests' %}">{% trans "My Requests" %}</a>
 
-            <a href="{% url 'pending_approvals' %}">
-                {% trans "Approvals" %}
-                <span class="nav-badge" id="pending-approval-count">
-                    {{ pending_approval_count }}
-                </span>
-            </a>
+            <a href="{% url 'pending_approvals' %}">{% trans "Approvals" %}</a>
 
             <a href="{% url 'approval_history' %}">{% trans "Approval History" %}</a>
 
@@ -608,6 +636,9 @@
         </div>
 
         <div class="nav-right">
+            {% if user.is_authenticated %}
+            {% include "includes/workflow_notifications.html" %}
+            {% endif %}
             <form action="{% url 'set_language' %}" method="post" class="language-switcher">
                 {% csrf_token %}
                 <input name="next" type="hidden" value="{{ request.path }}">
@@ -628,7 +659,7 @@
     </div>
 
     {% if show_drc_match_banner %}
-        {% include "includes/drc_match_ribbon.html" %}
+    {% include "includes/drc_match_ribbon.html" %}
     {% endif %}
 
     <div class="page app-container {% block page_layout %}app-container--standard{% endblock %}">
@@ -646,30 +677,10 @@
     </div>
 
     {% if show_drc_match_banner %}
-        {% include "includes/drc_match_mascot.html" %}
+    {% include "includes/drc_match_mascot.html" %}
     {% endif %}
 
-    <script>
-        setInterval(function () {
-            fetch("{% url 'notification_count' %}")
-                .then(response => response.json())
-                .then(data => {
-                    const pendingBadge = document.getElementById("pending-approval-count");
-                    const returnedBadge = document.getElementById("returned-request-count");
 
-                    if (pendingBadge) {
-                        pendingBadge.textContent = data.pending;
-                        pendingBadge.style.display = data.pending > 0 ? "inline-block" : "none";
-                    }
-
-                    if (returnedBadge) {
-                        returnedBadge.textContent = data.returned;
-                        returnedBadge.style.display = data.returned > 0 ? "inline-block" : "none";
-                    }
-                })
-                .catch(error => console.error("Notification count error:", error));
-        }, 30000);
-    </script>
 
     <script src="{% static 'js/auto_filters.js' %}" defer></script>
 </body>

@@ -39,7 +39,8 @@
     {% if request_obj.succursale %} — {{ request_obj.succursale }}{% endif %}</p>
 {% endif %}
 
-<form method="post" class="reading-form">
+<p data-approval-handled role="alert" hidden></p>
+<form method="post" class="reading-form" data-live-approval-id="{{ approval.pk }}"><fieldset data-approval-controls>
 
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ back_url }}">
@@ -50,6 +51,6 @@
         {% trans "Submit" %}
     </button></div>
 
-</form>
+</fieldset></form>
 
 {% endblock %}

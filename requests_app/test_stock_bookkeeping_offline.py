@@ -13,7 +13,35 @@ from .stock_report_export import protect_text_cells
 from .test_stock_export_offline import fixture, related
 
 
+def financial_rows(workbook, scope):
+    from django.utils.translation import gettext as _
+    return [tuple(row[1:]) for row in workbook[_('Bookkeeping')].iter_rows(min_row=3, min_col=14, max_col=18, values_only=True)
+            if row[0] == _(scope)]
+
+
 class BookkeepingOfflineTests(TestCase):
+    def test_multiple_authorized_branches_keep_frozen_totals_and_out_only_issuance(self):
+        req, data = self.data()
+        second = Obj(**vars(req)); second.pk = 2; second.request_number = 'SECOND'
+        invoice = Obj(**vars(data['invoices'][0]))
+        invoice.pk = 2; invoice.request_id = 2; invoice.total = Decimal('7')
+        invoice.succursale_snapshot = {'id': 2, 'name': 'Second branch'}
+        line = Obj(**vars(data['lines'][0])); line.invoice_id = 2; line.line_total = Decimal('7')
+        data = {'allowed': {1, 2}, 'invoices': data['invoices'] + [invoice], 'lines': data['lines'] + [line]}
+        material = req.material_items.all()[0].material
+        movements = [Obj(material=material, created_at=req.finalized_at, request_id=request_id,
+                         movement_type=kind, quantity=Decimal(quantity))
+                     for request_id, kind, quantity in [(1, 'OUT', '3'), (1, 'RETURN', '1'), (2, 'OUT', '4')]]
+        wb = Workbook()
+        report.add_statistics(wb, [req, second], movements, data)
+        rows = list(wb['Succursale Summary'].values)[2:] + financial_rows(wb, 'Succursale Summary')
+        self.assertEqual(sorted(row[3] for row in rows if row[1] == 'Known Authorized Invoice Totals'), [5, 7])
+        self.assertEqual(sorted(row[3] for row in rows if row[1] == 'Quantity Issued'), [3, 4])
+        coverage = [row for row in rows if row[1] == 'MICROCOM invoices not issued or not finalized (on demand)']
+        self.assertEqual(len(coverage), 2)
+        self.assertEqual([row[3] for row in coverage], [0, 0])
+        self.assertEqual([row[10] for row in list(wb['Bookkeeping'].values)[2:] if row[11]], [Decimal('5'), Decimal('7')])
+
     def data(self,price=Decimal('2.50'),amount=Decimal('5.00'),currency='USD'):
         req=fixture()
         inv=Obj(pk=1,request_id=1,number='FAC/FROZEN',issue_date=date(2027,1,1),finalized_at=req.finalized_at,
@@ -53,16 +81,16 @@ class BookkeepingOfflineTests(TestCase):
             with override(language):
                 from django.utils.translation import gettext as _
                 wb=Workbook();report.add_statistics(wb,requests,movements,data)
-                rows=list(wb[_('Bookkeeping')].values)[2:]
+                rows=[row for row in list(wb[_('Bookkeeping')].values)[2:] if row[11]]
                 self.assertEqual([r[11] for r in rows],[_('Internal invoice not applicable'),_('Invoice not issued or not finalized (on demand)'),_('Classification unavailable')])
                 self.assertEqual(rows[0][8],_('Not applicable'))
-                monthly=list(wb[_('Monthly Statistics')].values)
+                monthly=list(wb[_('Monthly Statistics')].values) + financial_rows(wb, 'Monthly Statistics')
                 self.assertIn(('2027-01',_('Approved Material Requests'),'',3),monthly)
                 self.assertIn(('2027-01',_('Stock Movements'),'',3),monthly)
                 self.assertIn(('2027-01',_('Quantity Issued'),'pcs',3),monthly)
                 self.assertIn(('2027-01',_('MICROCOM invoices not issued or not finalized (on demand)'),'',1),monthly)
                 self.assertFalse(any(r[1]==_('Missing Frozen Values') for r in monthly[2:]))
-                branches=list(wb[_('Succursale Summary')].values)[2:]
+                branches=list(wb[_('Succursale Summary')].values)[2:] + financial_rows(wb, 'Succursale Summary')
                 counts=[r for r in branches if r[1]==_('MICROCOM invoices not issued or not finalized (on demand)')]
                 self.assertEqual(sum(r[3] for r in counts),1)
 
@@ -73,11 +101,11 @@ class BookkeepingOfflineTests(TestCase):
         legacy=fixture();legacy.pk=4
         data['allowed']={1,2,3,4}
         wb=Workbook();report.add_statistics(wb,[finalized,pending,client,legacy],[],data)
-        rows=list(wb['Monthly Statistics'].values)[2:]
+        rows=list(wb['Monthly Statistics'].values)[2:] + financial_rows(wb, 'Monthly Statistics')
         self.assertIn(('2027-01','Known Authorized Invoice Totals','USD',Decimal('5')),rows)
         self.assertIn(('2027-01','MICROCOM invoices not issued or not finalized (on demand)','',1),rows)
         self.assertFalse(any(row[1]=='Missing Frozen Values' for row in rows))
-        self.assertEqual(len(list(wb['Bookkeeping'].values)[2:]),4)
+        self.assertEqual(len([row for row in list(wb['Bookkeeping'].values)[2:] if row[11]]),4)
         with override('fr'):
             from django.utils.translation import gettext
             self.assertEqual(gettext('Internal invoice not applicable'),'Facture interne non applicable')
@@ -105,9 +133,9 @@ class BookkeepingOfflineTests(TestCase):
     def test_stored_invoice_total_is_not_recalculated(self):
         req,data=self.data();data['invoices'][0].total=Decimal('19.99')
         wb=self.workbook(req,data)
-        metrics=list(wb['Succursale Summary'].values)
+        metrics=financial_rows(wb, 'Succursale Summary')
         self.assertIn(('OLD - =FROZEN BRANCH [1]','Known Authorized Invoice Totals','USD',19.99),metrics)
-        self.assertIn(('=CATEGORY','Known Authorized Stored Line Totals','USD',5),list(wb['Material Group Summary'].values))
+        self.assertIn(('=CATEGORY','Known Authorized Stored Line Totals','USD',5),financial_rows(wb, 'Material Group Summary'))
 
     def test_material_balance_not_repeated_per_request_line(self):
         req,_=self.data();req.material_items=related(req.material_items.all()*2)
@@ -123,7 +151,7 @@ class BookkeepingOfflineTests(TestCase):
     def test_month_uses_kinshasa_instant_without_rewriting_issue_date(self):
         req,data=self.data();data['invoices'][0].issue_date=date(2026,12,31)
         wb=self.workbook(req,data)
-        self.assertIn(('2027-01','Known Authorized Invoice Totals','USD',5),list(wb['Monthly Statistics'].values))
+        self.assertIn(('2027-01','Known Authorized Invoice Totals','USD',5),financial_rows(wb, 'Monthly Statistics'))
         self.assertEqual(wb['Bookkeeping']['B3'].value.date(),date(2026,12,31))
 
     def test_out_and_return_not_netting_invoice_values(self):
@@ -138,7 +166,7 @@ class BookkeepingOfflineTests(TestCase):
         second=Obj(**vars(inv));second.pk=2;second.currency='EUR';second.total=Decimal('7')
         other=Obj(**vars(line));other.invoice_id=2;other.currency='EUR';other.line_total=Decimal('7')
         data['invoices'].append(second);data['lines'].append(other)
-        rows=list(self.workbook(req,data)['Monthly Statistics'].values)
+        rows=financial_rows(self.workbook(req,data), 'Monthly Statistics')
         self.assertIn(('2027-01','Known Authorized Invoice Totals','USD',5),rows)
         self.assertIn(('2027-01','Known Authorized Invoice Totals','EUR',7),rows)
 

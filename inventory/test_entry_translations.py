@@ -164,7 +164,7 @@ class EntryCatalogAuditTests(SimpleTestCase):
             for match in re.finditer(r"gettext\(" + literal + r"\)", code):
                 message = ast.literal_eval(match.group(1))
                 self.assertIn(message, catalog, f"Missing French message in {path.name}: {message}")
-        for name in ("entry_forms.py", "entry_views.py", "entry_review.py", "entry_services.py", "receipt_history.py", "entry_i18n.py"):
+        for name in ("entry_forms.py", "entry_views.py", "entry_drafts.py", "entry_review.py", "entry_services.py", "receipt_history.py", "entry_i18n.py"):
             tree = ast.parse((root / "inventory" / name).read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)

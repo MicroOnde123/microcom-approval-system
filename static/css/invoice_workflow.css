@@ -1,0 +1,19 @@
+/* Draft workflow screens only; financial services and PDFs are unchanged. */
+.invoice-workflow .invoice-form-field { margin:16px 0; }
+.invoice-workflow .invoice-form-field label { display:block; font-size:13px; font-weight:600; margin-bottom:7px; }
+.invoice-workflow textarea { width:100%; max-width:100%; }
+.invoice-workflow .errorlist { color:#a52a21; font-size:13px; line-height:1.6; }
+.invoice-workflow [aria-invalid=true] { border-color:#b42318; }
+.invoice-workflow input:focus-visible, .invoice-workflow select:focus-visible, .invoice-workflow textarea:focus-visible { outline:3px solid #436e9a; outline-offset:3px; }
+.invoice-workflow .document-actions { flex-wrap:wrap; align-items:center; }
+.invoice-workflow .invoice-price-table { min-width:550px; }
+.invoice-workflow .invoice-price-table input[type=number] { width:11rem; max-width:100%; font-variant-numeric:tabular-nums; }
+.invoice-workflow .invoice-price-table td:last-child { min-width:13rem; }
+.invoice-workflow .invoice-refresh-section { border:1px solid var(--border); border-radius:8px; background:#f8fafc; padding:18px; }
+.invoice-workflow p { line-height:1.6; }
+.invoice-workflow caption:not(.invoice-sr-only) { text-align:left; font-weight:600; padding:12px; color:var(--primary); }
+@media(max-width:600px) {
+ .invoice-workflow .document-actions { flex-direction:column; align-items:stretch; }
+ .invoice-workflow .document-actions .btn { text-align:center; }
+ .invoice-workflow .invoice-refresh-section { padding:14px; }
+}

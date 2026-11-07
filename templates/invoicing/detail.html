@@ -1,8 +1,20 @@
-{% extends "base.html" %}{% load i18n static %}
+{% extends "base.html" %}{% load i18n static tz %}
 {% block title %}{% trans "Invoice detail" %}{% endblock %}
-{% block content %}<div class="page-header"><h1>{% trans "Invoice detail" %}</h1><div class="actions-inline"><a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% if can_edit %}<a class="btn btn-secondary" href="{% url 'invoicing:edit' invoice.pk %}">{% trans "Edit invoice draft" %}</a>{% endif %}{% if can_finalize %}<a class="btn" href="{% url 'invoicing:finalize' invoice.pk %}">{% trans "Finalize invoice" %}</a>{% endif %}</div></div>
-{% if invoice.status == 'FINALIZED' %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/financial_documents.css' %}">
 <link rel="stylesheet" href="{% static 'css/invoice_actions.css' %}">
+<link rel="stylesheet" href="{% static 'css/invoice_detail.css' %}">
+<section class="financial-document invoice-detail">
+<div class="page-header"><div><h1>{% trans "Invoice detail" %}</h1><p class="invoice-reference">{% if invoice.status == 'FINALIZED' %}{{ invoice.number }}{% else %}{% blocktrans with draft_id=invoice.pk %}Draft #{{ draft_id }}{% endblocktrans %}{% endif %}</p></div><div class="actions-inline"><a class="btn btn-tertiary" href="{% url 'invoicing:list' %}">{% trans "Invoices" %}</a>{% if can_edit %}<a class="btn btn-secondary" href="{% url 'invoicing:edit' invoice.pk %}">{% trans "Edit invoice draft" %}</a>{% endif %}{% if can_finalize %}<a class="btn" href="{% url 'invoicing:finalize' invoice.pk %}">{% trans "Finalize invoice" %}</a>{% endif %}</div></div>
+{% if finalization_success %}
+<section class="invoice-finalization-success" aria-labelledby="finalization-success-title">
+<h2 id="finalization-success-title" tabindex="-1" autofocus>{% trans "Invoice finalized" %}</h2>
+<p>{% trans "Invoice finalized. Its number and financial snapshots are now permanent." %}</p>
+<dl class="document-summary"><dt>{% trans "Document number" %}</dt><dd class="invoice-reference">{{ invoice.number }}</dd><dt>{% trans "Finalized at" %}</dt><dd>{{ invoice.finalized_at|timezone:invoice.business_timezone }} ({{ invoice.business_timezone }})</dd><dt>{% trans "Total" %}</dt><dd>{{ invoice.total }} {{ invoice.currency }}</dd></dl>
+</section>
+{% endif %}
+{% if invoice.status == 'FINALIZED' %}
 <nav class="invoice-actions" aria-label="{% trans 'Document actions' %}">
     <div class="invoice-actions__documents">
         <form method="post" action="{% url 'invoicing:print' invoice.pk %}" target="_blank" rel="noopener">
@@ -22,21 +34,27 @@
     {% endif %}
 </nav>
 {% if return_note_nav.unavailable %}<p class="muted">{% trans "Material return note valuation requires a finalized internal facture. Recording a physical return does not create a facture or a return note." %}</p>{% endif %}
+
 {% endif %}
-<p><strong>{% trans "Status" %}:</strong> {{ invoice.get_status_display }}</p>
-{% if invoice.status == 'FINALIZED' %}
-<p><strong>{% trans "Document number" %}:</strong> {{ invoice.number }}</p><p><strong>{% trans "Issue date" %}:</strong> {{ invoice.issue_date|date:"Y-m-d" }} ({{ invoice.business_timezone }})</p>
-<p>{{ invoice.company_snapshot.company_name }}<br>{{ invoice.company_snapshot.company_address|linebreaksbr }}<br>{{ invoice.company_snapshot.contact_details|linebreaksbr }}</p>
-<p><strong>{% trans "Succursale" %}:</strong> {{ invoice.succursale_snapshot.code }} — {{ invoice.succursale_snapshot.name }}</p><p>{{ invoice.request_reference_snapshot }}</p>
-<p class="message info">{% trans "This finalized invoice is read-only. Its financial information is frozen." %}</p>
-{% if invoice.succursale_snapshot.physical_address %}<p><strong>{% trans "Succursale physical address" %}:</strong><br>{{ invoice.succursale_snapshot.physical_address|linebreaksbr }}</p>{% endif %}
-{% else %}<p>{{ invoice.request.request_number }} — {{ invoice.succursale }}</p>{% endif %}
-<div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Material" %}</th><th>{% trans "Net billable quantity" %}</th><th>{% trans "Unit price" %}</th><th>{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td>{{ line.material_code_snapshot }} — {{ line.description_snapshot }} ({{ line.unit_snapshot }})</td><td>{{ line.quantity }}</td><td>{{ line.unit_price|default_if_none:"—" }} {{ line.currency }}</td><td>{{ line.line_total|default_if_none:"—" }} {{ line.currency }}</td></tr>{% endfor %}</tbody></table></div>
-{% if invoice.status == 'FINALIZED' %}<p><strong>{% trans "Total" %}:</strong> {{ invoice.total }} {{ invoice.currency }}</p><p>{{ display_amount_words }}</p>{% endif %}
-{% if invoice.audit_metadata.note %}<p>{{ invoice.audit_metadata.note|linebreaksbr }}</p>{% endif %}
-<h2>{% trans "Invoice history" %}</h2>
-<div class="table-wrap" tabindex="0"><table class="data-table">
-<thead><tr><th>{% trans "Occurred at" %}</th><th>{% trans "Actor" %}</th><th>{% trans "Event type" %}</th></tr></thead>
+<section class="invoice-section" aria-labelledby="invoice-identity-title"><h2 id="invoice-identity-title">{% trans "Invoice identity" %}</h2>
+<dl class="document-summary"><dt>{% trans "Status" %}</dt><dd><span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></dd>
+<dt>{% trans "Material request reference" %}</dt><dd>{% if invoice.status == 'FINALIZED' %}{{ invoice.request_reference_snapshot }}{% else %}{{ invoice.request.request_number }}{% endif %}</dd>
+<dt>{% trans "Created at" %}</dt><dd>{{ invoice.created_at|timezone:invoice.business_timezone }}</dd>
+{% if invoice.status == 'FINALIZED' %}<dt>{% trans "Issue date" %}</dt><dd>{{ invoice.issue_date|date:"Y-m-d" }} ({{ invoice.business_timezone }})</dd><dt>{% trans "Finalized at" %}</dt><dd>{{ invoice.finalized_at|timezone:invoice.business_timezone }}</dd><dt>{% trans "Finalized by" %}</dt><dd>{{ invoice.finalized_by }}</dd>{% endif %}</dl>
+{% if invoice.status == 'FINALIZED' %}<p class="message info">{% trans "This finalized invoice is read-only. Its financial information is frozen." %}</p>{% endif %}</section>
+<section class="invoice-section" aria-labelledby="invoice-parties-title"><h2 id="invoice-parties-title">{% trans "Company and destination" %}</h2>
+<div class="document-parties"><div><h3>{% trans "Company" %}</h3>{% if invoice.status == 'FINALIZED' %}<strong>{{ invoice.company_snapshot.company_name }}</strong><p>{{ invoice.company_snapshot.company_address|linebreaksbr }}</p><p>{{ invoice.company_snapshot.contact_details|linebreaksbr }}</p>{% else %}<p class="muted">{% trans "Company details are recorded at finalization." %}</p>{% endif %}</div>
+<div><h3>{% trans "Succursale" %}</h3>{% if invoice.status == 'FINALIZED' %}<strong>{{ invoice.succursale_snapshot.code }} &mdash; {{ invoice.succursale_snapshot.name }}</strong>{% if invoice.succursale_snapshot.physical_address %}<p>{{ invoice.succursale_snapshot.physical_address|linebreaksbr }}</p>{% endif %}{% else %}<strong>{{ invoice.succursale.code }} &mdash; {{ invoice.succursale.name }}</strong>{% if invoice.succursale.physical_address %}<p>{{ invoice.succursale.physical_address|linebreaksbr }}</p>{% endif %}{% endif %}</div></div></section>
+<section class="invoice-section" aria-labelledby="invoice-materials-title"><h2 id="invoice-materials-title">{% trans "Invoice materials" %}</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="invoice-materials-title"><table class="data-table invoice-lines"><caption class="invoice-sr-only">{% trans "Invoice materials" %}</caption><thead><tr><th scope="col">{% trans "Material" %}</th><th scope="col">{% trans "Net billable quantity" %}</th><th scope="col">{% trans "Unit price" %}</th><th scope="col">{% trans "Line total" %}</th></tr></thead><tbody>{% for line in lines %}<tr><td><strong class="invoice-code">{{ line.material_code_snapshot }}</strong><span class="invoice-description">{{ line.description_snapshot }}</span></td><td>{{ line.quantity }} {{ line.unit_snapshot }}</td><td>{% if line.unit_price != None %}{{ line.unit_price }} {{ line.currency }}{% else %}{% trans "Unknown" %}{% endif %}</td><td>{% if line.line_total != None %}{{ line.line_total }} {{ line.currency }}{% else %}{% trans "Unknown" %}{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="invoice-section" aria-labelledby="invoice-summary-title"><h2 id="invoice-summary-title">{% trans "Financial summary" %}</h2>
+<dl class="document-summary invoice-total"><dt>{% trans "Currency" %}</dt><dd>{{ invoice.currency }}</dd><dt>{% trans "Total" %}{% if invoice.status == 'DRAFT' %} &mdash; {% trans "Provisional" %}{% endif %}</dt><dd>{% if invoice.status == 'FINALIZED' %}{{ invoice.total }} {{ invoice.currency }}{% elif draft_total != None %}{{ draft_total }} {{ invoice.currency }}{% else %}{% trans "Incomplete pricing" %}{% endif %}</dd></dl>
+{% if invoice.status == 'FINALIZED' %}<p>{{ display_amount_words }}</p>{% endif %}
+{% if invoice.audit_metadata.note %}<h3>{% trans "Invoice note" %}</h3><p>{{ invoice.audit_metadata.note|linebreaksbr }}</p>{% endif %}</section>
+<section class="invoice-section" aria-labelledby="invoice-history-title">
+<h2 id="invoice-history-title">{% trans "Invoice history" %}</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="invoice-history-title"><table class="data-table"><caption class="invoice-sr-only">{% trans "Invoice history" %}</caption>
+<thead><tr><th scope="col">{% trans "Occurred at" %}</th><th scope="col">{% trans "Actor" %}</th><th scope="col">{% trans "Event type" %}</th></tr></thead>
 <tbody>{% for row in audit_history %}<tr>
 <td>{{ row.event.occurred_at }}</td><td>{{ row.event.actor }}</td>
 <td><strong>{{ row.presentation.title }}</strong>
@@ -46,4 +64,6 @@
 </details></td></tr>
 {% empty %}<tr><td colspan="3">{% trans "No invoice history available." %}</td></tr>{% endfor %}
 </tbody></table></div>
+</section>
+</section>
 {% endblock %}

@@ -157,7 +157,7 @@ class InvoiceFilterPrintingTests(unittest.TestCase):
         def inert_url(*args, **kwargs):
             return "/synthetic/"
         engine = Engine(loaders=[("django.template.loaders.locmem.Loader",
-            {"base.html": "{% block content %}{% endblock %}"})], libraries={"i18n": "django.templatetags.i18n"})
+            {"base.html": "{% block content %}{% endblock %}"})], libraries={"i18n": "django.templatetags.i18n", "static": "django.templatetags.static"})
         engine.template_builtins.append(library)
         template = engine.from_string(source)
         for language, label in (("en", "Print Filtered Invoices"), ("fr", "Imprimer les factures filtrées")):
@@ -166,8 +166,8 @@ class InvoiceFilterPrintingTests(unittest.TestCase):
                 self.assertTrue(form.is_valid())
                 content = template.render(Context({"filter_form": form, "page_obj": Paginator([], 25).page(1),
                     "active_filters": self.filters(), "invoice_print_limit": 20}))
-                self.assertIn(label, content); self.assertIn('type="date"', content)
-                self.assertIn('value="2026-01-01"', content)
+                self.assertIn(label, content); self.assertIn('data-entry-date', content); self.assertNotIn('type="date"', content)
+                self.assertIn('value="01/01/2026"' if language == 'fr' else 'value="2026-01-01"', content)
                 # Legitimate synchronization scripts are part of this page;
                 # the user-supplied attack must remain escaped, not executable.
                 self.assertNotIn("<script>alert(1)</script>", content)

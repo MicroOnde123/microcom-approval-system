@@ -2,7 +2,6 @@
 from zoneinfo import ZoneInfo
 
 from django import forms
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils import timezone
@@ -11,6 +10,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 
 from accounts.models import Department
 from .models import RequestMaterialItem, StockMovement
+from .stock_report_foundations import ExportBudget, configured_limit
 
 BUSINESS_ZONE = ZoneInfo("Africa/Kinshasa")
 
@@ -73,18 +73,18 @@ def movement_scope(requests, filters):
 
 
 def enforce_size(requests, movements):
-    limit = getattr(settings, "STOCK_REPORT_EXPORT_MAX_ROWS", 10000)
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 1_000_000:
-        raise ValidationError(_("The Excel export limit is invalid. Ask an administrator."))
+    limit = configured_limit()
     lines = RequestMaterialItem.objects.filter(request_id__in=requests.values("pk")).count()
-    if lines > limit or movements.count() > limit - lines:
-        raise ValidationError(_("The Excel export exceeds %(limit)s rows. Narrow the filters and try again.") % {"limit": limit})
+    budget = ExportBudget(limit)
+    budget.reserve('request_items', lines)
+    budget.reserve('movements', movements.count())
     return limit
 
 
 def enforce_loaded_size(requests, movements, limit):
-    if sum(len(request.material_items.all()) for request in requests) + len(movements) > limit:
-        raise ValidationError(_("The Excel export exceeds %(limit)s rows. Narrow the filters and try again.") % {"limit": limit})
+    budget = ExportBudget(limit)
+    budget.reserve('request_items', sum(len(request.material_items.all()) for request in requests))
+    budget.reserve('movements', len(movements))
 
 
 def add_movements(workbook, movements, requests):

@@ -1,0 +1,27 @@
+/* Invoice detail screen only. PDF rendering is independent. */
+.invoice-detail .page-header h1 { font-size:25px; color:var(--primary); margin-bottom:8px; }
+.invoice-detail .invoice-reference { font-family:monospace; font-size:14px; overflow-wrap:anywhere; user-select:all; }
+.invoice-detail .invoice-section { margin:24px 0; border-top:1px solid var(--border); padding-top:20px; }
+.invoice-detail h2 { font-size:18px; color:var(--primary); margin-bottom:16px; }
+.invoice-detail h3 { font-size:14px; color:var(--primary); }
+.invoice-detail .document-summary { font-size:14px; line-height:1.6; }
+.invoice-detail .document-summary dt { color:#526175; font-size:12px; }
+.invoice-detail .document-parties { min-width:0; }
+.invoice-detail .document-parties > div { min-width:0; overflow-wrap:anywhere; }
+.invoice-detail .invoice-code { display:block; font-family:monospace; font-size:12px; color:var(--primary); }
+.invoice-detail .invoice-description { display:block; margin-top:5px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.invoice-detail .invoice-lines th:not(:first-child), .invoice-detail .invoice-lines td:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
+.invoice-detail .invoice-lines { min-width:650px; }
+.invoice-detail .invoice-total dd { font-size:20px; font-weight:600; color:var(--primary); }
+.invoice-finalization-success { border:1px solid #b9dfc8; border-left:4px solid #15803d; border-radius:8px; background:#f0fdf4; padding:18px; margin-bottom:20px; }
+.invoice-detail .invoice-finalization-success h2 { color:#166534; }
+.invoice-finalization-success .document-summary { background:transparent; padding:0; }
+.invoice-detail details summary { cursor:pointer; padding:8px 0; }
+.invoice-detail .table-wrap:focus-visible, .invoice-detail a:focus-visible, .invoice-detail button:focus-visible, .invoice-detail summary:focus-visible, #finalization-success-title:focus-visible { outline:3px solid #436e9a; outline-offset:3px; }
+.invoice-sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+@media(max-width:600px) {
+ .invoice-detail .page-header .actions-inline { width:100%; flex-wrap:wrap; }
+ .invoice-detail .page-header .btn { flex:1 1 100%; text-align:center; }
+ .invoice-detail .document-summary { padding:14px; }
+ .invoice-detail .document-parties { padding:14px; gap:16px; }
+}

@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from openpyxl.styles import Font, PatternFill
 
 from .stock_report_export import reporting_time
+from .stock_report_foundations import reserve_generated
 
 
 def load_bookkeeping(user, requests, remaining):
@@ -40,6 +41,8 @@ def exact_number(value):
 
 
 def table(workbook, name, headers, rows, note):
+    if name != _("Bookkeeping"):
+        reserve_generated(workbook, summary_rows=len(rows))
     sheet = workbook.create_sheet(name)
     sheet.append([note])
     sheet.append(headers)
@@ -192,6 +195,7 @@ def add_statistics(workbook, requests, movements, financial):
             _("Currency"), _("Stored Line Total"), _("Bookkeeping Status")], bookkeeping,
             _("Authorized finalized invoice evidence only. Later returns and credits are not netted. Categories are current; invoice amounts and branch names are frozen."))
 
+    authorized_branches = {branch_for[rid] for rid in financial['allowed']} if financial is not None else set()
     branch_rows = []
     for name in sorted(set(branches) | set(branch_money)):
         data = branches[name]
@@ -200,7 +204,7 @@ def add_statistics(workbook, requests, movements, financial):
         if financial is not None:
             branch_rows += [[name, _("Known Authorized Invoice Totals"), currency, value] for currency, value in sorted(branch_money[name].items())]
             # Only counts of authorized missing financial evidence are exposed.
-            if name in {branch_for[rid] for rid in financial['allowed']}:
+            if name in authorized_branches:
                 branch_rows += [[name, _("MICROCOM invoices not issued or not finalized (on demand)"), '', coverage[name]], [name, _("Missing Frozen Values"), '', branch_unknown[name]]]
     group_rows = []
     for name in sorted(set(groups) | set(group_money)):
@@ -227,7 +231,45 @@ def add_statistics(workbook, requests, movements, financial):
                 month_rows.append([month, _("MICROCOM invoices not issued or not finalized (on demand)"), '', month_coverage[month]])
             if month in month_unknown:
                 month_rows.append([month, _("Missing Frozen Values"), '', month_unknown[month]])
-    headers = [_("Grouping"), _("Measure"), _("Unit / Currency"), _("Value")] if financial is not None else [_("Grouping"), _("Measure"), _("Unit"), _("Value")]
+    # Financial aggregates remain available, but only inside authorized Bookkeeping.
+    financial_measures = {_("Known Authorized Invoice Totals"), _("Known Authorized Stored Line Totals"),
+                          _("Missing Frozen Values"), _("MICROCOM invoices not issued or not finalized (on demand)")}
+    financial_rows = []
+    for scope, rows in ((_("Succursale Summary"), branch_rows), (_("Material Group Summary"), group_rows),
+                        (_("Monthly Statistics"), month_rows)):
+        financial_rows.extend([[scope, *row] for row in rows if row[1] in financial_measures])
+        rows[:] = [row for row in rows if row[1] not in financial_measures]
+    if financial is not None:
+        reserve_generated(workbook, summary_rows=len(financial_rows))
+        sheet = workbook[_("Bookkeeping")]
+        from openpyxl.styles import Alignment
+        for col, label in enumerate([_("Financial Summary Scope"), _("Grouping"), _("Measure"), _("Unit / Currency"), _("Value")], 14):
+            sheet.cell(2, col, label).font = Font(bold=True, color='FFFFFF')
+            sheet.cell(2, col).fill = PatternFill('solid', fgColor='17365D')
+            sheet.cell(2, col).alignment = Alignment(wrap_text=True, vertical='top')
+            sheet.column_dimensions[sheet.cell(2, col).column_letter].width = 30
+        for index, row in enumerate(financial_rows, 3):
+            for col, value in enumerate(row, 14):
+                cell = sheet.cell(index, col, exact_number(value))
+                cell.alignment = Alignment(wrap_text=True, vertical='top')
+                if col == 18:
+                    cell.number_format = '0' if isinstance(value, int) else '#,##0.00'
+        sheet.print_title_rows = '1:2'
+        sheet.merge_cells('A1:L1')
+        sheet.merge_cells('N1:R1')
+        sheet['N1'] = _("Financial Summary Scope")
+        sheet['N1'].font = Font(bold=True)
+        sheet.row_dimensions[1].height = 32
+        sheet.row_dimensions[2].height = 32
+        # Print the original details and summary panel separately, rather than
+        # shrinking eighteen wide columns onto one unreadable page.
+        sheet.print_area = [f'A1:L{max(2, len(bookkeeping) + 2)}', f'N1:R{max(2, len(financial_rows) + 2)}']
+        sheet.page_setup.orientation = 'landscape'
+        sheet.page_setup.paperSize = sheet.PAPERSIZE_A3
+        sheet.page_setup.fitToWidth = 1
+        sheet.page_setup.fitToHeight = 0
+        sheet.sheet_properties.pageSetUpPr.fitToPage = True
+    headers = [_("Grouping"), _("Measure"), _("Unit"), _("Value")]
     note = _("Separate measures: never add incompatible units or currencies. Issued quantities use recorded OUT movements; stock is central, not held by succursales.")
     table(workbook, _("Succursale Summary"), headers, branch_rows, note)
     table(workbook, _("Material Group Summary"), headers, group_rows, note + ' ' + _("Categories and available stock are current; each material balance is counted once."))

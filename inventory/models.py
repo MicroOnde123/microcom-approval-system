@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 from core.document_config import Currency
 from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.utils import timezone
 
 
 class Succursale(models.Model):
@@ -86,6 +88,35 @@ class Material(models.Model):
     
 
 
+class MaterialPriceChange(models.Model):
+    """Database-generated evidence for updates, not an alternative price catalogue."""
+    material = models.ForeignKey(Material, on_delete=models.PROTECT, related_name="price_changes", verbose_name=_("Material"))
+    old_price = models.DecimalField(_("Previous price"), max_digits=12, decimal_places=2, null=True, blank=True)
+    new_price = models.DecimalField(_("New price"), max_digits=12, decimal_places=2, null=True, blank=True)
+    old_currency = models.CharField(_("Previous currency"), max_length=3, null=True, blank=True, choices=Currency.choices)
+    new_currency = models.CharField(_("New currency"), max_length=3, null=True, blank=True, choices=Currency.choices)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("Changed by"))
+    changed_at = models.DateTimeField(_("Changed at"), default=timezone.now, editable=False)
+    reason = models.TextField(_("Reason"))
+    source = models.CharField(_("Source"), max_length=20, choices=[("admin", _("Django Admin")), ("service", _("Catalogue service"))])
+
+    class Meta:
+        ordering = ["-changed_at", "-pk"]
+        verbose_name = _("Material price change")
+        verbose_name_plural = _("Material price history")
+        default_permissions = ("view",)
+        indexes = [models.Index(fields=["material", "-id"], name="material_price_history_idx")]
+
+    def save(self, *args, **kwargs):
+        raise ValidationError(_("Price history is append-only and is recorded automatically."))
+
+    def __str__(self):
+        return f"{self.material.code} — {self.changed_at.isoformat()}"
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError(_("Price history is append-only and is recorded automatically."))
+
+
 class MaterialReceipt(models.Model):
     """A durable receipt and idempotency claim, committed with its stock movement."""
     operation_token = models.UUIDField(unique=True, editable=False)
@@ -118,3 +149,54 @@ class MaterialReceiptLine(models.Model):
 
     class Meta:
         constraints = [models.CheckConstraint(condition=models.Q(quantity__gt=0), name='material_receipt_positive_quantity')]
+
+class MaterialEntryDraft(models.Model):
+    class Mode(models.TextChoices):
+        NEW = "new", _("New material")
+        EXISTING = "existing", _("Existing material")
+
+    class Status(models.TextChoices):
+        DRAFT = "DRAFT", _("Draft")
+        COMPLETED = "COMPLETED", _("Completed")
+        CANCELLED = "CANCELLED", _("Cancelled")
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="material_entry_drafts",
+    )
+    mode = models.CharField(
+        max_length=10,
+        choices=Mode.choices,
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
+    data = models.JSONField(default=dict, blank=True)
+    operation_token = models.UUIDField(unique=True)
+
+    signed_token = models.TextField(
+    _("Signed receipt token"),
+    editable=False,
+    )
+
+    version = models.PositiveIntegerField(default=1)
+    receipt = models.ForeignKey(
+        MaterialReceipt,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="entry_drafts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "-pk"]
+        verbose_name = _("Material entry draft")
+        verbose_name_plural = _("Material entry drafts")
+
+    def __str__(self):
+        return f"{self.get_mode_display()} - {self.owner_id} - {self.status}"
