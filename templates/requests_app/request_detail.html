@@ -216,10 +216,10 @@
     </div>
     {% endif %}
 
-    {% if request_obj.metadata_json.site %}
+    {% if request_obj.site_names %}
     <div class="detail-item">
-        <strong>{% trans "Site" %}</strong>
-        {{ request_obj.metadata_json.site }}
+        <strong>{% trans "Sites" %}</strong>
+        {% include 'requests_app/includes/site_names.html' with sites=request_obj.site_names %}
     </div>
     {% endif %}
 
@@ -237,10 +237,10 @@
     </div>
     {% endif %}
 
-    {% if request_obj.metadata_json.microcom_agents %}
+    {% if request_obj.agent_names %}
     <div class="detail-item">
         <strong>{% trans "Microcom Agents" %}</strong>
-        {{ request_obj.metadata_json.microcom_agents }}
+        {{ request_obj.agent_names }}
     </div>
     {% endif %}
 

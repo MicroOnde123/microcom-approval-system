@@ -116,8 +116,7 @@
             <div id="site-authorization-fields" style="display:none; margin-top:16px;">
                 <div class="form-grid">
                     <div>
-                        <label>{{ form.site.label }}</label>
-                        {{ form.site }}
+                        {% include 'requests_app/includes/site_picker.html' %}
                         {% if form.site.errors %}
                         <div class="field-error">{{ form.site.errors }}</div>
                         {% endif %}
@@ -140,8 +139,7 @@
                     </div>
 
                     <div>
-                        <label>{{ form.microcom_agents.label }}</label>
-                        {{ form.microcom_agents }}
+                        {% include 'requests_app/includes/agent_picker.html' %}
                         {% if form.microcom_agents.errors %}
                         <div class="field-error">{{ form.microcom_agents.errors }}</div>
                         {% endif %}

@@ -201,11 +201,7 @@
 
                     <div>
 
-                        <label>
-                            {{ form.site.label }}
-                        </label>
-
-                        {{ form.site }}
+                        {% include 'requests_app/includes/site_picker.html' %}
 
                     </div>
 
@@ -231,11 +227,7 @@
 
                     <div>
 
-                        <label>
-                            {{ form.microcom_agents.label }}
-                        </label>
-
-                        {{ form.microcom_agents }}
+                        {% include 'requests_app/includes/agent_picker.html' %}
 
                     </div>
 

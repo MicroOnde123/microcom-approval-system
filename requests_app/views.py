@@ -142,7 +142,7 @@ def save_attachments(request, req):
 def build_permission_metadata(form):
     cleaned = form.cleaned_data
 
-    return {
+    metadata = {
         "permission_group": cleaned.get("permission_group"),
         "permission_subgroup": cleaned.get("permission_subgroup"),
         "destination": cleaned.get("destination"),
@@ -178,6 +178,68 @@ def build_permission_metadata(form):
         "tt": cleaned.get("tt"),
         "external_persons": cleaned.get("external_persons"),
     }
+
+    from copy import deepcopy
+    from .agents import INTERNAL_KEYS
+    existing = form.instance.metadata_json or {}
+    for key in INTERNAL_KEYS:
+        if key in existing:
+            metadata[key] = deepcopy(existing[key])
+    from .site_selection import preserve_legacy_attempt_site
+    preserve_legacy_attempt_site(form.instance, metadata)
+    if cleaned.get("permission_group") == "SITE_AUTHORIZATION" and form.data.get("site_selections") and "site_selections" in cleaned:
+        metadata["site_selections"] = cleaned["site_selections"]
+    if cleaned.get("permission_group") == "SITE_AUTHORIZATION" and form.data.get("agent_selections") and "agent_selections" in cleaned:
+        metadata["agent_selections"] = cleaned["agent_selections"]
+    return metadata
+
+
+@login_required
+def site_search(request):
+    from core.models import Site
+    from django.http import JsonResponse
+    if not request.user.is_active or not request.user.department_id:
+        return HttpResponseForbidden()
+    if request.method != "GET":
+        return JsonResponse({}, status=405)
+    try:
+        page = int(request.GET.get("page", "1"))
+        if not 1 <= page <= 10000:
+            raise ValueError
+    except ValueError:
+        return JsonResponse({}, status=400)
+    rows = list(Site.objects.filter(is_active=True, name__icontains=request.GET.get("q", "").strip()[:100])
+                .order_by("name", "pk").values("id", "name")[(page-1)*20:page*20+1])
+    response = JsonResponse({"results": rows[:20], "more": len(rows)>20})
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@login_required
+def agent_user_search(request):
+    from django.contrib.auth import get_user_model
+    from django.http import JsonResponse
+    from django.db.models import Q, Value
+    from django.db.models.functions import Concat
+    from .agents import display_name
+    if not request.user.is_active or not request.user.department_id:
+        return HttpResponseForbidden()
+    if request.method != "GET":
+        return JsonResponse({}, status=405)
+    query = request.GET.get("q", "").strip()[:100]
+    try:
+        page = max(1, min(int(request.GET.get("page", "1")), 10000))
+    except ValueError:
+        return JsonResponse({}, status=400)
+    users = get_user_model().objects.filter(is_active=True).annotate(
+        combined_name=Concat("first_name", Value(" "), "last_name"))
+    if query:
+        users = users.filter(Q(full_name__icontains=query) | Q(first_name__icontains=query)
+                             | Q(last_name__icontains=query) | Q(combined_name__icontains=query))
+    rows = list(users.only("id", "full_name", "first_name", "last_name", "username").order_by("full_name", "pk")[(page-1)*20:page*20+1])
+    response = JsonResponse({"results": [{"id": u.pk, "name": display_name(u)} for u in rows[:20]], "more": len(rows)>20})
+    response["Cache-Control"] = "private, no-store"
+    return response
 
 
 def request_form_context(form, formset, submission_token, **extra):
@@ -1026,7 +1088,8 @@ def permission_document(request, request_id):
         messages.error(request, "This request is not approved yet.")
         return redirect("request_detail", request_id=request_obj.id)
 
-    metadata = request_obj.metadata_json or {}
+    metadata = dict(request_obj.metadata_json or {})
+    metadata["microcom_agents"] = request_obj.agent_names
 
     if not metadata.get("permission_group"):
         messages.error(request, "This request is not a permission request.")
@@ -1748,7 +1811,8 @@ def administration_report_document(request, request_id):
     )
 
     # Permission requests must use their dedicated document.
-    metadata = request_obj.metadata_json or {}
+    metadata = dict(request_obj.metadata_json or {})
+    metadata["microcom_agents"] = request_obj.agent_names
 
     if metadata.get("permission_group"):
         approvals = request_obj.approvals.filter(

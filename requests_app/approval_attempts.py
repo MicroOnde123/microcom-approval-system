@@ -97,6 +97,11 @@ def hydrate_attempts(attempts):
                 if type(decision["actor_id"]) is int and not isinstance(decision["recorded_actor"], str)}
     people = get_user_model().objects.in_bulk(user_ids)
     for attempt in attempts:
+        from .agents import archived_names
+        request = getattr(attempt["log"], "request", None)
+        attempt["agent_names"] = archived_names(request, attempt["log"].pk) if request else ""
+        from .site_selection import site_names
+        attempt["site_names"] = site_names(request, attempt["log"].pk) if request else []
         for decision in attempt["decisions"]:
             actor = people.get(decision["actor_id"])
             recorded = decision["recorded_actor"]

@@ -1,7 +1,18 @@
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils.translation import gettext_lazy as _
-from .models import CompanyDocumentSettings
+from .models import CompanyDocumentSettings, Site
+
+
+@admin.register(Site)
+class SiteAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_active", "updated_at")
+    search_fields = ("name",)
+    list_filter = ("is_active",)
+    readonly_fields = ("created_at", "updated_at")
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(CompanyDocumentSettings)

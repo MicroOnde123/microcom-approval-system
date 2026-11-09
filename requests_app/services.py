@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 
 from workflows.models import ApprovalWorkflow, validate_stock_review_steps
 from requests_app.models import Request, RequestApproval, RequestAuditLog
+from .agents import prepare_submission, record_attempt, archive_attempt
 from .stock_services import deduct_material_stock, validate_material_quantities
 from .resubmission import BASELINE_ACTION, is_general_permission, record_baseline, resume_decision
 
@@ -36,6 +37,7 @@ def log_action(request, action, user=None, comment=""):
     )
     from .notifications import record_event
     record_event(event)
+    return event
 
 
 def get_applicable_workflow(request):
@@ -143,8 +145,10 @@ def submit_request(request, *, notifications_on_commit=False):
     if request.approvals.exists():
         raise ValidationError(_("This request has already been submitted into a workflow."))
 
+    prepare_submission(request)
     workflow = lock_permission_workflow(request, get_applicable_workflow(request))
     approvals = create_approval_steps(request, workflow)
+    record_attempt(request)
     record_baseline(request, workflow)
 
     first_step = approvals[0] if approvals else None
@@ -370,6 +374,7 @@ def resubmit_request(request_obj, user):
     if request_obj.status != "RETURNED":
         raise ValidationError(_("Only returned requests can be resubmitted."))
 
+    prepare_submission(request_obj)
     permission_attempt = is_general_permission(request_obj) or request_obj.audit_logs.filter(action=BASELINE_ACTION).exists()
     workflow = lock_permission_workflow(request_obj, get_applicable_workflow(request_obj)) if permission_attempt else None
     target, reason = resume_decision(request_obj, workflow) if permission_attempt else (None, None)
@@ -385,12 +390,13 @@ def resubmit_request(request_obj, user):
                       ("approver_user_id", "alternate_approver_user_id", "acted_by_id") if row[key]}
         people = {str(person.pk): person.full_name or person.username
                   for person in get_user_model().objects.filter(pk__in=person_ids)}
-        log_action(
+        archive = log_action(
             request_obj, "APPROVAL_HISTORY_ARCHIVED", user,
             json.dumps({"version": 1, "approvals": previous_approvals, "people": people,
                         "routing": {"reason": reason, "resumed_step": target.step_order if target else None}},
                        default=str, ensure_ascii=False),
         )
+        archive_attempt(request_obj, archive.pk)
     if target:
         # Keep prior decisions untouched; new IDs invalidate all old pending URLs.
         pending = list(request_obj.approvals.filter(step_order__gte=target.step_order).order_by("step_order"))
@@ -404,6 +410,7 @@ def resubmit_request(request_obj, user):
         request_obj.current_step_order = target.step_order
         request_obj.finalized_at = None
         request_obj.save()
+        record_attempt(request_obj)
         record_baseline(request_obj, workflow)
         recipients = [actor.email for actor in (target.approver_user, target.alternate_approver_user) if actor and actor.email]
         send_notification_email("New Request Awaiting Your Approval",

@@ -133,6 +133,16 @@ class Request(models.Model):
             self.request_for_department_id = self.department_id
         super().save(*args, **kwargs)
 
+    @property
+    def agent_names(self):
+        from .agents import rendered_names
+        return rendered_names(self)
+
+    @property
+    def site_names(self):
+        from .site_selection import site_names
+        return site_names(self)
+
     def __str__(self):
         return self.request_number
 

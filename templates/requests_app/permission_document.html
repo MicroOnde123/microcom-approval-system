@@ -1,6 +1,7 @@
 {% load i18n %}
+{% get_current_language as document_language %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ document_language }}">
 
 <head>
     <meta charset="UTF-8">
@@ -139,6 +140,11 @@
             margin-top: 8px;
         }
 
+        .site-name-list { margin: 0; padding-inline-start: 1.2em; }
+        .site-name-list li { margin: 0 0 2px; }
+        .info-table td, .approval-table td, .reason-box { overflow-wrap: anywhere; }
+        .signature-area { break-inside: avoid; }
+
         @page {
             size: A4 portrait;
             margin: 8mm;
@@ -158,15 +164,17 @@
 
             .print-sheet {
                 width: 194mm;
-                height: 281mm;
+                height: auto;
+                min-height: 281mm;
                 max-width: none;
                 margin: 0;
             }
 
             .half-copy {
-                height: 136mm;
+                height: auto;
+                min-height: 136mm;
                 margin: 0;
-                overflow: hidden;
+                overflow: visible;
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
@@ -175,6 +183,7 @@
                 height: 9mm;
                 margin: 0;
                 border-top: 2px dashed #111827;
+                break-after: avoid;
             }
 
             .document-box {
@@ -241,6 +250,9 @@
             .approval-note {
                 margin: 1mm 0 0;
             }
+
+            .approval-table thead { display: table-header-group; }
+            .approval-table tr { break-inside: avoid; }
         }
     </style>
 </head>

@@ -4902,3 +4902,207 @@ msgstr "Voir toutes les notifications"
 #: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
 msgid "Pending approval pages"
 msgstr "Pages des approbations en attente"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Invalid person selection."
+msgstr "La sélection de personne est invalide."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Select at most 10 people."
+msgstr "Sélectionnez au maximum 10 personnes."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "This registered user is already selected."
+msgstr "Cet utilisateur est déjà sélectionné."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "First name and surname are required."
+msgstr "Le prénom et le nom sont obligatoires."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Enter a valid name of at most 255 characters."
+msgstr "Saisissez un nom valide de 255 caractères maximum."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "A selected user is invalid or inactive. Remove or replace this person."
+msgstr "Un utilisateur sélectionné est invalide ou inactif. Retirez ou remplacez cette personne."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Select at least one person."
+msgstr "Sélectionnez au moins une personne."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Remove person"
+msgstr "Retirer la personne"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Edit person"
+msgstr "Modifier la personne"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "selected"
+msgstr "sélectionnés"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "A person with this name is already selected. Add another person with the same name?"
+msgstr "Une personne portant ce nom est déjà sélectionnée. Ajouter une autre personne portant le même nom ?"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Loading…"
+msgstr "Chargement…"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "No matching users."
+msgstr "Aucun utilisateur correspondant."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Unable to load users. Try again."
+msgstr "Impossible de charger les utilisateurs. Réessayez."
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Previously recorded names"
+msgstr "Noms précédemment enregistrés"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Replace with person selections"
+msgstr "Remplacer par une sélection de personnes"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Search Microcom users"
+msgstr "Rechercher des utilisateurs Microcom"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Search by first name or surname"
+msgstr "Rechercher par prénom ou nom"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Microcom users"
+msgstr "Utilisateurs Microcom"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "More users"
+msgstr "Plus d’utilisateurs"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Other person — Add manually"
+msgstr "Autre personne — Ajouter manuellement"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "First name(s)"
+msgstr "Prénom(s)"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Surname"
+msgstr "Nom"
+
+#: requests_app/agents.py templates/requests_app/includes/agent_picker.html
+msgid "Save person"
+msgstr "Enregistrer la personne"
+
+#: templates/requests_app/includes/agent_picker.html
+msgid "About Microcom agent selection"
+msgstr "À propos de la sélection des agents Microcom"
+
+#: templates/requests_app/includes/agent_picker.html
+msgid "Search employees by name..."
+msgstr "Rechercher un agent par nom..."
+
+#: templates/requests_app/includes/agent_picker.html
+msgid "Search and select employees from the list. If someone is not listed, choose 'Other person' to enter their first name and surname. Maximum: 10 people in total."
+msgstr "Recherchez et sélectionnez les agents dans la liste. Si une personne n'y figure pas, choisissez « Autre personne » pour saisir son nom et son prénom. Maximum : 10 personnes au total."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Sites"
+msgstr "Sites"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Site name"
+msgstr "Nom du site"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Enter a valid site name."
+msgstr "Saisissez un nom de site valide."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Invalid site selection."
+msgstr "La sélection de site est invalide."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Select at most 5 sites."
+msgstr "Sélectionnez au maximum 5 sites."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "This directory site is already selected."
+msgstr "Ce site du répertoire est déjà sélectionné."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Enter a valid site name of at most 255 characters."
+msgstr "Saisissez un nom de site valide de 255 caractères maximum."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "A selected site is invalid or inactive. Remove or replace it."
+msgstr "Un site sélectionné est invalide ou inactif. Retirez-le ou remplacez-le."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Select at least one site."
+msgstr "Sélectionnez au moins un site."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "sites selected"
+msgstr "sites sélectionnés"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Remove site"
+msgstr "Retirer le site"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Edit site"
+msgstr "Modifier le site"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "A site with this name is already selected. Add a different site with the same name?"
+msgstr "Un site portant ce nom est déjà sélectionné. Ajouter un autre site portant le même nom ?"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "No matching sites."
+msgstr "Aucun site correspondant."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Unable to load sites. Try again."
+msgstr "Impossible de charger les sites. Réessayez."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "About site selection"
+msgstr "À propos de la sélection des sites"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Search and select sites from the directory. Choose 'Other site' to enter an unlisted site manually. Maximum: 5 sites in total. All sites share the same validity dates."
+msgstr "Recherchez et sélectionnez les sites dans le répertoire. Choisissez « Autre site » pour saisir un site non répertorié. Maximum : 5 sites au total. Tous les sites partagent les mêmes dates de validité."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Previously recorded site"
+msgstr "Site précédemment enregistré"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Replace with site selections"
+msgstr "Remplacer par une sélection de sites"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Search sites by name..."
+msgstr "Rechercher un site par nom..."
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Site directory"
+msgstr "Répertoire des sites"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "More sites"
+msgstr "Plus de sites"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Other site — Add manually"
+msgstr "Autre site — Ajouter manuellement"
+
+#: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
+msgid "Save site"
+msgstr "Enregistrer le site"

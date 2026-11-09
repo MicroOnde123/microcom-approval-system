@@ -28,6 +28,8 @@
 <p><strong>{% trans "Submitted From Department" %}:</strong> {{ request_obj.department }}</p>
 <p><strong>{% trans "Request For Department" %}:</strong> {{ request_obj.request_for_department }}</p>
 
+{% if request_obj.agent_names %}<p><strong>{% trans "Microcom Agents" %}:</strong> {{ request_obj.agent_names }}</p>{% endif %}
+{% if request_obj.site_names %}<div><strong>{% trans "Sites" %}:</strong> {% include 'requests_app/includes/site_names.html' with sites=request_obj.site_names %}</div>{% endif %}
 {% if approval.requires_stock_classification %}
 <p>{% trans "Confirm or replace the classification when approving this stock review. Rejection and return for correction do not require classification." %}</p>
 {% if request_obj.classification %}

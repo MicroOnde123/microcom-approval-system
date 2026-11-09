@@ -1,0 +1,1 @@
+{% if sites|length > 1 %}<ul class="site-name-list">{% for name in sites %}<li>{{ name }}</li>{% endfor %}</ul>{% elif sites %}{{ sites.0|linebreaksbr }}{% endif %}
