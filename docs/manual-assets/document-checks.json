@@ -1,0 +1,31 @@
+{
+  "en": {
+    "chapters": 29,
+    "inline_placeholders": 0,
+    "links": "valid"
+  },
+  "fr": {
+    "chapters": 29,
+    "inline_placeholders": 0,
+    "links": "valid"
+  },
+  "Microcom_Guide_Utilisateur_FR.pdf": {
+    "pages": 35,
+    "blank_pages": 0,
+    "numbering": "valid",
+    "status": "final text edition",
+    "bytes": 208645
+  },
+  "Microcom_User_Manual_EN.pdf": {
+    "pages": 35,
+    "blank_pages": 0,
+    "numbering": "valid",
+    "status": "final text edition",
+    "bytes": 204089
+  },
+  "screen_state_inventory_rows": 74,
+  "real_screenshots": 0,
+  "annotated_screenshots": 0,
+  "application_tests_run_by_document_validator": false,
+  "authenticated_runtime_verification": false
+}

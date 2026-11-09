@@ -16,6 +16,31 @@ class InvoiceListPresentationTests(LifecycleFixtures, TestCase):
         receive_stock(user=self.admin, mode="existing", token=new_token(self.admin,"existing"),
             material_id=self.material.pk, receipt_data={"quantity":"1000", "received_on":"2026-11-07"})
 
+    def test_candidates_precede_invoice_filters_and_history_in_both_languages(self):
+        invoice = self.create()
+        request, _ = self.make_request()
+        approve_step(request.approvals.get(), self.user,
+                     classification="MICROCOM", succursale=self.branch)
+        for language in ("en", "fr"):
+            with self.subTest(language=language):
+                self.client.cookies["django_language"] = language
+                response = self.client.get(self.url, {"status": "DRAFT"})
+                self.assertEqual(response.status_code, 200)
+                html = response.content.decode()
+                markers = ('<h1>', 'id="invoice-candidates-title"',
+                           'id="invoice-filter-form"', 'id="invoice-bulk-print-form"',
+                           'id="live-filter-results"')
+                positions = [html.index(marker) for marker in markers]
+                self.assertEqual(positions, sorted(positions))
+                self.assertContains(response, reverse("invoicing:create", args=[request.pk]))
+                self.assertContains(response, reverse("invoicing:detail", args=[invoice.pk]))
+                # Live invoice filtering still updates the candidate form's hidden
+                # filters without replacing the existing filter/print controls.
+                results = html[positions[-1]:]
+                self.assertIn('form="invoice-candidate-form" type="hidden" name="status" value="DRAFT"', results)
+                self.assertNotIn('id="invoice-filter-form"', results)
+                self.assertNotIn('id="invoice-bulk-print-form"', results)
+
     def test_pagination_total_navigation_and_responsive_structure(self):
         self.create()
         for _ in range(25):

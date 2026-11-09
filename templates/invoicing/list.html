@@ -24,6 +24,17 @@
     </a>
 </div>
 
+{% if can_create_invoice %}
+<section class="invoice-candidates" aria-labelledby="invoice-candidates-title"><h2 id="invoice-candidates-title">{% trans "Requests available for invoice review" %}</h2><p class="muted">{% trans "Eligibility is checked before a draft is saved." %}</p>
+<form id="invoice-candidate-form" method="get" class="invoice-candidate-form">
+{{ candidate_form.candidate_q.label_tag }}{{ candidate_form.candidate_q }}{{ candidate_form.candidate_q.errors }}
+<div class="actions-inline"><button class="btn btn-secondary" type="submit">{% trans "Search" %}</button></div>
+</form>
+{% if candidate_has_more %}<p class="message info">{% trans "Only the 50 most recent matching requests are shown. More requests are available; refine the request reference search above." %}</p>{% endif %}
+<p class="muted">{% trans "This search applies only to requests available for draft creation, not to the invoice list or printing." %}</p>
+<ul class="invoice-candidate-list">{% for source in candidate_requests %}<li><a href="{% url 'invoicing:create' source.pk %}">{{ source.request_number }}</a></li>{% empty %}<li>{% trans "No requests match this selection." %}</li>{% endfor %}</ul>
+</section>{% endif %}
+
 <form id="invoice-filter-form"
       method="get"
       data-auto-filters="true"
@@ -157,16 +168,8 @@
     </nav>
 
 {% if can_create_invoice %}
-<section class="invoice-candidates" aria-labelledby="invoice-candidates-title"><h2 id="invoice-candidates-title">{% trans "Requests available for invoice review" %}</h2><p class="muted">{% trans "Eligibility is checked before a draft is saved." %}</p>
-<form method="get" class="invoice-candidate-form">
-{% for name, value in active_filters.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-{{ candidate_form.candidate_q.label_tag }}{{ candidate_form.candidate_q }}{{ candidate_form.candidate_q.errors }}
-<div class="actions-inline"><button class="btn btn-secondary" type="submit">{% trans "Search" %}</button></div>
-</form>
-{% if candidate_has_more %}<p class="message info">{% trans "Only the 50 most recent matching requests are shown. More requests are available; refine the request reference search above." %}</p>{% endif %}
-<p class="muted">{% trans "This search applies only to requests available for draft creation, not to the invoice list or printing." %}</p>
-<ul class="invoice-candidate-list">{% for source in candidate_requests %}<li><a href="{% url 'invoicing:create' source.pk %}">{{ source.request_number }}</a></li>{% empty %}<li>{% trans "No requests match this selection." %}</li>{% endfor %}</ul>
-</section>{% endif %}
+{% for name, value in active_filters.items %}<input form="invoice-candidate-form" type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+{% endif %}
 </div>
 </section>
 {% endblock %}

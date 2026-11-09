@@ -1,0 +1,910 @@
+{
+  "source_commit": "72b527b739d2e42a0ead10d17af4ec571876dfc8",
+  "release": "November 2026",
+  "real_captured": 0,
+  "real_annotated": 0,
+  "workflow_runtime_verified": 0,
+  "owner_access_pending": true,
+  "primary": [
+    {
+      "id": "01-login",
+      "entry": "/login/",
+      "source": "config/urls.py; accounts/forms.py; templates/registration/login.html",
+      "en": "Sign in",
+      "fr": "Se connecter",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — username",
+        "Blue 2 — empty password field",
+        "Blue 3 — login button",
+        "Amber 4 — reset link"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — identifiant",
+        "Bleu 2 — champ mot de passe vide",
+        "Bleu 3 — connexion",
+        "Ambre 4 — réinitialisation"
+      ]
+    },
+    {
+      "id": "02-dashboard",
+      "entry": "/",
+      "source": "core/views.py; templates/core/dashboard.html; templates/base.html; requests_app/context_processors.py",
+      "en": "Navigate the dashboard",
+      "fr": "Naviguer dans le tableau de bord",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — request links",
+        "Blue 2 — Approvals and counter",
+        "Blue 3 — report/invoice links",
+        "Blue 4 — language/Logout"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — demandes",
+        "Bleu 2 — approbations/compteur",
+        "Bleu 3 — rapports/factures",
+        "Bleu 4 — langue/déconnexion"
+      ]
+    },
+    {
+      "id": "03-administrative",
+      "entry": "/requests/create/",
+      "source": "requests_app/forms.py; requests_app/views.py:create_request; templates/requests_app/create_request.html",
+      "en": "Create an administrative request",
+      "fr": "Créer une demande administrative",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — type",
+        "Amber 2 — owning department",
+        "Blue 3 — conditional fields/attachments",
+        "Blue 4 — submit/draft"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — type",
+        "Ambre 2 — département responsable",
+        "Bleu 3 — champs conditionnels/pièces",
+        "Bleu 4 — soumission/brouillon"
+      ]
+    },
+    {
+      "id": "04-material",
+      "entry": "/requests/create/",
+      "source": "requests_app/forms.py; requests_app/views.py:create_request; templates/requests_app/includes/material_formset.html",
+      "en": "Create a technician material request",
+      "fr": "Créer une demande de matériel de technicien",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — search/category",
+        "Amber 2 — selected material/unit",
+        "Blue 3 — quantity/add/remove",
+        "Blue 4 — submit"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — recherche/catégorie",
+        "Ambre 2 — article/unité",
+        "Bleu 3 — quantité/ajout/retrait",
+        "Bleu 4 — soumission"
+      ]
+    },
+    {
+      "id": "05-classification",
+      "entry": "/approvals/{approval_id}/",
+      "source": "requests_app/approval_forms.py; requests_app/classification.py; requests_app/services.py:approve_step; workflows/models.py",
+      "en": "Classify at the designated stock-review step",
+      "fr": "Classer à l’étape désignée de revue du stock",
+      "status": "missing",
+      "en_callouts": [
+        "1 — current step",
+        "2 — classification",
+        "3 — succursale",
+        "4 — approval action"
+      ],
+      "fr_callouts": [
+        "1 — étape courante",
+        "2 — classification",
+        "3 — succursale",
+        "4 — décision"
+      ]
+    },
+    {
+      "id": "06-succursale",
+      "entry": "/approvals/{approval_id}/",
+      "source": "requests_app/approval_forms.py; requests_app/classification.py; inventory/models.py:Succursale; inventory/admin.py",
+      "en": "Select the succursale",
+      "fr": "Choisir la succursale",
+      "status": "missing",
+      "en_callouts": [
+        "Amber 1 — Microcom",
+        "Blue 2 — branch dropdown",
+        "Amber 3 — correct code/name",
+        "Green 4 — saved branch (another capture)"
+      ],
+      "fr_callouts": [
+        "Ambre 1 — Microcom",
+        "Bleu 2 — liste succursales",
+        "Ambre 3 — code/nom exact",
+        "Vert 4 — succursale enregistrée (autre capture)"
+      ]
+    },
+    {
+      "id": "07-decisions",
+      "entry": "/approvals/pending/",
+      "source": "requests_app/views.py:pending_approvals,approval_detail; requests_app/services.py; requests_app/approval_forms.py",
+      "en": "Approve, reject or return",
+      "fr": "Approuver, rejeter ou retourner",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — filters",
+        "Blue 2 — Review",
+        "Amber 3 — decision/comment",
+        "Green 4 — result (another capture)"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — filtres",
+        "Bleu 2 — examen",
+        "Ambre 3 — décision/commentaire",
+        "Vert 4 — résultat (autre capture)"
+      ]
+    },
+    {
+      "id": "08-correction",
+      "entry": "/requests/{request_id}/edit/",
+      "source": "requests_app/views.py:edit_request,cancel_request; requests_app/services.py:resubmit_request; templates/requests_app/edit_request.html",
+      "en": "Correct, resubmit or cancel",
+      "fr": "Corriger, soumettre de nouveau ou annuler",
+      "status": "missing",
+      "en_callouts": [
+        "1 — return comment",
+        "2 — corrected information",
+        "3 — resubmit result",
+        "4 — archived attempts"
+      ],
+      "fr_callouts": [
+        "1 — commentaire de retour",
+        "2 — corrections",
+        "3 — résultat",
+        "4 — tentatives archivées"
+      ]
+    },
+    {
+      "id": "09-stock",
+      "entry": "/materials/reports/",
+      "source": "inventory/models.py; requests_app/views.py:material_reports; templates/requests_app/material_reports.html",
+      "en": "View availability and stock reports",
+      "fr": "Consulter disponibilité et rapports stock",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — filters",
+        "Amber 2 — stock quantity/badge",
+        "Blue 3 — View/Material Management",
+        "Blue 4 — exports"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — filtres",
+        "Ambre 2 — stock/alerte",
+        "Bleu 3 — consultation/gestion",
+        "Bleu 4 — exports"
+      ]
+    },
+    {
+      "id": "10-catalog",
+      "entry": "/admin/inventory/material/",
+      "source": "inventory/models.py; inventory/admin.py; core/document_config.py",
+      "en": "Maintain materials, prices and currencies",
+      "fr": "Gérer le catalogue, les prix et les devises",
+      "status": "missing",
+      "en_callouts": [
+        "1 — currency",
+        "2 — change reason",
+        "3 — Modify Price",
+        "4 — price history"
+      ],
+      "fr_callouts": [
+        "1 — devise",
+        "2 — motif",
+        "3 — modification du prix",
+        "4 — historique"
+      ]
+    },
+    {
+      "id": "11-deduction",
+      "entry": "/requests/{request_id}/",
+      "source": "requests_app/services.py:approve_step; requests_app/stock_services.py:deduct_material_stock",
+      "en": "Understand automatic deduction",
+      "fr": "Comprendre la déduction automatique",
+      "status": "missing",
+      "en_callouts": [
+        "Green 1 — Approved",
+        "Blue 2 — completed timeline",
+        "Amber 3 — quantities/live stock",
+        "Green 4 — OUT evidence (separate admin capture)"
+      ],
+      "fr_callouts": [
+        "Vert 1 — Approved",
+        "Bleu 2 — suivi terminé",
+        "Ambre 3 — quantités/stock actuel",
+        "Vert 4 — preuve OUT (capture administrative séparée)"
+      ]
+    },
+    {
+      "id": "12-bcbs",
+      "entry": "/requests/{request_id}/material-documents/BC/ or BS/",
+      "source": "requests_app/material_documents.py; requests_app/views.py:material_document; templates/requests_app/material_document_confirm.html",
+      "en": "Issue BC and BS",
+      "fr": "Émettre les BC et BS",
+      "status": "missing",
+      "en_callouts": [
+        "Amber 1 — BC/BS kind",
+        "Amber 2 — source request",
+        "Blue 3 — Confirm & Print",
+        "Green 4 — permanent reference (separate capture)"
+      ],
+      "fr_callouts": [
+        "Ambre 1 — type BC/BS",
+        "Ambre 2 — demande source",
+        "Bleu 3 — confirmation",
+        "Vert 4 — référence définitive (autre capture)"
+      ]
+    },
+    {
+      "id": "13-invoice-draft",
+      "entry": "/invoices/",
+      "source": "invoicing/permissions.py; invoicing/views.py:invoice_list,invoice_create,invoice_edit; invoicing/services.py",
+      "en": "Create and prepare an invoice draft",
+      "fr": "Créer et préparer un brouillon de facture",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — eligible request/create",
+        "Amber 2 — currency",
+        "Blue 3 — draft prices",
+        "Amber 4 — quantity refresh"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — demande/création",
+        "Ambre 2 — devise",
+        "Bleu 3 — prix du brouillon",
+        "Ambre 4 — actualisation"
+      ]
+    },
+    {
+      "id": "14-invoice-issue",
+      "entry": "/invoices/{invoice_id}/finalize/",
+      "source": "invoicing/forms.py; invoicing/services.py:finalize_invoice; invoicing/views.py:invoice_finalize",
+      "en": "Verify and finalize the invoice",
+      "fr": "Vérifier et finaliser la facture",
+      "status": "missing",
+      "en_callouts": [
+        "Amber 1 — quantities/prices",
+        "Blue 2 — series",
+        "Amber 3 — confirmation",
+        "Green 4 — issued number/status (another capture)"
+      ],
+      "fr_callouts": [
+        "Ambre 1 — quantités/prix",
+        "Bleu 2 — série",
+        "Ambre 3 — confirmation",
+        "Vert 4 — numéro/statut émis (autre capture)"
+      ]
+    },
+    {
+      "id": "15-credit-boundary",
+      "entry": "No employee credit-note route",
+      "source": "invoicing/models.py:CreditNote,CreditAllocation,CreditOperation; invoicing/migrations/0004_credit_reservation_schema.py; invoicing/migrations/0005_credit_financial_guards.py; invoicing/urls.py; invoicing/admin.py",
+      "en": "Credit notes: availability boundary",
+      "fr": "Avoirs : limite de disponibilité",
+      "status": "no_ui",
+      "en_callouts": [
+        "No screenshot target — no reachable credit-note UI",
+        "Red boundary — no raw admin/database record creation"
+      ],
+      "fr_callouts": [
+        "Aucune capture cible — pas d’interface d’avoir accessible",
+        "Limite rouge — pas de création brute administration/base"
+      ]
+    },
+    {
+      "id": "16-physical-return",
+      "entry": "/requests/{request_id}/material-outcomes/?tab=returns",
+      "source": "requests_app/stock_services.py:return_material_stock,material_return_totals; requests_app/material_outcome_views.py; requests_app/stock_forms.py",
+      "en": "Record a physical stock return",
+      "fr": "Enregistrer un retour physique",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — returns tab",
+        "Amber 2 — remaining maximum",
+        "Blue 3 — quantity/reason",
+        "Blue 4 — confirmation"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — onglet retours",
+        "Ambre 2 — reste maximal",
+        "Bleu 3 — quantité/motif",
+        "Bleu 4 — confirmation"
+      ]
+    },
+    {
+      "id": "17-reconciliation",
+      "entry": "/requests/{request_id}/material-outcomes/?tab=reconcile",
+      "source": "requests_app/material_outcomes.py:reconcile; requests_app/material_outcome_views.py; templates/requests_app/material_outcomes.html",
+      "en": "Reconcile material usage",
+      "fr": "Régulariser l’utilisation du matériel",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — three tabs",
+        "Blue 2 — destination/split",
+        "Amber 3 — returned/read-only and totals",
+        "Blue 4 — reason/review"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — trois onglets",
+        "Bleu 2 — destination/répartition",
+        "Ambre 3 — retour figé/totaux",
+        "Bleu 4 — motif/revue"
+      ]
+    },
+    {
+      "id": "18-receipt",
+      "entry": "/requests/{request_id}/material-outcomes/?tab=returns",
+      "source": "requests_app/material_outcomes.py:issue_receipt; requests_app/material_outcome_views.py:receipt_pdf; requests_app/return_receipt_documents.py",
+      "en": "Issue a nonfinancial RCP return receipt",
+      "fr": "Émettre un reçu RCP non financier",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — return checkboxes",
+        "Amber 2 — Generate Bon de retour",
+        "Green 3 — RCP reference",
+        "Blue 4 — PDF/Print (another capture)"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — cases retours",
+        "Ambre 2 — génération",
+        "Vert 3 — référence RCP",
+        "Bleu 4 — PDF/impression (autre capture)"
+      ]
+    },
+    {
+      "id": "19-return-note",
+      "entry": "/invoices/{invoice_id}/return-notes/new/",
+      "source": "invoicing/return_note_access.py; invoicing/return_note_views.py; invoicing/return_note_services.py; invoicing/return_note_forms.py; config/settings.py",
+      "en": "Issue an invoice-linked valued return note",
+      "fr": "Émettre un bon valorisé lié à la facture",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — eligible movements",
+        "Amber 2 — reason/series",
+        "Blue 3 — preview",
+        "Amber 4 — preview totals/confirmation (separate capture)"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — mouvements admissibles",
+        "Ambre 2 — motif/série",
+        "Bleu 3 — aperçu",
+        "Ambre 4 — totaux/confirmation (autre capture)"
+      ]
+    },
+    {
+      "id": "20-audit",
+      "entry": "/requests/{request_id}/; /approvals/history/",
+      "source": "requests_app/views.py:request_detail,approval_history,administration_reports; invoicing/views.py:invoice_detail; templates/requests_app/request_detail.html",
+      "en": "Follow approvals and audit records",
+      "fr": "Suivre approbations et audit",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — reference/status",
+        "Blue 2 — timeline",
+        "Blue 3 — audit actor/time/comment",
+        "Blue 4 — linked histories"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — référence/statut",
+        "Bleu 2 — suivi",
+        "Bleu 3 — acteur/date/commentaire",
+        "Bleu 4 — historiques liés"
+      ]
+    },
+    {
+      "id": "21-users",
+      "entry": "/admin/accounts/user/",
+      "source": "accounts/admin.py; accounts/models.py; invoicing/permissions.py; requests_app/material_outcomes.py:authorize",
+      "en": "Manage users and permissions",
+      "fr": "Gérer comptes et permissions",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — department/role",
+        "Amber 2 — stock/report flags",
+        "Amber 3 — exact permissions",
+        "Blue 4 — Active/staff/Save"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — département/rôle",
+        "Ambre 2 — indicateurs stock/rapport",
+        "Ambre 3 — permissions exactes",
+        "Bleu 4 — Active/staff/Save"
+      ]
+    },
+    {
+      "id": "22-workflows",
+      "entry": "/admin/workflows/approvalworkflow/",
+      "source": "workflows/models.py; workflows/admin.py; requests_app/services.py:get_applicable_workflow,create_approval_steps",
+      "en": "Configure approval workflows",
+      "fr": "Configurer les workflows",
+      "status": "missing",
+      "en_callouts": [
+        "1 — type / department",
+        "2 — order",
+        "3 — stock review",
+        "4 — assignment"
+      ],
+      "fr_callouts": [
+        "1 — type / département",
+        "2 — ordre",
+        "3 — revue du stock",
+        "4 — affectation"
+      ]
+    },
+    {
+      "id": "23-company",
+      "entry": "/admin/core/companydocumentsettings/; /admin/invoicing/documentsequence/",
+      "source": "core/models.py; core/admin.py; invoicing/admin.py; invoicing/models.py:CompanyVerification,DocumentSequence; inventory/admin.py",
+      "en": "Configure verified company/document information",
+      "fr": "Configurer société et informations documentaires vérifiées",
+      "status": "missing",
+      "en_callouts": [
+        "Blue 1 — company identity/contacts",
+        "Amber 2 — currency/timezone",
+        "Blue 3 — attest action (list capture)",
+        "Amber 4 — sequence verification (separate capture)"
+      ],
+      "fr_callouts": [
+        "Bleu 1 — identité/contacts",
+        "Ambre 2 — devise/fuseau",
+        "Bleu 3 — attestation (capture de liste)",
+        "Ambre 4 — séquence/vérification (autre capture)"
+      ]
+    },
+    {
+      "id": "24-print",
+      "entry": "/invoices/ and issued document pages",
+      "source": "invoicing/views.py:invoice_print,invoice_bulk_print; invoicing/printing.py; invoicing/print_delivery.py; requests_app/material_outcome_views.py; templates/invoicing/list.html",
+      "en": "Print and download documents",
+      "fr": "Imprimer et télécharger les documents",
+      "status": "missing",
+      "en_callouts": [
+        "Amber 1 — language",
+        "Blue 2 — document print",
+        "Amber 3 — both issue dates",
+        "Blue 4 — PDF viewer controls (another capture)"
+      ],
+      "fr_callouts": [
+        "Ambre 1 — langue",
+        "Bleu 2 — impression document",
+        "Ambre 3 — deux dates",
+        "Bleu 4 — lecteur PDF (autre capture)"
+      ]
+    },
+    {
+      "id": "25-errors",
+      "entry": "Current workflow validation/error screen",
+      "source": "requests_app/approval_forms.py; requests_app/stock_services.py; invoicing/services.py; invoicing/return_note_services.py; PDF error templates",
+      "en": "Troubleshoot without duplicate operations",
+      "fr": "Dépanner sans doublons",
+      "status": "missing",
+      "en_callouts": [
+        "Red 1 — exact error",
+        "Amber 2 — reference",
+        "Blue 3 — safe retry/back",
+        "Amber 4 — affected required field"
+      ],
+      "fr_callouts": [
+        "Rouge 1 — erreur exacte",
+        "Ambre 2 — référence",
+        "Bleu 3 — reprise/retour sûr",
+        "Ambre 4 — champ concerné"
+      ]
+    },
+    {
+      "id": "26-entry-new",
+      "entry": "/materials/entries/",
+      "source": "inventory/entry_forms.py; inventory/entry_services.py; inventory/entry_views.py; templates/inventory/entry_review.html",
+      "en": "Register a new material and initial stock",
+      "fr": "Créer un matériel et son stock initial",
+      "status": "missing",
+      "en_callouts": [
+        "1 — material information",
+        "2 — initial stock",
+        "3 — review",
+        "4 — confirmation/reference"
+      ],
+      "fr_callouts": [
+        "1 — informations",
+        "2 — stock initial",
+        "3 — vérification",
+        "4 — confirmation/référence"
+      ]
+    },
+    {
+      "id": "27-entry-existing",
+      "entry": "/materials/entries/?mode=existing",
+      "source": "inventory/entry_forms.py; inventory/entry_views.py; inventory/entry_services.py; templates/inventory/receipt_confirmation.html",
+      "en": "Receive an existing material",
+      "fr": "Réceptionner un matériel existant",
+      "status": "missing",
+      "en_callouts": [
+        "1 — material selection",
+        "2 — quantity and estimate",
+        "3 — verification",
+        "4 — historical confirmation"
+      ],
+      "fr_callouts": [
+        "1 — matériel",
+        "2 — quantité et estimation",
+        "3 — vérification",
+        "4 — confirmation historique"
+      ]
+    },
+    {
+      "id": "28-entry-drafts",
+      "entry": "/materials/entries/",
+      "source": "inventory/entry_drafts.py; inventory/entry_views.py; templates/inventory/draft_saved_notice.html; templates/inventory/cancel_entry_draft.html",
+      "en": "Save, resume and cancel an entry draft",
+      "fr": "Enregistrer, reprendre et annuler un brouillon d’entrée",
+      "status": "missing",
+      "en_callouts": [
+        "1 — Save Draft",
+        "2 — saved notice",
+        "3 — Resume Draft",
+        "4 — cancellation confirmation"
+      ],
+      "fr_callouts": [
+        "1 — enregistrement",
+        "2 — confirmation",
+        "3 — reprise",
+        "4 — annulation"
+      ]
+    },
+    {
+      "id": "29-notifications",
+      "entry": "/notifications/",
+      "source": "requests_app/notifications.py; requests_app/notification_views.py; templates/includes/workflow_notifications.html; accounts/admin.py",
+      "en": "Use workflow notifications and email preferences",
+      "fr": "Utiliser les notifications et préférences de courriel",
+      "status": "missing",
+      "en_callouts": [
+        "1 — notification menu",
+        "2 — All/Unread",
+        "3 — View Request / Mark as Read",
+        "4 — email preference"
+      ],
+      "fr_callouts": [
+        "1 — menu",
+        "2 — toutes/non lues",
+        "3 — voir/marquer comme lue",
+        "4 — préférence de courriel"
+      ]
+    }
+  ],
+  "additional_states": [
+    {
+      "id": "03b-permission",
+      "chapter": 3,
+      "en": "Leave Permission fields",
+      "fr": "Champs de permission de sortie",
+      "status": "missing"
+    },
+    {
+      "id": "03c-site",
+      "chapter": 3,
+      "en": "Site Authorization fields",
+      "fr": "Champs d’autorisation de site",
+      "status": "missing"
+    },
+    {
+      "id": "03d-draft",
+      "chapter": 3,
+      "en": "Saved draft and Edit Draft",
+      "fr": "Brouillon enregistré et modification",
+      "status": "missing"
+    },
+    {
+      "id": "05b-client",
+      "chapter": 5,
+      "en": "CLIENT without branch",
+      "fr": "CLIENT sans succursale",
+      "status": "missing"
+    },
+    {
+      "id": "06b-saved",
+      "chapter": 6,
+      "en": "Saved classification and branch",
+      "fr": "Classification et succursale enregistrées",
+      "status": "missing"
+    },
+    {
+      "id": "07b-result",
+      "chapter": 7,
+      "en": "Decision success and next step",
+      "fr": "Décision réussie et étape suivante",
+      "status": "missing"
+    },
+    {
+      "id": "08b-cancel",
+      "chapter": 8,
+      "en": "Cancel Request confirmation",
+      "fr": "Confirmation d’annulation",
+      "status": "missing"
+    },
+    {
+      "id": "10b-branch-admin",
+      "chapter": 10,
+      "en": "Succursale admin and address",
+      "fr": "Administration succursale et adresse",
+      "status": "missing"
+    },
+    {
+      "id": "11b-out",
+      "chapter": 11,
+      "en": "OUT stock movement",
+      "fr": "Mouvement stock OUT",
+      "status": "missing"
+    },
+    {
+      "id": "12b-bc-issued",
+      "chapter": 12,
+      "en": "Official BC print page",
+      "fr": "Page du BC officiel",
+      "status": "missing"
+    },
+    {
+      "id": "12c-bs-issued",
+      "chapter": 12,
+      "en": "Official BS print page",
+      "fr": "Page du BS officiel",
+      "status": "missing"
+    },
+    {
+      "id": "13b-currency",
+      "chapter": 13,
+      "en": "Invoice creation currency",
+      "fr": "Devise à la création de facture",
+      "status": "missing"
+    },
+    {
+      "id": "13c-prices",
+      "chapter": 13,
+      "en": "Draft invoice prices and refresh",
+      "fr": "Prix et actualisation du brouillon",
+      "status": "missing"
+    },
+    {
+      "id": "14b-finalized",
+      "chapter": 14,
+      "en": "Finalized invoice details",
+      "fr": "Détails de facture finalisée",
+      "status": "missing"
+    },
+    {
+      "id": "16b-confirm",
+      "chapter": 16,
+      "en": "Physical return confirmation dialog",
+      "fr": "Dialogue de confirmation du retour",
+      "status": "missing"
+    },
+    {
+      "id": "16c-full",
+      "chapter": 16,
+      "en": "Fully returned and no active form",
+      "fr": "Retour complet sans formulaire actif",
+      "status": "missing"
+    },
+    {
+      "id": "17b-overview",
+      "chapter": 17,
+      "en": "Material Management Overview tab",
+      "fr": "Vue d’ensemble du matériel",
+      "status": "missing"
+    },
+    {
+      "id": "17c-review",
+      "chapter": 17,
+      "en": "Reconciliation review dialog",
+      "fr": "Dialogue de revue de régularisation",
+      "status": "missing"
+    },
+    {
+      "id": "17d-history",
+      "chapter": 17,
+      "en": "Reconciliation revision history",
+      "fr": "Historique des révisions",
+      "status": "missing"
+    },
+    {
+      "id": "18b-confirm",
+      "chapter": 18,
+      "en": "RCP selected-movement confirmation",
+      "fr": "Confirmation des mouvements RCP",
+      "status": "missing"
+    },
+    {
+      "id": "18c-issued",
+      "chapter": 18,
+      "en": "RCP history and PDF actions",
+      "fr": "Historique RCP et commandes PDF",
+      "status": "missing"
+    },
+    {
+      "id": "18d-pdf",
+      "chapter": 18,
+      "en": "Nonfinancial RCP PDF",
+      "fr": "PDF RCP non financier",
+      "status": "missing"
+    },
+    {
+      "id": "19b-preview",
+      "chapter": 19,
+      "en": "Valued return-note preview",
+      "fr": "Aperçu du bon valorisé",
+      "status": "missing"
+    },
+    {
+      "id": "19c-issued",
+      "chapter": 19,
+      "en": "Issued valued return-note detail",
+      "fr": "Détails du bon valorisé émis",
+      "status": "missing"
+    },
+    {
+      "id": "19d-history",
+      "chapter": 19,
+      "en": "Valued return-note history",
+      "fr": "Historique des bons valorisés",
+      "status": "missing"
+    },
+    {
+      "id": "20b-invoice-audit",
+      "chapter": 20,
+      "en": "Invoice audit details",
+      "fr": "Détails d’audit de facture",
+      "status": "missing"
+    },
+    {
+      "id": "20c-admin-report",
+      "chapter": 20,
+      "en": "Administration Report and filters",
+      "fr": "Rapport administratif et filtres",
+      "status": "missing"
+    },
+    {
+      "id": "21b-permissions",
+      "chapter": 21,
+      "en": "Explicit invoice/return-note permissions",
+      "fr": "Permissions facture/bon valorisé",
+      "status": "missing"
+    },
+    {
+      "id": "22b-first-review",
+      "chapter": 22,
+      "en": "Designated named stock review",
+      "fr": "Revue du stock nominative à sa position configurée",
+      "status": "missing"
+    },
+    {
+      "id": "23b-company-attest",
+      "chapter": 23,
+      "en": "Company attestation list action",
+      "fr": "Action d’attestation société",
+      "status": "missing"
+    },
+    {
+      "id": "23c-sequence",
+      "chapter": 23,
+      "en": "Annual sequence and attestation",
+      "fr": "Séquence annuelle et attestation",
+      "status": "missing"
+    },
+    {
+      "id": "24b-filter-print",
+      "chapter": 24,
+      "en": "Both issue dates and Print Filtered Invoices",
+      "fr": "Deux dates et impression des factures filtrées",
+      "status": "missing"
+    },
+    {
+      "id": "24c-viewer",
+      "chapter": 24,
+      "en": "Invoice PDF viewer print/save",
+      "fr": "Impression/enregistrement du PDF facture",
+      "status": "missing"
+    },
+    {
+      "id": "24d-permission",
+      "chapter": 24,
+      "en": "Approved Permission Document",
+      "fr": "Document d’autorisation approuvé",
+      "status": "missing"
+    },
+    {
+      "id": "25b-pdf-error",
+      "chapter": 25,
+      "en": "PDF unavailable and safe retry",
+      "fr": "PDF indisponible et reprise sûre",
+      "status": "missing"
+    },
+    {
+      "id": "26-review",
+      "chapter": 26,
+      "en": "New material review before confirmation",
+      "fr": "Vérification du nouveau matériel avant confirmation",
+      "status": "missing"
+    },
+    {
+      "id": "26-completed",
+      "chapter": 26,
+      "en": "New material receipt completed",
+      "fr": "Réception du nouveau matériel terminée",
+      "status": "missing"
+    },
+    {
+      "id": "27-completed",
+      "chapter": 27,
+      "en": "Existing receipt historical balances",
+      "fr": "Soldes historiques d’une réception existante",
+      "status": "missing"
+    },
+    {
+      "id": "28-saved",
+      "chapter": 28,
+      "en": "Draft saved notice: continue/new entry",
+      "fr": "Brouillon enregistré : continuer/nouvelle entrée",
+      "status": "missing"
+    },
+    {
+      "id": "28-cancel",
+      "chapter": 28,
+      "en": "Draft cancellation confirmation",
+      "fr": "Confirmation d’annulation du brouillon",
+      "status": "missing"
+    },
+    {
+      "id": "28-stale",
+      "chapter": 28,
+      "en": "Stale draft refusal",
+      "fr": "Refus d’un brouillon périmé",
+      "status": "missing"
+    },
+    {
+      "id": "10-price-dialog",
+      "chapter": 10,
+      "en": "Modify Price and reason; stale conflict",
+      "fr": "Modifier le prix et motif ; conflit de version",
+      "status": "missing"
+    },
+    {
+      "id": "10-price-history",
+      "chapter": 10,
+      "en": "Read-only price audit history",
+      "fr": "Historique des prix en lecture seule",
+      "status": "missing"
+    },
+    {
+      "id": "29-unread",
+      "chapter": 29,
+      "en": "Unread filter and mark-read result",
+      "fr": "Filtre non lu et résultat du marquage",
+      "status": "missing"
+    },
+    {
+      "id": "29-preference",
+      "chapter": 29,
+      "en": "Administrator email preference",
+      "fr": "Préférence de courriel dans Admin",
+      "status": "missing"
+    },
+    {
+      "id": "20-access-document",
+      "chapter": 20,
+      "en": "Approved Bon d’accès via Administration Report",
+      "fr": "Bon d’accès approuvé depuis le rapport Administration",
+      "status": "missing"
+    }
+  ]
+}

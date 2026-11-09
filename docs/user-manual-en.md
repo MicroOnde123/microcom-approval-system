@@ -1,355 +1,841 @@
-# Microcom User Manual
+![Microcom](manual-assets/microcom-logo.png)
 
-Version 2.0 — 2026-11-02
+# Microcom Approval System
 
-REVIEW EDITION — authentic screenshots are partial; workflow discrepancy and deployment verification remain unresolved. Not approved as a final training guide.
+## Employee Training Guide
 
-Code: `d3eb76641c1bd3efe431f26a4536964a0be1aeaf`
+**NOVEMBER 2026 — TEXT USER GUIDE**
 
-This guide updates the user and administrator guides under docs/manuals/. Screenshots show the actual local Django application using training data.
+Version 3.0 · November / novembre 2026 · 2026-11-09
 
-## A. Access and navigation
+Source: 72b527b739d2e42a0ead10d17af4ec571876dfc8
 
-Employees use their individual account. Navigation reflects their access; an absent menu is not a reason to share an administrator account.
+Final text edition. Follow the numbered procedures for your authorized role. Application screenshots are a separate future improvement.
 
-Prerequisites: Active account; approved application address supplied by your administrator.
+[Validation](user-manual-validation.md) · [Capture checklist / Liste des captures](manual-screenshot-checklist.md) · [EN/FR](user-manual-fr.md)
 
-1. Open the approved address and enter your username and password on Login. Never use a password-reset link supplied by another employee.
-2. Use the dashboard to open Create Request, My Requests or Pending Approvals as appropriate. Review the request reference before acting.
-3. Choose English or Français in the language selector. Documents use the current application language; choose it before opening a PDF.
-4. Use Logout when finished. An expired session requires signing in again; unsaved form content may be lost.
+## Contents
 
-Expected: your own dashboard and permitted menus. If access fails, ask the administrator to check account activation; never publish passwords or session cookies.
+- [0. Using this guide](#guide-start)
+- [1. Sign in](#01-login)
+- [2. Navigate the dashboard](#02-dashboard)
+- [3. Create an administrative request](#03-administrative)
+- [4. Create a technician material request](#04-material)
+- [5. Classify at the designated stock-review step](#05-classification)
+- [6. Select the succursale](#06-succursale)
+- [7. Approve, reject or return](#07-decisions)
+- [8. Correct, resubmit or cancel](#08-correction)
+- [9. View availability and stock reports](#09-stock)
+- [10. Maintain materials, prices and currencies](#10-catalog)
+- [11. Understand automatic deduction](#11-deduction)
+- [12. Issue BC and BS](#12-bcbs)
+- [13. Create and prepare an invoice draft](#13-invoice-draft)
+- [14. Verify and finalize the invoice](#14-invoice-issue)
+- [15. Credit notes: availability boundary](#15-credit-boundary)
+- [16. Record a physical stock return](#16-physical-return)
+- [17. Reconcile material usage](#17-reconciliation)
+- [18. Issue a nonfinancial RCP return receipt](#18-receipt)
+- [19. Issue an invoice-linked valued return note](#19-return-note)
+- [20. Follow approvals and audit records](#20-audit)
+- [21. Manage users and permissions](#21-users)
+- [22. Configure approval workflows](#22-workflows)
+- [23. Configure verified company/document information](#23-company)
+- [24. Print and download documents](#24-print)
+- [25. Troubleshoot without duplicate operations](#25-errors)
+- [26. Register a new material and initial stock](#26-entry-new)
+- [27. Receive an existing material](#27-entry-existing)
+- [28. Save, resume and cancel an entry draft](#28-entry-drafts)
+- [29. Use workflow notifications and email preferences](#29-notifications)
+- [A. Glossary and references](#glossary)
 
-![A · Sign in](manual-assets/en/annotated/login-annotated.png)
+<a id="guide-start"></a>
 
-1. Username field · 2. Submission control: read the page before confirming
+## 0. Using this guide
 
-![A · Dashboard and navigation](manual-assets/en/annotated/dashboard-annotated.png)
+November 2026 release. Procedures reflect the current implementation and the invoice-page presentation update. No production records were used to prepare this guide.
 
-1. Application navigation and language controls · 2. Dashboard work area
+Microcom has one central stock. Succursales are administrative/billing entities, never warehouses. Request For Department owns/routes the request; it is not a billing succursale. Original stock classification is distinct from later usage outcomes. CLIENT requests are excluded from internal invoicing; eligible MICROCOM requests can have an individual invoice created when needed.
 
-## B. Administrative requests and corrections
+Read prerequisites, follow the numbered steps, then check the expected result. Important checks explain permissions, errors and safeguards. Examples use synthetic references.
 
-A request belongs to its Request For Department, which determines routing. Saving a draft does not submit it for approval.
+| Role / Rôle | Access / Accès |
+|---|---|
+| Employee / technician | Own submissions, own Draft/Returned editing, own open cancellation and permitted approved documents; department needed to create. |
+| Primary / alternate approver | Current assigned pending step only; permitted assigned-request access. Later approvers wait. |
+| Stock personnel | can_manage_stock or superuser: reports, physical returns, reconciliation, RCP and approved material issue notes. No invoice grant implied. |
+| Administration report reader | can_view_administration_reports or superuser: approved configured-type report across departments; no ordinary detail/approval grant. |
+| Invoice operator | view_invoice plus action permission and stock-review assignment scope; superuser or staff + manage_all_invoices for global scope. |
+| Administrator | Staff/model permissions and explicit financial attestations. Role names alone are not blanket permissions. |
 
-Prerequisites: Signed-in requester; active request type and applicable workflow.
+Draft/request → submit → designated stock review at its configured position (when configured) → ordered approvals → final approval and one stock deduction. Then issue BC/BS and, for eligible MICROCOM, create/review/finalize the invoice. Later: physical return restores stock; reconciliation records outcomes; RCP documents physical returns; invoice-linked note values returns. None automatically creates an accounting credit.
 
-1. Open Create Request. Select Request Type and Request For Department; enter Description / Reason, Date Needed and any type-specific fields.
-2. Add required attachments. Check the selected files and remove inappropriate confidential information before submission.
-3. Save as Draft to continue later, or submit the completed request. Record its generated REQ-ADM reference; other configured types have their own stable namespace.
-4. Open My Requests and filter by reference, department, type, status or dates. Open the detail page to read comments and approval progress.
-5. For a Returned request, read the correction comment, open its edit action, correct the fields and submit again. The request keeps its original reference.
-6. Use cancellation only when available for your open request. An approved request cannot be rewritten through the correction process.
+<a id="01-login"></a>
 
-Expected: one stable reference, including drafts and resubmissions. A missing workflow blocks submission; contact the administrator rather than changing the department merely to bypass routing.
+## 1. Sign in
 
-![B · Create a request](manual-assets/en/annotated/request-create-annotated.png)
+**Before you begin** — Use your own active account and the application address supplied by IT.
 
-1. Request type · 2. Owning department
+### Do this
 
-![B · My Requests](manual-assets/en/annotated/my-requests-annotated.png)
+1. Open the approved application address and check that you are on the intended system.
 
-1. Search and filter controls · 2. Record list or material lines
+2. Enter username/password and use the login button.
 
-![B · Request draft](manual-assets/en/annotated/request-draft-annotated.png)
+3. For a forgotten password, use the reset link and registered email; contact IT if delivery or the link fails.
 
-1. Page heading and permitted actions · 2. Edit the open request
+> **Important check** — Never capture a populated password. Session expiry requires signing in again and can lose unsaved edits.
 
-![B · Edit a request](manual-assets/en/annotated/request-edit-annotated.png)
+> **Expected result** — Dashboard opens; invalid/inactive accounts cannot sign in.
 
-1. Request type · 2. Submission control: read the page before confirming
+<details><summary>Code trace</summary>
 
-## C. Technician material requests
+config/urls.py; accounts/forms.py; templates/registration/login.html
 
-Request only the materials required. Technicians submit and track requests; authorized stock personnel record subsequent reconciliation and physical returns.
+</details>
 
-Prerequisites: Material request type and available active materials.
+<a id="02-dashboard"></a>
 
-1. Select the material request type on Create Request. Confirm the owning department before entering material rows.
-2. Add each material, quantity and useful item note. Check units carefully; do not treat a cable length as a number of pieces.
-3. Review all rows and submit, or save a draft. A draft does not reserve or deduct stock.
-4. Keep the REQ-MAT reference and follow the approval chain in request details. Final stock availability is checked again during approval.
+## 2. Navigate the dashboard
 
-Expected: complete material rows and an approval chain after submission. Correct invalid quantities; never create a second request merely because a response was slow.
+**Before you begin** — Signed-in users see navigation according to their access. Dashboard status text is not a live health check.
 
-![C · Material request entry](manual-assets/en/annotated/material-request-create-annotated.png)
+### Do this
 
-1. Request type · 2. Search/select material by name, code or category
+1. Use Create Request / New Request to begin and My Requests for your submissions.
 
-![C · Material and quantity rows](manual-assets/en/annotated/material-request-lines-annotated.png)
+2. Use Approvals for current assigned steps and Approval History for your decisions.
 
-1. Search/select material by name, code or category · 2. Requested quantity in the material unit
+3. Open permitted reports or Invoices. Choose EN/FR with the language selector; use Logout when finished.
 
-![C · Pending Approvals](manual-assets/en/annotated/pending-approvals-annotated.png)
+> **Important check** — A role name does not grant every menu. Check lists even without email: workflow notifications may fail silently.
 
-1. Search and filter controls · 2. Record list or material lines
+> **Expected result** — The right work area opens in the chosen language.
 
-## D. Stock classification: deployment discrepancy
+<details><summary>Code trace</summary>
 
-RELEASE CHECK: the supplied target workflow allows stock review at any configured step. This checkout still requires it to be the FIRST step. Do not configure the proposed Step 2 example against this version.
+core/views.py; templates/core/dashboard.html; templates/base.html; requests_app/context_processors.py
 
-Prerequisites: Assigned primary or alternate stock reviewer at the current approval step. A stock-report flag alone does not assign an approval.
+</details>
 
-1. Open Pending Approvals and the assigned material request. Confirm quantities, purpose and supporting evidence.
-2. For CLIENT work, choose CLIENT. No Microcom succursale is required or retained.
-3. For MICROCOM work, choose MICROCOM and select a valid succursale. Classification and succursale are mandatory for this approval.
-4. Approve only after review. Missing classification blocks approval; returning for correction or rejecting must remain possible under the existing rules.
-5. The requested Fiber example is Initial approval → Stock Classification Review → Direction → Finances. It is a target example, NOT a verified configuration supported by this checkout. Ask the application owner to reconcile versions first.
+<a id="03-administrative"></a>
 
-Expected: classification evidence is retained. Never reorder a live workflow or grant administrator access to work around a routing error.
+## 3. Create an administrative request
 
-![D · CLIENT classification — control detail](manual-assets/en/annotated/stock-classification-client-annotated.png)
+**Before you begin** — Your account needs a department and a configured workflow. Request-type flags control required fields.
 
-1. CLIENT / MICROCOM classification · 2. Succursale selection for MICROCOM
+### Do this
 
-![D · MICROCOM classification — control detail](manual-assets/en/annotated/stock-classification-microcom-annotated.png)
+1. Choose Request Type and Request For Department: the owning team, not a billing succursale.
 
-1. CLIENT / MICROCOM classification · 2. Succursale selection for MICROCOM
+2. Enter description, Date Needed and Amount when required; attach supporting files.
 
-![D · Approval workflow configuration](manual-assets/en/annotated/admin-workflow-annotated.png)
+3. For Leave Permission enter By Foot/By Car, destination and reason; travel times/driver are optional. Site Authorization requires site, validity dates, Microcom agents and reason; TT/external persons are optional.
 
-1. Stored name · 2. Configured approval steps
+4. Submit Request, or Save as Draft. Reopen My Requests → Edit Draft, finish and submit.
 
-## E. Central inventory and material prices
+> **Important check** — A draft starts no approvals or stock reservation. Recheck saved rows if incomplete. Amount is not an invoice/payment execution. Check chronological consistency yourself.
 
-One central warehouse supplies technicians. Succursales identify administrative destinations and billing entities, not independent warehouses.
+> **Expected result** — Submission starts routing; a draft remains editable and unsubmitted. Note the reference.
 
-Prerequisites: Stock-report access for reports; separate staff and model permissions for Django material administration.
+<details><summary>Code trace</summary>
 
-1. Open Material Reports to review issued, physically returned and remaining returnable quantities, alongside ledger status.
-2. Authorized administrators open Inventory → Materials in Django Admin. Select an existing item to review code, category, unit, stock and minimum level.
-3. When adding a priced material, verify the proposed USD selection or choose CDF/EUR. Editing retains the saved currency; there is no automatic currency conversion.
-4. Enter an unknown price as blank, not zero. Zero means an explicit legitimate price. Save only approved catalog changes.
-5. Do not edit stock balances to simulate an issue or a return. Use the approved operational process and investigate inconsistent movement history.
+requests_app/forms.py; requests_app/views.py:create_request; templates/requests_app/create_request.html
 
-Expected: prices and currencies are deliberate. Catalog changes do not rewrite finalized invoice snapshots. A historical discrepancy requires stock administrator review, not deletion of movements.
+</details>
 
-![E · Material Reports](manual-assets/en/annotated/material-reports-annotated.png)
+<a id="04-material"></a>
 
-1. Search and filter controls · 2. Record list or material lines
+## 4. Create a technician material request
 
-![E · Material catalog](manual-assets/en/annotated/admin-materials-annotated.png)
+**Before you begin** — Choose a material request type, owning department and active catalog materials. All materials come from central stock.
 
-1. Administration search · 2. Authorized records
+### Do this
 
-![E · Unit price and currency — control detail](manual-assets/en/annotated/admin-material-annotated.png)
+1. Enter purpose/destination and Date Needed.
 
-1. Unit price; blank means unknown · 2. Stored price currency
+2. Search by name, code or category, or Filter By Category; select the actual item and enter a positive quantity in its unit.
 
-## F. Approvals, corrections and stock deduction
+3. Use + Add Material / Remove, one row per item; review then Submit Request or Save as Draft.
 
-Only the current assigned approver or permitted alternate acts. Request status and your own approval action are different pieces of information.
+> **Important check** — At least one item, no duplicates, and valid positive quantities are required. Stock is checked at entry and final approval; nothing is reserved. No editable item-note box is rendered: use the description.
 
-Prerequisites: A submitted request assigned to the signed-in approver.
+> **Expected result** — The request enters approval. Technicians do not perform stock classification or select the billing branch.
 
-1. Open Pending Approvals, then the request. Read attachments, quantities and previous comments.
-2. Choose Approve, Return for correction or Reject as appropriate and provide the required comment. Do not approve incomplete evidence.
-3. An approval advances to the next configured step. At final material approval, the application validates and deducts stock exactly once.
-4. Use Approval History to review your actions and the overall request status. The requester corrects a Returned request through its edit/resubmit flow.
-5. If final approval fails, report the displayed validation message and request reference. Do not manually deduct stock or repeatedly submit different operations.
+<details><summary>Code trace</summary>
 
-Expected: the approved request retains its approval history and exactly one issuance per material. Printing, reconciliation and reporting must not repeat this deduction.
+requests_app/forms.py; requests_app/views.py:create_request; templates/requests_app/includes/material_formset.html
 
-![F · Pending Approvals](manual-assets/en/annotated/pending-approvals-annotated.png)
+</details>
 
-1. Search and filter controls · 2. Record list or material lines
+<a id="05-classification"></a>
 
-![F · Approval History](manual-assets/en/annotated/approval-history-annotated.png)
+## 5. Classify at the designated stock-review step
 
-1. Search and filter controls · 2. Record list or material lines
+**Before you begin** — Only the assigned active primary or alternate can classify when this step is current; preceding steps must finish first.
 
-![F · Approved material request](manual-assets/en/annotated/approved-request-annotated.png)
+### Do this
 
-1. Page heading and permitted actions · 2. Related operational and document actions
+1. Open the current assigned approval and review the materials and purpose.
 
-## G. Bon de commande and bon de sortie
+2. Choose Approve and CLIENT or MICROCOM. CLIENT does not require a succursale.
 
-BC is an internal material order, not supplier purchasing. BS documents the authorized issue. Both use the existing issue-note layout, with different titles and references.
+3. For MICROCOM select the appropriate active succursale, add the required comment and submit.
 
-Prerequisites: Approved material request, confirmed stock deduction and material rows; requester, assigned approver, stock user or superuser access as permitted.
+4. Later approvers wait for their configured turn. A workflow may place stock review second or last without reordering other steps.
 
-1. Open the approved request and choose BC or BS in its document actions.
-2. For first issuance, verify the request reference on the confirmation page. Cancel leaves it unissued; opening this page alone assigns no number.
-3. Choose Confirm & Print only when authorized. This POST assigns a permanent BC/0001/YYYY or BS/0001/YYYY reference using independent annual counters.
-4. Use the print view controls and browser print dialog; Save as PDF is a browser option where supported.
-5. Reopen the same document for a reprint. Its reference remains unchanged and no stock is deducted again. Material-report bulk printing does not allocate official references.
+> **Important check** — Only one designated review is allowed. Designation is optional in configuration: administrators must ensure material workflows include it. Returning or rejecting does not require classification.
 
-Expected: at most one BC and one BS per request. Their annual rollover uses Africa/Kinshasa. Do not confuse the request reference with either document reference.
+> **Expected result** — Valid classification is required before this step can approve. CLIENT requests do not require an internal invoice.
 
-![G · BC first-issuance confirmation](manual-assets/en/annotated/bc-confirm-annotated.png)
+<details><summary>Code trace</summary>
 
-1. Original material request reference · 2. Submission control: read the page before confirming
+requests_app/approval_forms.py; requests_app/classification.py; requests_app/services.py:approve_step; workflows/models.py
 
-![G · BS first-issuance confirmation](manual-assets/en/annotated/bs-confirm-annotated.png)
+</details>
 
-1. Original material request reference · 2. Submission control: read the page before confirming
+<a id="06-succursale"></a>
 
-## H. Internal invoices
+## 6. Select the succursale
 
-A facture is on-demand bookkeeping for one eligible MICROCOM request, not a sale or a stock movement. CLIENT work does not require an internal Microcom invoice.
+**Before you begin** — A succursale is an administrative/billing entity, never a warehouse. You must be the designated stock reviewer approving Microcom.
 
-Prerequisites: Approved MICROCOM request with actual OUT evidence, confirmed succursale and physical address, compatible material prices, verified company settings, and a verified annual INVOICE series for finalization. Explicit invoice action permissions and stock-review scope are required.
+### Do this
 
-1. Open Invoices and select an eligible candidate request, or use the permitted invoice action associated with the request. Select the currency and create its draft.
-2. Review material descriptions, net billable quantities, currency and unit prices. Catalog prices are copied into the draft when currencies match; unknown or mismatched prices remain incomplete.
-3. An authorized editor may correct draft prices or explicitly refresh quantities. Review the history; a refresh may record that no quantity or price changed.
-4. A draft has a Draft #ID label and a provisional sum only when all lines are priced. It has no official invoice number or finalized total.
-5. Choose Finalize invoice, review the configured series and confirm only after verifying all evidence. Finalization freezes the branch name/address, company data, material labels and financial values. Do not use this training manual to issue live financial documents.
-6. For a finalized invoice, use Print Invoice. The active-language PDF opens in the private viewer with Print and Download fallback controls. Existing artifacts remain immutable and checksummed.
-7. For combined printing, enter both From and To official issue dates in Invoices, refine search/status, then print filtered invoices. Only authorized finalized matches across all pages are included, subject to the configured maximum.
+1. Confirm the intended destination with the requesting team and select its code/name in Succursale.
 
-Expected: official FAC/0001/YYYY numbering only at finalization. New years require verified financial sequences; never reset a counter. After an error, reload and request administrator review without changing guards or frozen values.
+2. If missing/inactive, ask an authorized administrator to review Inventory → Succursales; do not substitute another branch or department.
 
-![H · Invoice list and filters](manual-assets/en/annotated/invoices-annotated.png)
+3. Submit and check classification/branch in request details.
 
-1. Official issue-date and invoice filters · 2. Record list or material lines
+> **Important check** — Microcom requires a branch; Client must not select one. New branches require physical address; final invoicing requires it for older branches too. Selection never transfers stock.
 
-![H · Invoice draft](manual-assets/en/annotated/invoice-draft-annotated.png)
+> **Expected result** — The billing entity is linked; stock remains central.
 
-1. Page heading and permitted actions · 2. Record list or material lines
+<details><summary>Code trace</summary>
 
-![H · Invoice finalization — configuration check](manual-assets/en/annotated/invoice-finalize-annotated.png)
+requests_app/approval_forms.py; requests_app/classification.py; inventory/models.py:Succursale; inventory/admin.py
 
-1. Document or administration page heading · 2. Protected confirmation form
+</details>
 
-## I. Credit notes: supported boundary
+<a id="07-decisions"></a>
 
-The repository contains credit models, allocations, reservation audit and financial guards. No employee credit creation/issuance/PDF route is present in invoicing/urls.py. A complete credit-note workflow must not be inferred from model permissions or Django Admin.
+## 7. Approve, reject or return
 
-Prerequisites: Administrator or finance review of the supported business process; no documented self-service credit action.
+**Before you begin** — Only your current pending primary/alternate step of an open request is actionable.
 
-1. If a monetary credit or refund is needed, stop and contact the responsible finance administrator.
-2. Do not use a physical return receipt or financial Material Return Note as a credit, refund or payment adjustment.
-3. Do not create or edit protected credit records manually to bypass the missing issuance workflow. Active credit allocations exclude financial return-note evidence for the entire invoice, in both directions.
+### Do this
 
-Expected: escalation rather than an invented menu or unsafe financial workaround. Credit creation screenshots are not applicable to this checkout.
+1. Filter Approvals by type, owning department, search or Date Needed range.
 
-## J. Material Management, physical returns and receipts
+2. Inspect details, amount, materials and attachments before Review / Approve Request.
 
-Use the existing three-tab Material Management workspace. Reconciliation records outcomes; a physical return restores central stock; RCP acknowledges actual returns; invoice-linked BR values eligible returns without changing stock or the original invoice.
+3. Choose Approve, Reject or Return for changes, explain in Comment and Submit; refresh to check result.
 
-Prerequisites: Approved material request with confirmed deduction; authorized stock personnel. Financial BR additionally needs its enabled gate, explicit permissions, scope, finalized invoice and eligible post-finalization returns.
+> **Important check** — Comment is optional in code but should explain rejection/correction. Once one assigned actor acts, the other cannot repeat. Later steps wait; superuser alone cannot bypass assignment. Required does not skip steps.
 
-1. Open Material Management from request details or Material Reports. Overview shows issued, CLIENT-installed, MICROCOM-used, physically returned and retained/testing quantities.
-2. In Reconcile, record technician-reported outcomes for every material. Use split quantities where needed, select the responsible technician and give the reason. Returned quantities come from actual movements and are not invented in this editor.
-3. Review and save a revision. The original classification, approvals, OUT movements and BC/BS stay unchanged. Open revision history to inspect previous reports. A stale edit requires reloading and reviewing the latest revision.
-4. Receive and verify the physical materials before opening Returns & Receipts. Enter an allowed quantity and reason; review and confirm the return. No separate return approval lifecycle is introduced. The protected service restores stock exactly once.
-5. Do not exceed the remaining quantity. Fully returned materials have no active return action. Historical stock discrepancy — review required means stop and ask the stock administrator; never delete movements or edit balances.
-6. Select recorded, undocumented RETURN movements and confirm Generate Bon de retour to issue the NONFINANCIAL RCP receipt. It works for CLIENT, MICROCOM and requests without invoices. Reprints keep the RCP reference and do not restore stock again.
-7. Use View PDF or Print on an issued receipt. The current application language is used. A PDF failure does not undo the recorded physical return or receipt; retry the PDF only.
-8. For financial BR, use the finalized invoice return-note action only when enabled and authorized. Select complete eligible RETURN movements strictly after invoice finalization; preview their frozen valuation, enter a reason and confirm once.
-9. An uncertain BR outcome must be retried using the SAME retained confirmation handle and issuance token. Do not start a new preview as a substitute. If the session is lost, inspect issued-note history and contact support before attempting another operation.
-10. Financial BR leaves the original facture unchanged, with cumulative caps, rounding and credit exclusivity enforced. The signed preview lasts two hours but the application session still times out after 15 minutes.
+> **Expected result** — Approve advances/finalizes; Return sets Returned; Reject closes as Rejected, without ordinary resubmission.
 
-Expected: auditable outcome revisions and stock restoration only for accepted physical returns. The isolated rehearsal keeps financial BR disabled; issuance, financial PDFs and recovery screenshots remain pending.
+<details><summary>Code trace</summary>
 
-Representative example: a CPE initially requested for MICROCOM testing is installed at the CLIENT site; unused cable and power supply are physically received back into stock. Record the returns, then reconcile mixed outcomes. The original MICROCOM classification remains unchanged. This feature supports every stock-managed material, not just CPEs.
+requests_app/views.py:pending_approvals,approval_detail; requests_app/services.py; requests_app/approval_forms.py
 
-![J · Material Management — Overview](manual-assets/en/annotated/material-overview-annotated.png)
+</details>
 
-1. Overview tab · 2. Issued quantities and outcomes
+<a id="08-correction"></a>
 
-![J · Material Reconciliation editor](manual-assets/en/annotated/material-reconcile-editor-annotated.png)
+## 8. Correct, resubmit or cancel
 
-1. Reconcile tab · 2. Outcome editor; expand the material row
+**Before you begin** — The active owner edits their own Draft or Returned request. Read the return comment first.
 
-![J · Physical return editor](manual-assets/en/annotated/material-return-editor-annotated.png)
+### Do this
 
-1. Returns & Receipts tab · 2. Physical return form; receive materials first
+1. Open My Requests, the request, then Edit and Resubmit or Edit Draft.
 
-## K. Administrator reference
+2. Correct the information and material rows; add attachments when necessary. Save Changes keeps a returned request returned.
 
-Administrative access is separate from operational stock and financial permissions. Never grant staff status merely to permit a scoped stock action.
+3. Choose Resubmit Request when complete. Material requests restart the applicable approval workflow.
 
-Prerequisites: Authorized staff account and the relevant model/action permissions.
+4. General Permission requests can resume at the returning step only if approval-relevant information, workflow and reliable evidence are unchanged; otherwise they restart.
 
-1. In Django Admin, maintain active users, departments and roles. Use individual identities and review stock-report and administration-report flags separately.
-2. Maintain request types and applicable workflows by owning department and amount range. Set primary and alternate approvers and unique step order. Test routing with approved rehearsal data before operational use.
-3. STOP: this source currently permits one designated stock-review step and requires it first. The desired any-step configuration must be reconciled with the application owner before publishing that procedure.
-4. Maintain succursale name, code, active status and physical address. New succursales require an address; legacy blank records can remain, but new Microcom invoice finalization requires a valid address.
-5. Review Company and document settings, save approved details and use Attest current company information. Changing those details invalidates the current content attestation for future issuance.
-6. Review Document sequences for type, year, series, format, next counter and verification evidence. Use the existing verification action; never reset a used counter. Financial invoice preparation does not silently attest a new year.
-7. Inspect request, reconciliation, receipt and invoice histories. Report protected-record errors instead of modifying immutable records. Requests cannot be added through Django Admin; create them through the application.
+5. Read the resubmission result and previous attempts. If no longer needed, use Cancel Request only for an eligible open request and confirm.
 
-Expected: permissions and attestations are explicit. Do not expose private PDF paths, reset links, logs containing credentials or signed confirmations in support tickets or training screenshots.
+> **Important check** — Earlier approval rows are archived before active routing is rebuilt. Existing history predating this archive feature is not reconstructed. Rejected requests have no ordinary resubmission action.
 
-![K · Administration modules](manual-assets/en/annotated/admin-annotated.png)
+> **Expected result** — The original request reference remains stable; earlier decisions remain visible as archived evidence.
 
-1. Authorized administration modules · 2. Account and session actions
+<details><summary>Code trace</summary>
 
-![K · User management](manual-assets/en/annotated/admin-users-annotated.png)
+requests_app/views.py:edit_request,cancel_request; requests_app/services.py:resubmit_request; templates/requests_app/edit_request.html
 
-1. Administration search · 2. Authorized records
+</details>
 
-![K · Approval workflow list](manual-assets/en/annotated/admin-workflows-annotated.png)
+<a id="09-stock"></a>
 
-1. Administrative list and actions · 2. Authorized records
+## 9. View availability and stock reports
 
-![K · Approval workflow configuration](manual-assets/en/annotated/admin-workflow-annotated.png)
+**Before you begin** — Employees see availability in picker/permitted details. Material Reports requires can_manage_stock or superuser.
 
-1. Stored name · 2. Configured approval steps
+### Do this
 
-![K · Succursale name and address — control detail](manual-assets/en/annotated/admin-succursale-annotated.png)
+1. Read material units and current central availability; no stock is reserved by browsing.
 
-1. Stored name · 2. Succursale physical address
+2. Open Material Reports and apply the offered request, department and date filters.
 
-![K · Company and document settings](manual-assets/en/annotated/admin-company-annotated.png)
+3. Review current inventory, entries, issuance/returns and warehouse activity in the available report sections. Keep units and currencies separate.
 
-1. Company settings, not the invoice PDF heading
+4. Export the filtered Excel report. Financial sheets and values remain permission-scoped; exports never post stock or issue documents.
 
-![K · Business timezone and numbering preference](manual-assets/en/annotated/admin-company-timezone-annotated.png)
+> **Important check** — Requested quantities, current balances and net returns describe different measures. Current Stock Inventory is a live snapshot including inactive materials; request/activity filters do not apply to that sheet. Narrow large exports and investigate inconsistent evidence before further stock actions.
 
-1. Africa/Kinshasa business timezone · 2. Invoice numbering preference; sequence verification is separate
+> **Expected result** — Find approved material requests and download the filtered report without moving stock.
 
-![K · Verified financial sequences](manual-assets/en/annotated/admin-sequences-annotated.png)
+<details><summary>Code trace</summary>
 
-1. Administrative list and actions · 2. Document or administration page heading
+inventory/models.py; requests_app/views.py:material_reports; templates/requests_app/material_reports.html
 
-## L. Reports, exports and troubleshooting
+</details>
 
-Reports respect your permitted dataset. Filters narrow that dataset; they do not grant access to other departments or financial values.
+<a id="10-catalog"></a>
 
-Prerequisites: Material Reports flag or superuser; separate financial invoice permission/scope for bookkeeping values. Administration Report uses its own flag.
+## 10. Maintain materials, prices and currencies
 
-1. Set search, department and dates as offered. Use Reset to clear filters. Invalid dates display errors and no results rather than an unfiltered report.
-2. Review issued, returned and remaining quantities and the movement status. Open request details or history for evidence; an inconsistency disables further return actions.
-3. Export Excel using the active filters. Authorized financial users receive eight worksheets; stock-only users receive seven without Bookkeeping. The four existing charts are retained.
-4. Review Material Report, Dashboard, Graphs, Stock Movements, Succursale Summary, Material Group Summary and Monthly Statistics. Bookkeeping uses finalized snapshots only and is added only where authorized.
-5. Keep currencies and units separate. Blank historical prices mean unknown, never zero. CLIENT activity remains in stock statistics but internal facture coverage is not applicable; MICROCOM invoices are on demand.
-6. An export exceeding the configured row limit (default 10,000) must be narrowed using filters. Exports never issue BC/BS, invoices or stock movements.
-7. For support, provide the request/document reference, timestamp, action, language and sanitized displayed error. Never send passwords, session cookies, confirmation tokens or complete confidential documents.
+**Before you begin** — Django Admin requires staff access and material permissions. Catalogue price editing also supports active stock personnel through Material Entries.
 
-Expected: localized, read-only reports. Missing access requires an authorized permission review, not another employee’s exported workbook.
+### Do this
 
-![L · Material Reports](manual-assets/en/annotated/material-reports-annotated.png)
+1. In Inventory → Materials maintain category, unique code, name, description, unit, active status and minimum stock level.
 
-1. Search and filter controls · 2. Record list or material lines
+2. On an unbound Add Material form, currency uses company document currency or USD. An existing USD, CDF or EUR remains selected; an unassigned currency displays the default.
 
-![L · Invalid date filter — safe error state](manual-assets/en/annotated/material-filter-error-annotated.png)
+3. Enter a known unit price and select USD, CDF or EUR. Blank price means unknown; zero is an explicit price. There is no currency conversion.
 
-1. Correct the invalid start date · 2. Validation error: no unfiltered results are shown
+4. For an existing price/currency change, enter Price change reason and Save. Stock, price and catalogue revisions must still match; reload and review conflicts.
 
-![L · Invoice list and filters](manual-assets/en/annotated/invoices-annotated.png)
+5. Alternatively, on Receive Stock select the material and Modify Price. Enter price, currency and a meaningful reason, then save the price in the dialog. This is separate from receipt confirmation.
 
-1. Official issue-date and invoice filters · 2. Record list or material lines
+6. Use View price history in Admin to inspect actor, reason, old/new values and source. Use Material Entries for traceable deliveries rather than direct stock edits.
 
-## Quick troubleshooting
+> **Important check** — A blank currency submitted with a price resolves to company currency or USD, even if the old currency differed. Opening a form writes nothing. Saving a displayed default is an audited currency change. Direct Admin stock edits do not create receipt movements.
 
-- Missing approval controls: check current assignment and status, not just stock-report access.
-- Missing price: complete the draft using authorized evidence; never replace an unknown value with zero.
-- Missing sequence/company verification: contact the administrator; never change counters or guards.
-- PDF failure: return to the issued document and retry only generation, not issuance.
-- Uncertain financial issuance: retain the same confirmation; inspect history if the session was lost.
-- Historical over-return or ambiguous OUT: stop returns and request a ledger review.
+> **Expected result** — Price history is append-only. Catalogue changes do not rewrite finalized invoices, stock quantities or old financial records.
 
-## Glossary
+<details><summary>Code trace</summary>
 
-- Succursale — Administrative destination/billing entity; not a warehouse.
-- BC — Internal material order.
-- BS — Authorized material issue note.
-- FAC — Immutable finalized internal bookkeeping invoice.
-- RCP — Nonfinancial receipt linked to actual physical RETURN movements.
-- BR — Invoice-linked returned-material valuation; no refund, credit or stock operation.
-- Reconciliation / Régularisation — Append-only report of actual material outcomes.
-- Africa/Kinshasa — Business timezone used for annual numbering and operational reporting.
+inventory/models.py; inventory/admin.py; core/document_config.py
+
+</details>
+
+<a id="11-deduction"></a>
+
+## 11. Understand automatic deduction
+
+**Before you begin** — There is no Deduct Stock button. The final assigned approver completes the material workflow.
+
+### Do this
+
+1. Review and submit the final Approve action.
+
+2. If insufficient stock is reported, ask stock staff to review; do not force Approved manually.
+
+3. On success check Approved and the timeline; authorized administrators can inspect related OUT movements.
+
+> **Important check** — The service locks request/material balances and uses stock_deducted against repeated deduction. Failure rolls back final approval. Safeguards were inspected, not runtime-tested for these guides.
+
+> **Expected result** — Stock deducts once and OUT movements record the actor. Documents/invoices/reconciliation never deduct again.
+
+<details><summary>Code trace</summary>
+
+requests_app/services.py:approve_step; requests_app/stock_services.py:deduct_material_stock
+
+</details>
+
+<a id="12-bcbs"></a>
+
+## 12. Issue BC and BS
+
+**Before you begin** — BC is an internal material order; BS is the authorized issue document. Requires Approved, stock_deducted, material rows and permitted request/document access.
+
+### Do this
+
+1. In detail or Material Reports open the required BC or BS action.
+
+2. At first issuance check kind/reference, then Confirm & Print. Cancel allocates nothing.
+
+3. Check the official reference, choose Print 1 copy / Print 2 copies; over six items forces one. Print / Save as PDF, review A4, sign/archive.
+
+> **Important check** — Confirmation allocates once; reprints reuse it. Format examples: BC/0001/2026 and BS/0001/2026, not actual records. Issuance never moves stock. Legacy bulk printing does not allocate official BC/BS.
+
+> **Expected result** — The numbered document opens. Reference is frozen; live names, available stock and editable issue remarks may change on reprint.
+
+<details><summary>Code trace</summary>
+
+requests_app/material_documents.py; requests_app/views.py:material_document; templates/requests_app/material_document_confirm.html
+
+</details>
+
+<a id="13-invoice-draft"></a>
+
+## 13. Create and prepare an invoice draft
+
+**Before you begin** — One invoice per individual eligible MICROCOM request, on demand. Requires view_invoice + add_invoice and scope, Approved/deducted stock evidence, designated-review confirmation/branch and valid company configuration.
+
+### Do this
+
+1. Open Invoices. Requests available for invoice review appears first, above invoice history. Search by request reference with its Search button and open the eligible request link.
+
+2. On the creation screen review the MICROCOM request and succursale, select invoice currency and confirm draft creation. Eligibility is checked before saving.
+
+3. Below the available requests, existing invoices have their own search, issue-date and status filters, Print Filtered Invoices, history table and pagination. Request search does not filter invoices or printing.
+
+4. Open Edit invoice draft: check Net billable quantity, enter authorized Unit price and optional Invoice note; Save draft prices.
+
+5. After new physical returns use Refresh issued quantities, then review/save again before finalization.
+
+> **Important check** — CLIENT excluded. Draft has no official number. Net quantities = issued less returns. Other-currency catalog prices remain unknown; no conversion. Zero is explicit, blank unknown. Duplicate/ambiguous stock evidence blocks invoicing.
+
+> **Expected result** — An editable unnumbered draft is ready for review; no stock/payment operation occurs.
+
+<details><summary>Code trace</summary>
+
+invoicing/permissions.py; invoicing/views.py:invoice_list,invoice_create,invoice_edit; invoicing/services.py
+
+</details>
+
+<a id="14-invoice-issue"></a>
+
+## 14. Verify and finalize the invoice
+
+**Before you begin** — Requires view_invoice + finalize_invoice and scope; prices/net quantities reviewed; current company attestation, verified annual series and branch physical address.
+
+### Do this
+
+1. Open Finalize invoice and compare materials, net quantities, prices and totals to evidence.
+
+2. Choose Invoice series. If absent, ask the authorized administrator to verify numbering; do not invent a number.
+
+3. Tick permanent confirmation and Finalize invoice. Check Finalized, number, issue date, branch, total and Invoice history.
+
+> **Important check** — User review and administrator attestations are prerequisites, not an extra invoice approval status. Financial/party snapshots and number become immutable. Currency consistent; date/year Africa/Kinshasa. New returns/stale revision require refresh/review.
+
+> **Expected result** — Permanent bookkeeping invoice issued without a second stock deduction. Later returns do not silently rewrite it; ordinary edit/delete is unavailable.
+
+<details><summary>Code trace</summary>
+
+invoicing/forms.py; invoicing/services.py:finalize_invoice; invoicing/views.py:invoice_finalize
+
+</details>
+
+<a id="15-credit-boundary"></a>
+
+## 15. Credit notes: availability boundary
+
+**Before you begin** — Credit models/database safeguards exist, but no employee credit-note creation/issue route or registered credit admin lifecycle was found.
+
+### Do this
+
+1. Record original invoice reference and actual physical return evidence.
+
+2. Ask Finance/IT to assess the accounting action; do not invent a Create credit note button.
+
+3. Keep physical RCP receipt, invoice-linked return valuation and accounting credit separate.
+
+> **Important check** — Schema safeguards include finalized original invoice/currency, attributable returns, reservation caps, explicit review, verified numbering and immutable final evidence. This does not prove deployed guards or expose a user workflow. Active credit allocations can block valued return notes.
+
+> **Expected result** — The accounting need is escalated without fabricating a credit. This is a boundary notice, not an issue procedure.
+
+<details><summary>Code trace</summary>
+
+invoicing/models.py:CreditNote,CreditAllocation,CreditOperation; invoicing/migrations/0004_credit_reservation_schema.py; invoicing/migrations/0005_credit_financial_guards.py; invoicing/urls.py; invoicing/admin.py
+
+</details>
+
+<a id="16-physical-return"></a>
+
+## 16. Record a physical stock return
+
+**Before you begin** — Stock access, Approved/deducted material request and consistent OUT/RETURN evidence are required. Receive the goods before recording.
+
+### Do this
+
+1. Material Management → Returns & Receipts: expand the correct material. The standalone Return to Stock page remains available.
+
+2. Check Available to return; enter positive Returned Quantity (two decimals) and required Return Reason.
+
+3. Confirm return to stock, review the dialog then Confirm; Back cancels. Check success/new remainder. Fully returned items have no active form.
+
+> **Important check** — Cumulative cap enforced. Locks and one transaction protect stock/movement/audit. Exact committed-token replay does not restore twice. If uncertain retry the same form or inspect history, not a new operation. Ambiguous old evidence is blocked. Server checks apply without JavaScript.
+
+> **Expected result** — Stock restored once with RETURN/audit reason. Ten issued minus four returned leaves six eligible. No invoice, credit or receipt is automatically issued.
+
+<details><summary>Code trace</summary>
+
+requests_app/stock_services.py:return_material_stock,material_return_totals; requests_app/material_outcome_views.py; requests_app/stock_forms.py
+
+</details>
+
+<a id="17-reconciliation"></a>
+
+## 17. Reconcile material usage
+
+**Before you begin** — Stock personnel record outcomes for the original technician on an Approved/deducted request. Original classification is unchanged.
+
+### Do this
+
+1. Use Material Management → Overview, then Reconcile and expand each material.
+
+2. Use quick destination for all remaining units or Split quantities / multiple outcomes: CLIENT-installed, MICROCOM-used, Retained / testing.
+
+3. Physically returned is read-only from movements. All four outcomes must total issued quantity. Enter Short explanation, Review and save, review then Confirm; inspect Reconciliation history.
+
+> **Important check** — Before a revision, usage is unknown. New physical returns can mark the old revision Review required. Reload stale data and append a new revision; old revisions remain. No stock/invoice changes.
+
+> **Expected result** — Versioned outcomes account for every unit: e.g. ten issued = four CLIENT + two MICROCOM + one retained + three physically returned.
+
+<details><summary>Code trace</summary>
+
+requests_app/material_outcomes.py:reconcile; requests_app/material_outcome_views.py; templates/requests_app/material_outcomes.html
+
+</details>
+
+<a id="18-receipt"></a>
+
+## 18. Issue a nonfinancial RCP return receipt
+
+**Before you begin** — The stock button Generate Bon de retour creates an RCP physical-return receipt, not a financial credit or invoice-linked valuation.
+
+### Do this
+
+1. With stock access, select recorded physical RETURN movements under Material Return Receipt.
+
+2. Generate Bon de retour, review selections and Confirm; Back issues nothing.
+
+3. Check the RCP reference/history. Set application language, then View PDF / Print; use the PDF viewer to save/print.
+
+> **Important check** — Only actual distinct returns not already in an RCP. Exact token replay reuses the receipt. No stock change, credit, refund or invoice adjustment. On PDF failure use retry on this receipt; do not issue another.
+
+> **Expected result** — A permanent RCP/year reference and frozen return snapshot are available through protected PDF access.
+
+<details><summary>Code trace</summary>
+
+requests_app/material_outcomes.py:issue_receipt; requests_app/material_outcome_views.py:receipt_pdf; requests_app/return_receipt_documents.py
+
+</details>
+
+<a id="19-return-note"></a>
+
+## 19. Issue an invoice-linked valued return note
+
+**Before you begin** — Requires enabled UI, finalized internal invoice, eligible complete returns, verified RETURN_NOTE year/series, invoice scope and dedicated permissions.
+
+### Do this
+
+1. From finalized invoice open Issue material return note or Material return note history.
+
+2. Select eligible complete movements, Operation reason and Return note series; Preview material return note.
+
+3. Check original invoice, frozen prices, quantities, returned value, cumulative value and adjusted net value. Change selection if needed; preview allocates no number.
+
+4. Tick permanent confirmation and Issue material return note; check its number/history, then Print if permitted.
+
+> **Important check** — Current settings enable UI; fallback/older notes say disabled: verify deployment, do not change flags. Pre-invoice excluded returns, duplicates, ambiguous provenance or active credit allocations can block. Confirmation max two hours; session may expire earlier. Lost response: check history first.
+
+> **Expected result** — Permanent valuation issued at original invoice prices, without stock change, credit/payment adjustment or rewriting the original invoice. Distinct from RCP.
+
+<details><summary>Code trace</summary>
+
+invoicing/return_note_access.py; invoicing/return_note_views.py; invoicing/return_note_services.py; invoicing/return_note_forms.py; config/settings.py
+
+</details>
+
+<a id="20-audit"></a>
+
+## 20. Follow approvals and audit records
+
+**Before you begin** — Use ownership/assignment or appropriate report/invoice access; report-only rights do not unlock ordinary request detail.
+
+### Do this
+
+1. Open My Requests → detail: reference/status, origin/owning departments, attachments, Approval Timeline and Audit Log.
+
+2. Approval History shows your latest qualifying non-pending action per request, not all assignments; filter owning department.
+
+3. Invoice history → Audit details explains financial events. Material Management shows reconciliation revisions and RCP history.
+
+4. Administration Report readers filter approved configured-type requests by search, origin/owner/requester and submission dates, then View Document / Print (25 per page).
+
+5. For an approved Administration permission request, View Document / Print opens the dedicated Bon d’accès. Report access does not grant ordinary request editing or approval rights.
+
+> **Important check** — Earlier approvals are archived on resubmission and can be consulted in previous attempts. Pre-feature missing history is not reconstructed. Audit evidence is not a complete snapshot of every field.
+
+> **Expected result** — Support can trace a reference/action/time and distinguish decisions, stock and document evidence.
+
+<details><summary>Code trace</summary>
+
+requests_app/views.py:request_detail,approval_history,administration_reports; invoicing/views.py:invoice_detail; templates/requests_app/request_detail.html
+
+</details>
+
+<a id="21-users"></a>
+
+## 21. Manage users and permissions
+
+**Before you begin** — Authorized staff/model access and an approved account process are required. No accounts are created during guide preparation.
+
+### Do this
+
+1. Accounts → Users: maintain identity, required email, department, role, Active; maintain Departments/Roles separately.
+
+2. Grant Can Manage Stock Reports / Can view administration reports only as needed; staff/model access is separate.
+
+3. Invoices require view_invoice plus add/change/finalize as needed and stock-review assignment scope. Broad scope: superuser or staff + manage_all_invoices.
+
+4. Valued notes: view_invoice + view_materialreturnnote; preview also issue_materialreturnnote; issue also add_materialreturnnote; documents also view_materialreturnnote_document. Save and arrange access verification.
+
+> **Important check** — Custom ModelAdmin is not the standard password wizard: never type plaintext in its raw password field; use approved provisioning/reset. Deactivate leavers, preserve actors. Stock flag or staff alone grants no invoice actions/scope.
+
+> **Expected result** — Existing accounts have the approved permissions; assigned current steps still control approvals.
+
+<details><summary>Code trace</summary>
+
+accounts/admin.py; accounts/models.py; invoicing/permissions.py; requests_app/material_outcomes.py:authorize
+
+</details>
+
+<a id="22-workflows"></a>
+
+## 22. Configure approval workflows
+
+**Before you begin** — Authorized administrator and agreed policy. Routing uses type/amount and owning department, then department-free global fallback.
+
+### Do this
+
+1. Maintain Request types and Requires materials / Requires amount / Is permission request flags; keep assigned reference namespaces unchanged.
+
+2. Workflows → Approval workflows: type, optional owning department, amount bounds, Active.
+
+3. Add unique ordered steps: specific user or active owning-department role user, with alternate where appropriate.
+
+4. For material workflows designate at most one Stock classification review at any valid position, with an active named primary and optional active alternate. Save without reordering existing steps.
+
+> **Important check** — The stock review is actionable only after preceding approvals. Test the configured sequence using approved rehearsal data.
+
+> **Expected result** — Future submissions use configured steps; saving configuration is not proof of runtime acceptance.
+
+<details><summary>Code trace</summary>
+
+workflows/models.py; workflows/admin.py; requests_app/services.py:get_applicable_workflow,create_approval_steps
+
+</details>
+
+<a id="23-company"></a>
+
+## 23. Configure verified company/document information
+
+**Before you begin** — Authorized staff/model rights including invoicing.add_companyverification for company attestation and invoicing.change_documentsequence for sequence attestation; checked external numbering history.
+
+### Do this
+
+1. Core → Company and document settings: name, verified address, contacts, existing static logo reference, default USD/CDF/EUR and Africa/Kinshasa timezone; Save.
+
+2. In the list select settings and Attest current company information after checking; re-attest relevant changes.
+
+3. Invoicing → Document sequences: correct INVOICE or RETURN_NOTE type/year/series/format/safe starting value and external-history evidence. Save, select and Attest checked external numbering history.
+
+4. Inventory → Succursales: maintain code/name/active/physical address; new branches require address and invoicing requires it.
+
+> **Important check** — Never guess counters, lower used counters or rewrite issued references. Format preferences alone allocate nothing; BC/BS and RCP have separate automatic counters. No authorization here to run year-preparation commands or change flags.
+
+> **Expected result** — Current company and annual numbering have recorded attestations, enabling issuance if other checks pass; frozen existing documents remain unchanged.
+
+<details><summary>Code trace</summary>
+
+core/models.py; core/admin.py; invoicing/admin.py; invoicing/models.py:CompanyVerification,DocumentSequence; inventory/admin.py
+
+</details>
+
+<a id="24-print"></a>
+
+## 24. Print and download documents
+
+**Before you begin** — Authorized document access and issued/finalized documents; browser PDF capability. Check type, reference and language.
+
+### Do this
+
+1. Set application language; finalized invoice → Print Invoice. The server prepares its protected PDF; use viewer print/save.
+
+2. For filtered invoices, supply both issue dates in Invoices, narrow search/status then Print Invoices. Server selects finalized matches across pages; maximum 20.
+
+3. BC/BS use Print / Save as PDF and copy controls. RCP uses View PDF / Print; valued return note uses Print.
+
+4. Approved permissions use Permission Document → Print / Save PDF. Authorized Administration Report readers use View Document / Print.
+
+> **Important check** — Invoice printing uses protected PDF artifacts, not page-body printing. Filtered print has 20-document, size and page limits. PDF failure does not undo issuance: retry existing document, not a new invoice/receipt. Legacy material bulk print allocates no official BC/BS.
+
+> **Expected result** — Reviewed PDF/print uses the existing official reference. Layout, printer behaviour and download protection still require rehearsal verification.
+
+<details><summary>Code trace</summary>
+
+invoicing/views.py:invoice_print,invoice_bulk_print; invoicing/printing.py; invoicing/print_delivery.py; requests_app/material_outcome_views.py; templates/invoicing/list.html
+
+</details>
+
+<a id="25-errors"></a>
+
+## 25. Troubleshoot without duplicate operations
+
+**Before you begin** — Read exact error and preserve request/document reference. IT handles configuration/inconsistent evidence.
+
+### Do this
+
+1. Missing workflow/department/approver: report type, owning department and amount; check My Requests before recreating.
+
+2. Classification: Client without branch; Microcom with active branch. Stock/excess return/stale revision: refresh evidence, correct quantity; never force status/movements.
+
+3. Invoice missing price/address/attestation/series: resolve with Finance/IT. PDF failure: retry existing document.
+
+4. Expired confirmation: reopen/preview as directed. Uncertain issuance: history first. Forbidden: check action permission and request scope.
+
+> **Important check** — Never create a new return/receipt/invoice just to check the first. No passwords or confidential attachments in support messages. A missing credit-note screen is a product boundary.
+
+> **Expected result** — Resolve/escalate with reference, time and exact message, avoiding duplicate stock/documents.
+
+<details><summary>Code trace</summary>
+
+requests_app/approval_forms.py; requests_app/stock_services.py; invoicing/services.py; invoicing/return_note_services.py; PDF error templates
+
+</details>
+
+<a id="26-entry-new"></a>
+
+## 26. Register a new material and initial stock
+
+**Before you begin** — Active stock personnel or superuser. One central stock; no warehouse selection.
+
+### Do this
+
+1. Open Material Entries and Register New Material.
+
+2. Enter name, unique code, category, unit, description, active status, minimum stock level and optional catalogue price. This form initially selects USD; choose CDF or EUR explicitly when needed.
+
+3. Enter initial quantity (at least 0.01), receipt date, and optional supplier, delivery reference and notes.
+
+4. Choose Verify details. Nothing is received yet. Check material identity, unit, price, quantity and delivery details; use Modify to correct.
+
+5. Choose Confirm and Save once. Read Receipt completed and retain the IN reference. Open View receipt details or Receipt History.
+
+> **Important check** — A new material with zero opening stock cannot use this receipt form; authorized Admin catalogue creation is separate. Draft saving and verification do not create stock. Retry the same operation after a lost response; do not start a duplicate delivery.
+
+> **Expected result** — Confirmation atomically creates the material, receipt and IN movement. Initial stock is recorded once.
+
+<details><summary>Code trace</summary>
+
+inventory/entry_forms.py; inventory/entry_services.py; inventory/entry_views.py; templates/inventory/entry_review.html
+
+</details>
+
+<a id="27-entry-existing"></a>
+
+## 27. Receive an existing material
+
+**Before you begin** — Active stock personnel or superuser. Price-edit permission alone does not allow receipts or receipt history.
+
+### Do this
+
+1. Open Material Entries → Receive Stock and search/select the existing material.
+
+2. Check code and unit, current stock and catalogue price. Enter quantity received, receipt date, supplier/reference and notes as applicable.
+
+3. Read Estimated stock after receipt as an estimate. Choose Verify details and check the summary.
+
+4. Choose Confirm and Save. Read the IN reference, quantity received and stock after receipt.
+
+5. Open receipt details/history to consult the saved record. New Entry starts a separate delivery.
+
+> **Important check** — Receipt confirmation shows recorded historical balances, not live stock. Older records without an identity snapshot label catalogue fields as current information. A receipt is not linked to a technician request, invoice or credit note.
+
+> **Expected result** — The confirmed receipt increases central stock once and creates an incoming movement.
+
+<details><summary>Code trace</summary>
+
+inventory/entry_forms.py; inventory/entry_views.py; inventory/entry_services.py; templates/inventory/receipt_confirmation.html
+
+</details>
+
+<a id="28-entry-drafts"></a>
+
+## 28. Save, resume and cancel an entry draft
+
+**Before you begin** — Stock access; drafts belong to their creator and are separate from request drafts.
+
+### Do this
+
+1. On either entry form choose Save Draft to retain unfinished information without receiving stock.
+
+2. After Draft saved successfully choose Continue Editing or New Entry. Saved Drafts lists your own open drafts with Resume Draft and Cancel Draft.
+
+3. Resume the draft, finish its fields, then Verify details and Confirm and Save.
+
+4. To abandon an open draft, choose Cancel Draft, review the confirmation and confirm cancellation.
+
+5. If another tab changed the draft, reload and review the latest information. Completed drafts cannot be cancelled; find their receipt instead.
+
+> **Important check** — A draft is not a reservation, material registration or IN movement. Cancelling it does not reverse an already completed receipt. Do not reuse stale tabs to overwrite newer work.
+
+> **Expected result** — Only confirmation posts the stock receipt; saving or cancelling unfinished work leaves inventory unchanged.
+
+<details><summary>Code trace</summary>
+
+inventory/entry_drafts.py; inventory/entry_views.py; templates/inventory/draft_saved_notice.html; templates/inventory/cancel_entry_draft.html
+
+</details>
+
+<a id="29-notifications"></a>
+
+## 29. Use workflow notifications and email preferences
+
+**Before you begin** — Active individual account. Notifications do not replace approval authorization.
+
+### Do this
+
+1. Open Notifications in the navigation. Choose All or Unread; use View All Notifications for the paginated history.
+
+2. Check reference and current state. View Request marks the notification read and opens the request only when your access still permits it.
+
+3. Use Mark as Read to acknowledge a notice without approving, rejecting or returning the request.
+
+4. Use Pending Approvals for work that is currently actionable. Historical notifications do not reactivate completed or superseded assignments.
+
+5. Ask an authorized administrator to adjust Receive email notifications in Accounts → Users. This preference controls optional workflow email, not security/account messages or in-app notifications.
+
+> **Important check** — The unread badge counts active unread approval notices, not every unread historical event. Earlier events are not backfilled. Email failure does not cancel the request; check the application queues.
+
+> **Expected result** — Read state is personal. Marking read changes neither the request decision nor stock.
+
+<details><summary>Code trace</summary>
+
+requests_app/notifications.py; requests_app/notification_views.py; templates/includes/workflow_notifications.html; accounts/admin.py
+
+</details>
+
+<a id="glossary"></a>
+
+## A. Glossary and references
+
+New ordinary references follow REQ-{namespace}-{counter}/{year}, e.g. REQ-MAT-0001/2026 or REQ-ADM-0001/2026: examples only, not real records. They are durable at creation, including drafts; older references remain unchanged. BC/BS/RCP allocate independently at issuance in the Africa/Kinshasa business year. Never manually reuse/rewrite references.
+
+| Term / Terme | Meaning / Sens |
+|---|---|
+| Draft / Returned / Rejected | Unsubmitted / needs correction / closed by rejection: distinct states. |
+| Pending / In Review / Approved / Cancelled | Open approval / under review / final success / stopped before completion. |
+| Origin / owning department | Submitter department / Request For Department for routing and most filters. |
+| CLIENT / MICROCOM | Original classification confirmed by designated stock reviewer. |
+| BC / BS | Internal material order / authorized material issue, each with an official reference. |
+| Invoice | Bookkeeping snapshot for one eligible MICROCOM request; not a payment operation. |
+| RCP receipt | Nonfinancial evidence of physical returns, not credit/refund/invoice adjustment. |
+| Valued return note | Invoice-linked valuation of already-returned materials, not physical stock restoration or credit. |
+| Reconciliation | Versioned CLIENT-installed, MICROCOM-used, retained and physically returned outcomes. |
+| OUT / RETURN | Actual stock deduction / actual stock restoration movement. |
+| Material Issue Note | Free-text issue remarks: stock users open approved material detail, edit the note and Save Note. It appears in documents/reports; not a separately numbered document. Old full note text is not preserved in the update event. |
+| Audit / snapshot | Action evidence / frozen document data; not every request field has historical snapshots. |
+
+Final text edition. Follow the numbered procedures for your authorized role. Application screenshots are a separate future improvement.

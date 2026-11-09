@@ -1,355 +1,841 @@
-# Guide utilisateur Microcom
+![Microcom](manual-assets/microcom-logo.png)
 
-Version 2.0 — 2026-11-02
+# Système d’approbation Microcom
 
-VERSION DE REVUE — captures authentiques partielles ; écart de circuit et vérification du déploiement non résolus. Ne pas diffuser comme guide final.
+## Guide de formation des employés
 
-Code: `d3eb76641c1bd3efe431f26a4536964a0be1aeaf`
+**NOVEMBRE 2026 — GUIDE UTILISATEUR TEXTUEL**
 
-Ce guide révise les guides utilisateur et administrateur de docs/manuals/. Les captures viennent de la véritable application Django locale avec données de formation.
+Version 3.0 · November / novembre 2026 · 2026-11-09
 
-## A. Connexion et navigation
+Source: 72b527b739d2e42a0ead10d17af4ec571876dfc8
 
-Chaque employé utilise son compte personnel. Les menus dépendent des droits : leur absence ne justifie jamais le partage d’un compte administrateur.
+Édition textuelle finalisée. Suivez les procédures numérotées correspondant à vos droits. Les captures de l’application feront l’objet d’une amélioration distincte.
 
-Prérequis : Compte actif ; adresse de l’application communiquée par l’administrateur.
+[Validation](user-manual-validation.md) · [Capture checklist / Liste des captures](manual-screenshot-checklist.md) · [EN/FR](user-manual-en.md)
 
-1. Ouvrez l’adresse autorisée et saisissez vos identifiants sur la page de connexion. N’utilisez jamais le lien de réinitialisation d’un autre employé.
-2. Depuis le tableau de bord, ouvrez Créer une demande, Mes demandes ou Approbations en attente selon votre tâche. Vérifiez la référence avant toute action.
-3. Choisissez English ou Français dans le sélecteur de langue. Les documents suivent la langue active : sélectionnez-la avant d’ouvrir le PDF.
-4. Déconnectez-vous après utilisation. Une session expirée impose une nouvelle connexion ; les données non enregistrées peuvent être perdues.
+## Sommaire
 
-Résultat : votre tableau de bord et les menus autorisés. En cas de refus, faites vérifier l’activation du compte ; ne transmettez aucun mot de passe ni cookie de session.
+- [0. Utiliser ce guide](#guide-start)
+- [1. Se connecter](#01-login)
+- [2. Naviguer dans le tableau de bord](#02-dashboard)
+- [3. Créer une demande administrative](#03-administrative)
+- [4. Créer une demande de matériel de technicien](#04-material)
+- [5. Classer à l’étape désignée de revue du stock](#05-classification)
+- [6. Choisir la succursale](#06-succursale)
+- [7. Approuver, rejeter ou retourner](#07-decisions)
+- [8. Corriger, soumettre de nouveau ou annuler](#08-correction)
+- [9. Consulter disponibilité et rapports stock](#09-stock)
+- [10. Gérer le catalogue, les prix et les devises](#10-catalog)
+- [11. Comprendre la déduction automatique](#11-deduction)
+- [12. Émettre les BC et BS](#12-bcbs)
+- [13. Créer et préparer un brouillon de facture](#13-invoice-draft)
+- [14. Vérifier et finaliser la facture](#14-invoice-issue)
+- [15. Avoirs : limite de disponibilité](#15-credit-boundary)
+- [16. Enregistrer un retour physique](#16-physical-return)
+- [17. Régulariser l’utilisation du matériel](#17-reconciliation)
+- [18. Émettre un reçu RCP non financier](#18-receipt)
+- [19. Émettre un bon valorisé lié à la facture](#19-return-note)
+- [20. Suivre approbations et audit](#20-audit)
+- [21. Gérer comptes et permissions](#21-users)
+- [22. Configurer les workflows](#22-workflows)
+- [23. Configurer société et informations documentaires vérifiées](#23-company)
+- [24. Imprimer et télécharger les documents](#24-print)
+- [25. Dépanner sans doublons](#25-errors)
+- [26. Créer un matériel et son stock initial](#26-entry-new)
+- [27. Réceptionner un matériel existant](#27-entry-existing)
+- [28. Enregistrer, reprendre et annuler un brouillon d’entrée](#28-entry-drafts)
+- [29. Utiliser les notifications et préférences de courriel](#29-notifications)
+- [A. Glossaire et références](#glossary)
 
-![A · Connexion](manual-assets/fr/annotated/login-annotated.png)
+<a id="guide-start"></a>
 
-1. Champ du nom d’utilisateur · 2. Commande de validation : vérifiez la page avant de confirmer
+## 0. Utiliser ce guide
 
-![A · Tableau de bord et navigation](manual-assets/fr/annotated/dashboard-annotated.png)
+Version de novembre 2026. Les procédures reflètent le code courant et la nouvelle présentation de la page Factures. Aucune donnée de production n’a été utilisée pour préparer ce guide.
 
-1. Navigation et choix de langue · 2. Zone de travail du tableau de bord
+Microcom possède un stock central unique. Les succursales sont administratives/de facturation, jamais des entrepôts. Request For Department possède/oriente la demande ; ce n’est pas une succursale de facturation. La classification initiale diffère des utilisations ultérieures. CLIENT est exclu de la facturation interne ; chaque demande MICROCOM admissible peut avoir une facture selon besoin.
 
-## B. Demandes administratives et corrections
+Lisez les prérequis, suivez les étapes numérotées puis vérifiez le résultat attendu. Les contrôles importants précisent droits, erreurs et protections. Les exemples utilisent des références fictives.
 
-Le champ Demande pour le département détermine le département responsable et le circuit. Enregistrer un brouillon ne le soumet pas aux approbateurs.
+| Role / Rôle | Access / Accès |
+|---|---|
+| Employé / technicien | Ses soumissions, modification de ses Draft/Returned, annulation de ses demandes ouvertes et documents autorisés ; département requis pour créer. |
+| Principal / suppléant | Étape courante affectée en attente seulement ; consultation affectée autorisée. Les suivants attendent. |
+| Personnel du stock | can_manage_stock ou superutilisateur : rapports, retours physiques, régularisations, RCP et notes approuvées. Aucun droit facture implicite. |
+| Lecteur administratif | can_view_administration_reports ou superutilisateur : rapport approuvé du type configuré tous départements, sans détails ordinaires/approbation. |
+| Opérateur facture | view_invoice et droit d’action, périmètre de revue stock ; superutilisateur ou staff + manage_all_invoices pour global. |
+| Administrateur | Droits staff/modèles et attestations financières explicites. Un nom de rôle n’accorde pas tout. |
 
-Prérequis : Demandeur connecté ; type actif et circuit applicable.
+Brouillon/demande → soumission → revue désignée stock désignée (si configurée) → approbations ordonnées → approbation finale et déduction unique. Puis BC/BS et, pour MICROCOM admissible, création/revue/finalisation de facture. Ensuite : retour physique restaure le stock ; régularisation décrit les résultats ; RCP documente les retours ; bon lié à facture les valorise. Aucun ne crée automatiquement d’avoir comptable.
 
-1. Ouvrez Créer une demande. Sélectionnez le type et le département destinataire ; renseignez Description / Motif, la date souhaitée et les champs propres au type.
-2. Joignez les pièces nécessaires. Vérifiez leur contenu et retirez les informations confidentielles sans rapport avec la demande.
-3. Enregistrez un brouillon pour continuer plus tard, ou soumettez la demande complète. Notez sa référence REQ-ADM ; les autres types disposent de leur propre espace de références.
-4. Dans Mes demandes, filtrez par référence, département, type, statut ou dates. Consultez le détail pour lire les commentaires et suivre les approbations.
-5. Pour une demande retournée, lisez le commentaire, ouvrez la modification, corrigez puis soumettez de nouveau. La référence initiale reste inchangée.
-6. Annulez uniquement lorsque cette action est proposée pour votre demande ouverte. Une demande approuvée ne peut pas être réécrite par ce processus.
+<a id="01-login"></a>
 
-Résultat : une référence stable, y compris pour le brouillon et les nouvelles soumissions. Si aucun circuit ne correspond, contactez l’administrateur plutôt que de modifier le département pour contourner le contrôle.
+## 1. Se connecter
 
-![B · Créer une demande](manual-assets/fr/annotated/request-create-annotated.png)
+**Avant de commencer** — Utilisez votre compte actif et l’adresse de l’application fournie par l’informatique.
 
-1. Type de demande · 2. Département responsable
+### Procédure
 
-![B · Mes demandes](manual-assets/fr/annotated/my-requests-annotated.png)
+1. Ouvrez l’adresse approuvée et vérifiez que vous êtes sur le système attendu.
 
-1. Commandes de recherche et filtres · 2. Liste des enregistrements ou lignes de matériel
+2. Saisissez identifiant/mot de passe puis utilisez le bouton de connexion.
 
-![B · Brouillon de demande](manual-assets/fr/annotated/request-draft-annotated.png)
+3. En cas d’oubli, utilisez le lien de réinitialisation et le courriel enregistré ; contactez l’informatique si nécessaire.
 
-1. Titre et actions autorisées · 2. Modifier la demande ouverte
+> **Contrôle important** — Ne capturez jamais un mot de passe rempli. L’expiration exige une reconnexion et peut perdre les modifications non enregistrées.
 
-![B · Modifier une demande](manual-assets/fr/annotated/request-edit-annotated.png)
+> **Résultat attendu** — Le tableau de bord s’ouvre ; les comptes invalides/inactifs restent bloqués.
 
-1. Type de demande · 2. Commande de validation : vérifiez la page avant de confirmer
+<details><summary>Référence du code</summary>
 
-## C. Demandes de matériel des techniciens
+config/urls.py; accounts/forms.py; templates/registration/login.html
 
-Demandez uniquement le matériel nécessaire. Le technicien soumet et suit la demande ; le personnel du stock habilité enregistre ensuite la régularisation et les retours physiques.
+</details>
 
-Prérequis : Type de demande de matériel et articles actifs disponibles.
+<a id="02-dashboard"></a>
 
-1. Sélectionnez le type de demande de matériel. Confirmez le département responsable avant de saisir les lignes.
-2. Ajoutez le matériel, la quantité et une note utile. Vérifiez les unités : une longueur de câble ne correspond pas à un nombre de pièces.
-3. Vérifiez toutes les lignes puis soumettez, ou enregistrez un brouillon. Un brouillon ne réserve ni ne déduit le stock.
-4. Conservez la référence REQ-MAT et suivez les étapes dans le détail. La disponibilité est contrôlée de nouveau à l’approbation finale.
+## 2. Naviguer dans le tableau de bord
 
-Résultat : des lignes complètes et un circuit après soumission. Corrigez les quantités invalides ; ne créez pas une deuxième demande uniquement parce que la réponse tarde.
+**Avant de commencer** — Les utilisateurs connectés voient la navigation selon leurs droits. Le texte de statut n’est pas un contrôle de santé en temps réel.
 
-![C · Saisie d’une demande de matériel](manual-assets/fr/annotated/material-request-create-annotated.png)
+### Procédure
 
-1. Type de demande · 2. Recherchez et sélectionnez le matériel par nom, code ou catégorie
+1. Utilisez Create Request / New Request pour commencer et My Requests pour vos soumissions.
 
-![C · Lignes de matériel et quantités](manual-assets/fr/annotated/material-request-lines-annotated.png)
+2. Approvals affiche vos étapes courantes ; Approval History vos décisions.
 
-1. Recherchez et sélectionnez le matériel par nom, code ou catégorie · 2. Quantité demandée dans l’unité du matériel
+3. Ouvrez les rapports autorisés ou Invoices. Choisissez FR/EN avec le sélecteur ; terminez par Logout.
 
-![C · Approbations en attente](manual-assets/fr/annotated/pending-approvals-annotated.png)
+> **Contrôle important** — Un nom de rôle ne donne pas tous les menus. Consultez les listes même sans courriel : les notifications peuvent échouer silencieusement.
 
-1. Commandes de recherche et filtres · 2. Liste des enregistrements ou lignes de matériel
+> **Résultat attendu** — La bonne rubrique s’ouvre dans la langue choisie.
 
-## D. Classification du stock : écart à résoudre
+<details><summary>Référence du code</summary>
 
-CONTRÔLE AVANT DIFFUSION : le besoin annoncé autorise la revue du stock à toute étape. Cette version exige encore la PREMIÈRE étape. N’y configurez pas l’exemple avec revue à l’étape 2.
+core/views.py; templates/core/dashboard.html; templates/base.html; requests_app/context_processors.py
 
-Prérequis : Responsable principal ou suppléant affecté à l’étape courante de revue du stock. Le droit aux rapports ne crée pas cette affectation.
+</details>
 
-1. Dans Approbations en attente, ouvrez la demande affectée. Vérifiez les quantités, le motif et les justificatifs.
-2. Pour une intervention CLIENT, choisissez CLIENT. Aucune succursale Microcom n’est exigée ni conservée.
-3. Pour un usage MICROCOM, choisissez MICROCOM et une succursale valide. Ces informations sont obligatoires pour cette approbation.
-4. Approuvez après vérification. Une classification manquante bloque l’approbation ; le retour pour correction et le rejet suivent leurs règles habituelles.
-5. L’exemple Fiber demandé est : approbation initiale → revue du stock → Direction → Finances. Il s’agit d’un circuit cible, NON d’une configuration vérifiée pour cette version. Faites d’abord clarifier la version par le responsable applicatif.
+<a id="03-administrative"></a>
 
-Résultat : la preuve de classification est conservée. Ne réordonnez pas un circuit en service et n’accordez pas de droits administrateur pour contourner une erreur.
+## 3. Créer une demande administrative
 
-![D · Classification CLIENT — détail des champs](manual-assets/fr/annotated/stock-classification-client-annotated.png)
+**Avant de commencer** — Le compte exige un département et un workflow configuré. Les indicateurs du type imposent les champs.
 
-1. Classification CLIENT / MICROCOM · 2. Choix de succursale pour MICROCOM
+### Procédure
 
-![D · Classification MICROCOM — détail des champs](manual-assets/fr/annotated/stock-classification-microcom-annotated.png)
+1. Choisissez Request Type et Request For Department : équipe responsable, pas succursale de facturation.
 
-1. Classification CLIENT / MICROCOM · 2. Choix de succursale pour MICROCOM
+2. Saisissez description, Date Needed et Amount si requis ; joignez les justificatifs.
 
-![D · Configuration du circuit d’approbation](manual-assets/fr/annotated/admin-workflow-annotated.png)
+3. Leave Permission exige By Foot/By Car, destination et motif ; heures/chauffeur sont facultatifs. Site Authorization exige site, dates, agents Microcom et motif ; TT/personnes externes sont facultatifs.
 
-1. Nom enregistré · 2. Étapes d’approbation configurées
+4. Submit Request, ou Save as Draft. Rouvrez My Requests → Edit Draft, complétez puis soumettez.
 
-## E. Stock central et prix du matériel
+> **Contrôle important** — Un brouillon ne lance ni approbation ni réservation. Vérifiez les lignes incomplètes sauvegardées. Amount n’est ni facture ni paiement. Contrôlez la chronologie vous-même.
 
-Un stock central unique approvisionne les techniciens. Les succursales sont des destinations administratives et de facturation, pas des entrepôts indépendants.
+> **Résultat attendu** — La soumission lance le circuit ; le brouillon reste modifiable et non soumis. Relevez la référence.
 
-Prérequis : Droits aux rapports de stock ; droits administrateur et permissions de modèle distincts pour gérer le catalogue.
+<details><summary>Référence du code</summary>
 
-1. Ouvrez Rapports matériels pour examiner les quantités sorties, retournées et encore retournables, ainsi que la cohérence du registre.
-2. Dans Django Admin, les administrateurs habilités ouvrent Inventaire → Matériels. Consultez le code, la catégorie, l’unité, le stock et le seuil minimum.
-3. À la création d’un matériel tarifé, vérifiez USD ou choisissez CDF/EUR. La modification conserve la devise enregistrée ; aucune conversion automatique n’est effectuée.
-4. Laissez un prix inconnu vide : zéro constitue un prix explicite valide. Enregistrez uniquement les modifications autorisées du catalogue.
-5. Ne modifiez pas les soldes pour simuler une sortie ou un retour. Utilisez le processus prévu et faites examiner tout historique incohérent.
+requests_app/forms.py; requests_app/views.py:create_request; templates/requests_app/create_request.html
 
-Résultat : les prix et devises sont choisis explicitement. Le catalogue ne réécrit pas les factures finalisées. Une incohérence historique nécessite une vérification, jamais la suppression de mouvements.
+</details>
 
-![E · Rapports matériels](manual-assets/fr/annotated/material-reports-annotated.png)
+<a id="04-material"></a>
 
-1. Commandes de recherche et filtres · 2. Liste des enregistrements ou lignes de matériel
+## 4. Créer une demande de matériel de technicien
 
-![E · Catalogue du matériel](manual-assets/fr/annotated/admin-materials-annotated.png)
+**Avant de commencer** — Choisissez type matériel, département responsable et articles actifs. Tout provient du stock central.
 
-1. Recherche administrative · 2. Enregistrements autorisés
+### Procédure
 
-![E · Prix unitaire et devise — détail des champs](manual-assets/fr/annotated/admin-material-annotated.png)
+1. Saisissez objet/destination et Date Needed.
 
-1. Prix unitaire : vide signifie inconnu · 2. Devise du prix enregistré
+2. Recherchez par nom, code ou catégorie, ou Filter By Category ; choisissez l’article réel et une quantité positive dans son unité.
 
-## F. Approbations, corrections et déduction du stock
+3. Utilisez + Add Material / Remove, une ligne par article ; vérifiez puis Submit Request ou Save as Draft.
 
-Seul l’approbateur affecté à l’étape courante ou son suppléant autorisé agit. Le statut global et votre propre décision sont deux informations distinctes.
+> **Contrôle important** — Au moins un article, sans doublon, avec quantités positives valides. Stock contrôlé à la saisie et à la fin ; rien n’est réservé. Aucune note par ligne affichée : utilisez la description.
 
-Prérequis : Demande soumise et affectée à l’approbateur connecté.
+> **Résultat attendu** — La demande entre en approbation. Les techniciens ne classent pas et ne choisissent pas la succursale de facturation.
 
-1. Ouvrez Approbations en attente puis la demande. Lisez les pièces jointes, les quantités et les commentaires précédents.
-2. Choisissez Approuver, retourner pour correction ou rejeter selon le cas, avec le commentaire requis. N’approuvez pas des justificatifs incomplets.
-3. L’approbation avance à l’étape suivante. À l’approbation finale du matériel, l’application contrôle et déduit le stock une seule fois.
-4. Consultez Historique des approbations pour vos décisions et le statut global. Le demandeur corrige une demande retournée puis la soumet de nouveau.
-5. En cas d’échec final, transmettez le message et la référence. Ne déduisez pas manuellement le stock et ne multipliez pas les opérations différentes.
+<details><summary>Référence du code</summary>
 
-Résultat : la demande conserve son historique et une seule sortie par matériel. L’impression, la régularisation et les rapports ne répètent pas cette déduction.
+requests_app/forms.py; requests_app/views.py:create_request; templates/requests_app/includes/material_formset.html
 
-![F · Approbations en attente](manual-assets/fr/annotated/pending-approvals-annotated.png)
+</details>
 
-1. Commandes de recherche et filtres · 2. Liste des enregistrements ou lignes de matériel
+<a id="05-classification"></a>
 
-![F · Historique des approbations](manual-assets/fr/annotated/approval-history-annotated.png)
+## 5. Classer à l’étape désignée de revue du stock
 
-1. Commandes de recherche et filtres · 2. Liste des enregistrements ou lignes de matériel
+**Avant de commencer** — Seul le titulaire actif ou son suppléant affecté peut classer lorsque cette étape est courante ; les étapes précédentes doivent être terminées.
 
-![F · Demande de matériel approuvée](manual-assets/fr/annotated/approved-request-annotated.png)
+### Procédure
 
-1. Titre et actions autorisées · 2. Actions opérationnelles et documentaires
+1. Ouvrez l’approbation courante qui vous est affectée et vérifiez le matériel et le motif.
 
-## G. Bon de commande et bon de sortie
+2. Choisissez Approuver puis CLIENT ou MICROCOM. CLIENT ne nécessite aucune succursale.
 
-Le BC est une commande interne de matériel, pas un achat fournisseur. Le BS documente la sortie autorisée. Les deux utilisent le même modèle, avec des titres et références distincts.
+3. Pour MICROCOM, choisissez la succursale active appropriée, ajoutez le commentaire requis et soumettez.
 
-Prérequis : Demande de matériel approuvée, stock déduit et lignes présentes ; accès selon les droits du demandeur, de l’approbateur, du stock ou du superutilisateur.
+4. Les approbateurs suivants attendent leur tour. La revue du stock peut être la deuxième ou la dernière étape sans réordonner les autres.
 
-1. Ouvrez la demande approuvée et choisissez BC ou BS parmi les actions documentaires.
-2. À la première émission, vérifiez la référence sur la page de confirmation. Annuler laisse le document non émis ; ouvrir cette page seul n’attribue aucun numéro.
-3. Choisissez Confirmer et imprimer uniquement si vous êtes habilité. Cette validation attribue BC/0001/AAAA ou BS/0001/AAAA, avec des compteurs annuels indépendants.
-4. Utilisez les commandes d’impression et la boîte de dialogue du navigateur ; l’enregistrement PDF dépend de ses options.
-5. Rouvrez le même document pour une réimpression. Sa référence reste stable, sans nouvelle sortie de stock. L’impression groupée des rapports n’alloue aucune référence officielle.
+> **Contrôle important** — Une seule revue peut être désignée. Sa configuration reste facultative : l’administrateur doit la prévoir dans les circuits matériels. Le retour et le rejet n’exigent pas de classification.
 
-Résultat : au maximum un BC et un BS par demande. Le changement d’année suit Africa/Kinshasa. Ne confondez pas la référence de demande avec celles des documents.
+> **Résultat attendu** — Une classification valide est obligatoire pour approuver cette étape. Les demandes CLIENT ne nécessitent pas de facture interne.
 
-![G · Confirmation de première émission du BC](manual-assets/fr/annotated/bc-confirm-annotated.png)
+<details><summary>Référence du code</summary>
 
-1. Référence de la demande initiale · 2. Commande de validation : vérifiez la page avant de confirmer
+requests_app/approval_forms.py; requests_app/classification.py; requests_app/services.py:approve_step; workflows/models.py
 
-![G · Confirmation de première émission du BS](manual-assets/fr/annotated/bs-confirm-annotated.png)
+</details>
 
-1. Référence de la demande initiale · 2. Commande de validation : vérifiez la page avant de confirmer
+<a id="06-succursale"></a>
 
-## H. Factures internes
+## 6. Choisir la succursale
 
-La facture est un document comptable interne émis à la demande pour une demande MICROCOM admissible. Ce n’est ni une vente ni un mouvement de stock. Une intervention CLIENT n’exige pas de facture interne.
+**Avant de commencer** — Une succursale est administrative/de facturation, jamais un entrepôt. Vous êtes l’approbatrice stock désignée approuvant Microcom.
 
-Prérequis : Demande MICROCOM approuvée avec preuve de sortie, succursale et adresse, prix compatibles, informations de société attestées et série annuelle INVOICE vérifiée pour finaliser. Permissions explicites et périmètre de revue du stock sont requis.
+### Procédure
 
-1. Ouvrez Factures et sélectionnez une demande admissible, ou son action facture autorisée. Choisissez la devise puis créez le brouillon.
-2. Vérifiez les descriptions, quantités nettes, devise et prix unitaires. Les prix du catalogue sont copiés si la devise correspond ; les prix inconnus ou incompatibles restent incomplets.
-3. Un éditeur habilité peut corriger les prix du brouillon ou actualiser explicitement les quantités. Consultez l’historique ; une actualisation peut ne constater aucun changement.
-4. Le brouillon affiche Brouillon n° ID et une somme provisoire seulement si toutes les lignes sont tarifées. Il n’a ni numéro officiel ni total finalisé.
-5. Choisissez Finaliser la facture, vérifiez la série et les preuves avant de confirmer. La finalisation fige la succursale, son adresse, la société, les descriptions et les valeurs. Ce guide ne constitue pas une autorisation d’émettre des documents réels.
-6. Pour une facture finalisée, choisissez Imprimer la facture. Le PDF dans la langue active s’ouvre dans le lecteur privé avec les commandes d’impression et de téléchargement. Les anciens fichiers restent immuables et contrôlés par empreinte.
-7. Pour une impression groupée, renseignez Du et Au selon les dates officielles d’émission, affinez les filtres puis imprimez les factures filtrées. Toutes les pages sont couvertes, uniquement pour les factures finalisées autorisées et dans la limite configurée.
+1. Confirmez la destination avec l’équipe et choisissez code/nom dans Succursale.
 
-Résultat : le numéro FAC/0001/AAAA est attribué uniquement à la finalisation. Chaque année exige une série financière vérifiée ; ne remettez jamais un compteur à zéro. Après une erreur, rechargez et demandez une vérification sans modifier les protections ni les valeurs figées.
+2. Si absente/inactive, faites contrôler Inventory → Succursales par un administrateur ; ne remplacez pas par une autre succursale ou un département.
 
-![H · Liste et filtres des factures](manual-assets/fr/annotated/invoices-annotated.png)
+3. Soumettez puis vérifiez classification/succursale dans les détails.
 
-1. Filtres des factures et dates officielles · 2. Liste des enregistrements ou lignes de matériel
+> **Contrôle important** — Microcom exige une succursale ; Client n’en accepte pas. Adresse physique requise à la création et à la facture, même pour les anciennes. La sélection ne transfère aucun stock.
 
-![H · Brouillon de facture](manual-assets/fr/annotated/invoice-draft-annotated.png)
+> **Résultat attendu** — L’entité de facturation est liée ; le stock reste central.
 
-1. Titre et actions autorisées · 2. Liste des enregistrements ou lignes de matériel
+<details><summary>Référence du code</summary>
 
-![H · Finalisation de facture — contrôle de configuration](manual-assets/fr/annotated/invoice-finalize-annotated.png)
+requests_app/approval_forms.py; requests_app/classification.py; inventory/models.py:Succursale; inventory/admin.py
 
-1. Titre du document ou de la page · 2. Formulaire de confirmation protégé
+</details>
 
-## I. Avoirs : limite de la fonctionnalité
+<a id="07-decisions"></a>
 
-Le dépôt contient les modèles d’avoirs, allocations, audits de réservation et protections financières. Aucune route utilisateur complète de création, émission ou PDF d’avoir n’existe dans invoicing/urls.py. Les permissions ou Django Admin ne constituent pas ce processus.
+## 7. Approuver, rejeter ou retourner
 
-Prérequis : Examen du processus pris en charge avec l’administrateur ou la finance ; aucune action autonome documentée.
+**Avant de commencer** — Seule votre étape principale/suppléante courante en attente d’une demande ouverte est traitable.
 
-1. Si un avoir monétaire ou un remboursement est nécessaire, contactez le responsable financier.
-2. N’utilisez ni le reçu de retour physique ni le bon de retour de valorisation comme avoir, remboursement ou ajustement de paiement.
-3. Ne créez ni ne modifiez manuellement des enregistrements protégés pour contourner le processus absent. Les allocations actives d’avoir excluent la preuve financière de retour pour toute la facture, et réciproquement.
+### Procédure
 
-Résultat : une prise en charge par le responsable, sans menu inventé ni contournement financier. Les captures de création d’avoir ne sont pas applicables à cette version.
+1. Filtrez Approvals par type, département responsable, recherche ou période Date Needed.
 
-## J. Gestion du matériel, retours physiques et bons
+2. Examinez détails, montant, matériels et pièces avant Review / Approve Request.
 
-Utilisez Gestion du matériel et ses trois onglets. La régularisation décrit les usages ; le retour physique réintègre le stock central ; le RCP constate les retours ; le BR lié à une facture valorise les retours admissibles sans modifier le stock ni la facture initiale.
+3. Choisissez Approve, Reject ou Return for changes, expliquez dans Comment puis Submit ; actualisez.
 
-Prérequis : Demande de matériel approuvée et stock déduit ; personnel du stock habilité. Le BR financier exige en plus l’activation, les permissions explicites, le périmètre autorisé, une facture finalisée et des retours postérieurs admissibles.
+> **Contrôle important** — Commentaire facultatif mais recommandé pour rejet/correction. Après l’action d’un acteur, l’autre ne répète pas. Les suivants attendent ; superutilisateur seul ne contourne pas l’affectation. Required ne saute pas d’étape.
 
-1. Depuis le détail ou Rapports matériels, ouvrez Gestion du matériel. Vue d’ensemble affiche les quantités sorties, installées CLIENT, utilisées MICROCOM, retournées et conservées pour essais.
-2. Dans Régulariser, saisissez les résultats rapportés par le technicien pour chaque matériel. Répartissez les quantités si nécessaire, identifiez le technicien et indiquez le motif. Les quantités retournées proviennent des mouvements réels.
-3. Vérifiez puis enregistrez une révision. Classification initiale, approbations, sorties et BC/BS restent inchangés. Consultez l’historique repliable. Une modification périmée impose de recharger et revoir la dernière révision.
-4. Réceptionnez et contrôlez physiquement le matériel avant Retours et bons de retour. Saisissez la quantité permise et le motif puis confirmez. Aucun nouveau circuit d’approbation n’est ajouté. Le service protégé restaure le stock une seule fois.
-5. Ne dépassez pas le solde retournable. Un article entièrement retourné n’a plus d’action active. Incohérence historique du stock — vérification nécessaire impose l’arrêt et la vérification par le responsable, jamais la suppression de mouvements.
-6. Sélectionnez les mouvements RETURN encore non documentés et confirmez Générer le bon de retour pour émettre le reçu RCP NON FINANCIER. Il couvre CLIENT, MICROCOM et les demandes sans facture. La réimpression conserve sa référence sans nouvelle entrée en stock.
-7. Utilisez Voir le PDF ou Imprimer sur le reçu. La langue active est utilisée. Un échec PDF n’annule ni le retour ni le reçu : réessayez uniquement le PDF.
-8. Pour le BR financier, utilisez l’action de la facture finalisée seulement si elle est activée et autorisée. Sélectionnez des mouvements RETURN complets admissibles, strictement postérieurs à la finalisation ; vérifiez la valorisation figée et le motif avant confirmation.
-9. Si le résultat du BR est incertain, réessayez avec la MÊME confirmation conservée et le même jeton d’émission. Un nouvel aperçu ne remplace pas cet essai. Si la session est perdue, vérifiez l’historique et contactez le support.
-10. Le BR financier préserve la facture, avec plafonds cumulés, arrondis et exclusivité des avoirs. L’aperçu signé dure deux heures, mais la session conserve son expiration de 15 minutes.
+> **Résultat attendu** — Approve avance/finalise ; Return produit Returned ; Reject clôt en Rejected, sans resoumission ordinaire.
 
-Résultat : des révisions traçables et une réintégration uniquement pour les retours physiques validés. Le BR financier reste désactivé dans cette répétition ; ses captures d’émission, PDF et reprise restent à réaliser.
+<details><summary>Référence du code</summary>
 
-Exemple représentatif : un CPE initialement demandé pour essais MICROCOM est installé chez le CLIENT ; le câble et l’alimentation inutilisés sont réceptionnés au stock. Enregistrez les retours physiques puis une régularisation des résultats mixtes. La classification initiale MICROCOM reste inchangée. Le processus couvre tous les matériels, pas seulement les CPE.
+requests_app/views.py:pending_approvals,approval_detail; requests_app/services.py; requests_app/approval_forms.py
 
-![J · Gestion du matériel — Vue d’ensemble](manual-assets/fr/annotated/material-overview-annotated.png)
+</details>
 
-1. Onglet Vue d’ensemble · 2. Quantités sorties et résultats
+<a id="08-correction"></a>
 
-![J · Éditeur de régularisation du matériel](manual-assets/fr/annotated/material-reconcile-editor-annotated.png)
+## 8. Corriger, soumettre de nouveau ou annuler
 
-1. Onglet Régulariser · 2. Éditeur des résultats : dépliez la ligne
+**Avant de commencer** — Le propriétaire actif modifie son propre brouillon ou sa demande retournée. Lisez d’abord le commentaire de retour.
 
-![J · Saisie d’un retour physique](manual-assets/fr/annotated/material-return-editor-annotated.png)
+### Procédure
 
-1. Onglet Retours et bons de retour · 2. Formulaire de retour physique : réceptionnez d’abord le matériel
+1. Ouvrez Mes demandes, la demande, puis Modifier et soumettre de nouveau ou Modifier le brouillon.
 
-## K. Référence administrateur
+2. Corrigez les informations et les lignes ; ajoutez les pièces nécessaires. Enregistrer les modifications laisse une demande retournée dans cet état.
 
-L’accès administrateur est distinct des permissions opérationnelles et financières. N’accordez pas le statut administrateur uniquement pour permettre une action du stock.
+3. Choisissez Soumettre de nouveau lorsque tout est complet. Une demande matérielle reprend le circuit applicable depuis le début.
 
-Prérequis : Compte administrateur autorisé et permissions de modèle/action appropriées.
+4. Une autorisation générale peut reprendre à l’étape de retour uniquement si les informations pertinentes, le circuit et les preuves fiables restent inchangés ; sinon elle recommence.
 
-1. Dans Django Admin, gérez les utilisateurs actifs, départements et rôles. Utilisez des identités individuelles et examinez séparément les accès aux rapports du stock et administratifs.
-2. Gérez les types et circuits selon le département responsable et les montants. Définissez titulaires, suppléants et ordre unique. Vérifiez le routage avec des données de répétition avant usage.
-3. ARRÊT : ce code permet une seule étape de revue du stock et l’exige en premier. Faites clarifier l’écart avec la configuration attendue à toute étape avant de diffuser cette procédure.
-4. Gérez le nom, code, activation et adresse des succursales. Une nouvelle succursale exige une adresse ; les anciens enregistrements vides restent compatibles, mais une nouvelle facture MICROCOM exige une adresse valide.
-5. Vérifiez les paramètres société/documents puis utilisez l’action d’attestation des informations courantes. Leur modification invalide l’attestation de contenu pour les futures émissions.
-6. Vérifiez les séries : type, année, série, format, prochain compteur et justificatifs. Utilisez l’action de vérification prévue ; ne réinitialisez jamais un compteur utilisé. Préparer une année financière ne l’atteste pas automatiquement.
-7. Consultez les historiques des demandes, régularisations, reçus et factures. Signalez les erreurs de protection sans modifier les pièces immuables. Créez les demandes dans l’application, jamais par l’ajout Django Admin.
+5. Lisez le résultat et les tentatives précédentes. Si nécessaire, utilisez Annuler la demande uniquement pour une demande ouverte admissible, puis confirmez.
 
-Résultat : permissions et attestations explicites. N’exposez ni chemins privés PDF, liens de réinitialisation, secrets de journaux ni confirmations signées dans les tickets ou captures.
+> **Contrôle important** — Les étapes antérieures sont archivées avant reconstruction du circuit actif. Les historiques antérieurs à cette fonction ne sont pas reconstitués. Une demande rejetée ne dispose pas de resoumission ordinaire.
 
-![K · Modules d’administration](manual-assets/fr/annotated/admin-annotated.png)
+> **Résultat attendu** — La référence initiale reste stable ; les décisions précédentes restent consultables comme preuves archivées.
 
-1. Modules d’administration autorisés · 2. Actions de compte et session
+<details><summary>Référence du code</summary>
 
-![K · Gestion des utilisateurs](manual-assets/fr/annotated/admin-users-annotated.png)
+requests_app/views.py:edit_request,cancel_request; requests_app/services.py:resubmit_request; templates/requests_app/edit_request.html
 
-1. Recherche administrative · 2. Enregistrements autorisés
+</details>
 
-![K · Liste des circuits d’approbation](manual-assets/fr/annotated/admin-workflows-annotated.png)
+<a id="09-stock"></a>
 
-1. Liste administrative et actions · 2. Enregistrements autorisés
+## 9. Consulter disponibilité et rapports stock
 
-![K · Configuration du circuit d’approbation](manual-assets/fr/annotated/admin-workflow-annotated.png)
+**Avant de commencer** — Disponibilité visible au sélecteur/détails autorisés. Material Reports exige can_manage_stock ou superutilisateur.
 
-1. Nom enregistré · 2. Étapes d’approbation configurées
+### Procédure
 
-![K · Nom et adresse de succursale — détail des champs](manual-assets/fr/annotated/admin-succursale-annotated.png)
+1. Vérifiez unités et disponibilité centrale ; consulter ne réserve aucun stock.
 
-1. Nom enregistré · 2. Adresse physique de la succursale
+2. Ouvrez les rapports matériels et appliquez les filtres proposés : demande, département et dates.
 
-![K · Paramètres de l’entreprise et des documents](manual-assets/fr/annotated/admin-company-annotated.png)
+3. Consultez inventaire courant, entrées, sorties/retours et activité du stock selon les rubriques disponibles. Séparez unités et devises.
 
-1. Paramètres société, distincts du titre PDF
+4. Exportez le rapport Excel filtré. Feuilles et valeurs financières restent soumises aux droits ; l’export ne mouvemente ni n’émet de document.
 
-![K · Fuseau métier et préférence de numérotation](manual-assets/fr/annotated/admin-company-timezone-annotated.png)
+> **Contrôle important** — Quantités demandées, soldes courants et retours nets sont des mesures différentes. Réduisez les exports trop volumineux et examinez toute incohérence avant une nouvelle opération.
 
-1. Fuseau métier Africa/Kinshasa · 2. Préférence de format ; vérification de série distincte
+> **Résultat attendu** — Retrouvez les demandes approuvées et exportez sans mouvement stock.
 
-![K · Séries financières vérifiées](manual-assets/fr/annotated/admin-sequences-annotated.png)
+<details><summary>Référence du code</summary>
 
-1. Liste administrative et actions · 2. Titre du document ou de la page
+inventory/models.py; requests_app/views.py:material_reports; templates/requests_app/material_reports.html
 
-## L. Rapports, exports et dépannage
+</details>
 
-Les rapports respectent votre périmètre autorisé. Les filtres réduisent ce périmètre ; ils n’accordent ni accès supplémentaire ni visibilité financière.
+<a id="10-catalog"></a>
 
-Prérequis : Droit aux rapports matériels ou superutilisateur ; permissions/périmètre financiers distincts pour les valeurs. Le rapport administratif possède son propre droit.
+## 10. Gérer le catalogue, les prix et les devises
 
-1. Renseignez la recherche, le département et les dates proposés. Réinitialiser efface les filtres. Une date invalide produit un message et aucun résultat, pas un rapport non filtré.
-2. Vérifiez sorties, retours, soldes et cohérence. Consultez le détail ou l’historique comme preuve ; une incohérence désactive les nouveaux retours.
-3. Exportez Excel avec les filtres actifs. Les utilisateurs financièrement habilités obtiennent huit feuilles ; les utilisateurs du stock seuls, sept sans Comptabilité. Les quatre graphiques sont conservés.
-4. Consultez Rapport matériel, Tableau de bord, Graphiques, Mouvements de stock, Synthèse par succursale, Synthèse par groupe et Statistiques mensuelles. Comptabilité, si autorisée, utilise uniquement les valeurs finalisées figées.
-5. Séparez devises et unités. Un prix historique vide est inconnu, jamais zéro. L’activité CLIENT reste dans les statistiques de stock mais la couverture de facture interne ne s’y applique pas ; les factures MICROCOM sont émises à la demande.
-6. Au-delà de la limite configurée, de 10 000 lignes par défaut, réduisez l’export par les filtres. Exporter ne crée ni BC/BS, ni facture, ni mouvement.
-7. Pour le support, fournissez référence, heure, action, langue et message sans données sensibles. Ne transmettez ni mots de passe, cookies, jetons de confirmation ni documents confidentiels complets.
+**Avant de commencer** — Django Admin exige l’accès staff et les permissions matérielles. Le personnel actif du stock peut aussi modifier les prix depuis les entrées de matériel.
 
-Résultat : des rapports localisés en lecture seule. Un accès manquant exige une revue des droits, pas l’utilisation du fichier confidentiel d’un autre employé.
+### Procédure
 
-![L · Rapports matériels](manual-assets/fr/annotated/material-reports-annotated.png)
+1. Dans Inventaire → Matériels, gérez catégorie, code unique, nom, description, unité, activation et seuil minimal.
 
-1. Commandes de recherche et filtres · 2. Liste des enregistrements ou lignes de matériel
+2. À l’ouverture du formulaire d’ajout, la devise provient des paramètres documentaires, sinon USD. Une devise USD, CDF ou EUR existante reste sélectionnée ; une devise non affectée affiche la valeur par défaut.
 
-![L · Filtre de date invalide — message de validation](manual-assets/fr/annotated/material-filter-error-annotated.png)
+3. Renseignez le prix unitaire connu et choisissez USD, CDF ou EUR. Un prix vide est inconnu ; zéro est un prix explicite. Aucune conversion n’est effectuée.
 
-1. Corrigez la date de début invalide · 2. Erreur de validation : aucun résultat non filtré n’est affiché
+4. Pour modifier un prix ou une devise existants, saisissez le motif puis enregistrez. Les versions du stock, du prix et du catalogue doivent correspondre ; rechargez en cas de conflit.
 
-![L · Liste et filtres des factures](manual-assets/fr/annotated/invoices-annotated.png)
+5. Vous pouvez aussi choisir un matériel dans Réceptionner du stock puis Modifier le prix. Saisissez prix, devise et motif précis, puis enregistrez dans la boîte de dialogue. Cette action est distincte de la réception.
 
-1. Filtres des factures et dates officielles · 2. Liste des enregistrements ou lignes de matériel
+6. Dans Admin, consultez l’historique des prix : acteur, motif, anciennes et nouvelles valeurs, origine. Utilisez les entrées de matériel pour tracer les livraisons.
 
-## Dépannage rapide
+> **Contrôle important** — Une devise soumise vide avec un prix prend la devise documentaire, sinon USD, même si l’ancienne différait. Ouvrir le formulaire ne modifie rien. Enregistrer la valeur affichée produit une modification auditée. La modification directe du stock dans Admin ne crée pas de réception.
 
-- Commandes d’approbation absentes : vérifiez l’affectation courante et le statut, pas seulement l’accès aux rapports.
-- Prix manquant : complétez le brouillon avec des justificatifs autorisés ; ne remplacez pas un inconnu par zéro.
-- Série ou attestation manquante : contactez l’administrateur ; ne modifiez ni compteurs ni protections.
-- Échec PDF : revenez au document émis et relancez uniquement la génération, pas l’émission.
-- Émission financière incertaine : conservez la même confirmation ; consultez l’historique si la session est perdue.
-- Retour historique excessif ou sortie ambiguë : arrêtez les retours et demandez une vérification du registre.
+> **Résultat attendu** — L’historique des prix est protégé. Les changements du catalogue ne réécrivent ni factures finalisées, ni quantités, ni anciennes écritures.
 
-## Glossaire
+<details><summary>Référence du code</summary>
 
-- Succursale — Destination administrative/de facturation ; pas un entrepôt.
-- BC — Bon de commande interne.
-- BS — Bon de sortie autorisée.
-- FAC — Facture comptable interne finalisée et immuable.
-- RCP — Reçu non financier lié aux mouvements physiques RETURN.
-- BR — Valorisation de retours liée à une facture ; ni remboursement, ni avoir, ni mouvement de stock.
-- Reconciliation / Régularisation — Rapport des résultats réels du matériel, conservé par révisions.
-- Africa/Kinshasa — Fuseau métier des références annuelles et rapports opérationnels.
+inventory/models.py; inventory/admin.py; core/document_config.py
+
+</details>
+
+<a id="11-deduction"></a>
+
+## 11. Comprendre la déduction automatique
+
+**Avant de commencer** — Aucun bouton Deduct Stock. Le dernier approbateur affecté termine le circuit matériel.
+
+### Procédure
+
+1. Examinez puis soumettez la dernière action Approve.
+
+2. Si stock insuffisant, faites contrôler par le stock ; ne forcez pas Approved.
+
+3. Après réussite, vérifiez Approved et le suivi ; un administrateur autorisé peut consulter les OUT liés.
+
+> **Contrôle important** — Le service verrouille demande/soldes et utilise stock_deducted contre les répétitions. Un échec annule la dernière approbation. Protections inspectées, pas testées à l’exécution pour ces guides.
+
+> **Résultat attendu** — Déduction unique et OUT avec acteur. Documents/factures/régularisation ne déduisent pas à nouveau.
+
+<details><summary>Référence du code</summary>
+
+requests_app/services.py:approve_step; requests_app/stock_services.py:deduct_material_stock
+
+</details>
+
+<a id="12-bcbs"></a>
+
+## 12. Émettre les BC et BS
+
+**Avant de commencer** — BC : commande interne ; BS : autorisation de sortie. Exige Approved, stock_deducted, lignes matériel et accès documentaire autorisé.
+
+### Procédure
+
+1. Dans les détails ou Material Reports, ouvrez l’action BC ou BS voulue.
+
+2. À la première émission, contrôlez type/référence puis Confirm & Print. Cancel n’attribue rien.
+
+3. Vérifiez référence officielle, Print 1 copy / Print 2 copies ; plus de six articles impose un exemplaire. Print / Save as PDF, vérifiez A4, signez/archivez.
+
+> **Contrôle important** — Confirmation unique ; même référence en réimpression. Exemples : BC/0001/2026 et BS/0001/2026, pas des données réelles. Aucun mouvement stock. L’impression groupée historique n’attribue pas de BC/BS officiels.
+
+> **Résultat attendu** — Le document numéroté s’ouvre. Référence figée ; noms, stock actuel et remarques peuvent varier à la réimpression.
+
+<details><summary>Référence du code</summary>
+
+requests_app/material_documents.py; requests_app/views.py:material_document; templates/requests_app/material_document_confirm.html
+
+</details>
+
+<a id="13-invoice-draft"></a>
+
+## 13. Créer et préparer un brouillon de facture
+
+**Avant de commencer** — Une facture par demande MICROCOM admissible, à la demande. Exige view_invoice + add_invoice et périmètre, preuves Approved/déduction, revue désignée/succursale et société valide.
+
+### Procédure
+
+1. Ouvrez Factures. Les demandes disponibles pour examen de facturation apparaissent en premier, avant l’historique. Recherchez la référence avec le bouton Rechercher de cette rubrique, puis ouvrez le lien de la demande admissible.
+
+2. Dans l’écran de création, vérifiez la demande MICROCOM et la succursale, choisissez la devise et confirmez la création du brouillon. L’admissibilité est contrôlée avant enregistrement.
+
+3. Sous les demandes disponibles, les factures existantes disposent de leur recherche, des filtres de dates d’émission et de statut, de l’impression des factures filtrées, du tableau et de la pagination. La recherche de demandes ne filtre ni factures ni impression.
+
+4. Edit invoice draft : vérifiez Net billable quantity, saisissez Unit price autorisés et éventuel Invoice note ; Save draft prices.
+
+5. Après de nouveaux retours physiques : Refresh issued quantities, puis revérifiez/enregistrez avant finalisation.
+
+> **Contrôle important** — CLIENT exclu. Aucun numéro officiel au brouillon. Net = sorties moins retours. Prix d’autre devise inconnu, sans conversion. Zéro explicite, vide inconnu. Preuves ambiguës/doublons bloquent.
+
+> **Résultat attendu** — Brouillon modifiable non numéroté prêt à vérifier ; aucune opération stock/paiement.
+
+<details><summary>Référence du code</summary>
+
+invoicing/permissions.py; invoicing/views.py:invoice_list,invoice_create,invoice_edit; invoicing/services.py
+
+</details>
+
+<a id="14-invoice-issue"></a>
+
+## 14. Vérifier et finaliser la facture
+
+**Avant de commencer** — Exige view_invoice + finalize_invoice et périmètre ; prix/net vérifiés ; attestation société, série annuelle vérifiée et adresse physique de succursale.
+
+### Procédure
+
+1. Ouvrez Finalize invoice et comparez articles, net, prix et totaux aux preuves.
+
+2. Choisissez Invoice series. Si absente, faites vérifier la numérotation ; n’inventez pas de numéro.
+
+3. Cochez la confirmation permanente puis Finalize invoice. Vérifiez Finalized, numéro, date, succursale, total et historique.
+
+> **Contrôle important** — Revue utilisateur et attestations sont des prérequis, pas un statut supplémentaire. Données financières/parties et numéro deviennent immuables. Devise homogène ; date/année Africa/Kinshasa. Nouveaux retours/révision périmée : actualiser/revoir.
+
+> **Résultat attendu** — Pièce comptable définitive sans seconde déduction. Les retours ne la réécrivent pas ; modification/suppression ordinaire indisponible.
+
+<details><summary>Référence du code</summary>
+
+invoicing/forms.py; invoicing/services.py:finalize_invoice; invoicing/views.py:invoice_finalize
+
+</details>
+
+<a id="15-credit-boundary"></a>
+
+## 15. Avoirs : limite de disponibilité
+
+**Avant de commencer** — Modèles/protections de base présents, mais aucune route utilisateur de création/émission ni cycle administratif d’avoir enregistré trouvé.
+
+### Procédure
+
+1. Relevez facture d’origine et preuves de retour physique.
+
+2. Demandez l’évaluation aux Finances/informatique ; n’inventez pas de bouton Create credit note.
+
+3. Distinguez reçu RCP, valorisation liée à la facture et avoir comptable.
+
+> **Contrôle important** — Protections : facture finalisée/devise, retours attribuables, plafonds, revue explicite, numérotation vérifiée et preuves finales immuables. Cela ne prouve ni protections déployées ni parcours utilisateur. Les affectations d’avoir actives peuvent bloquer les bons valorisés.
+
+> **Résultat attendu** — Besoin transmis sans fabriquer d’avoir. Limite de disponibilité, pas procédure d’émission.
+
+<details><summary>Référence du code</summary>
+
+invoicing/models.py:CreditNote,CreditAllocation,CreditOperation; invoicing/migrations/0004_credit_reservation_schema.py; invoicing/migrations/0005_credit_financial_guards.py; invoicing/urls.py; invoicing/admin.py
+
+</details>
+
+<a id="16-physical-return"></a>
+
+## 16. Enregistrer un retour physique
+
+**Avant de commencer** — Accès stock, demande Approved/déduite et preuves OUT/RETURN cohérentes requis. Recevez les biens avant saisie.
+
+### Procédure
+
+1. Material Management → Returns & Receipts : développez l’article. La page séparée Return to Stock reste disponible.
+
+2. Vérifiez Available to return ; saisissez Returned Quantity positive (deux décimales) et Return Reason obligatoire.
+
+3. Confirm return to stock, vérifiez le dialogue puis Confirm ; Back annule. Vérifiez réussite/reste. Retour complet : aucun formulaire actif.
+
+> **Contrôle important** — Plafond cumulé contrôlé. Verrous/transaction protègent stock/mouvement/audit. Rejeu exact du jeton validé sans double ajout. Si incertain, même formulaire ou historique, pas nouvelle opération. Anciennes preuves ambiguës bloquées. Contrôles serveur sans JavaScript.
+
+> **Résultat attendu** — Stock restauré une fois, RETURN/motif. Dix sortis moins quatre retournés : six admissibles. Aucun document financier/reçu automatique.
+
+<details><summary>Référence du code</summary>
+
+requests_app/stock_services.py:return_material_stock,material_return_totals; requests_app/material_outcome_views.py; requests_app/stock_forms.py
+
+</details>
+
+<a id="17-reconciliation"></a>
+
+## 17. Régulariser l’utilisation du matériel
+
+**Avant de commencer** — Le stock enregistre les résultats pour le technicien d’origine d’une demande Approved/déduite. Classification initiale inchangée.
+
+### Procédure
+
+1. Material Management → Overview, puis Reconcile et développez chaque article.
+
+2. Destination rapide pour tout le reste ou Split quantities / multiple outcomes : CLIENT-installed, MICROCOM-used, Retained / testing.
+
+3. Physically returned vient des mouvements, en lecture seule. Les quatre résultats totalisent la sortie. Short explanation, Review and save, vérifiez puis Confirm ; consultez Reconciliation history.
+
+> **Contrôle important** — Avant révision, usage inconnu. De nouveaux retours peuvent produire Review required. Rechargez et ajoutez une révision ; les anciennes restent. Aucun changement stock/facture.
+
+> **Résultat attendu** — Résultats versionnés pour toute unité : dix sortis = quatre CLIENT + deux MICROCOM + un conservé + trois retournés.
+
+<details><summary>Référence du code</summary>
+
+requests_app/material_outcomes.py:reconcile; requests_app/material_outcome_views.py; templates/requests_app/material_outcomes.html
+
+</details>
+
+<a id="18-receipt"></a>
+
+## 18. Émettre un reçu RCP non financier
+
+**Avant de commencer** — Generate Bon de retour crée un reçu RCP de retour physique, pas un avoir ou une valorisation liée à la facture.
+
+### Procédure
+
+1. Avec accès stock, sélectionnez les RETURN réels dans Material Return Receipt.
+
+2. Generate Bon de retour, vérifiez puis Confirm ; Back n’émet rien.
+
+3. Vérifiez référence/historique RCP. Réglez la langue de l’application puis View PDF / Print ; utilisez le lecteur pour enregistrer/imprimer.
+
+> **Contrôle important** — Retours réels distincts pas encore reçus dans un RCP. Rejeu exact : même reçu. Ni stock, avoir, remboursement ou ajustement facture. Échec PDF : reprise du reçu, pas nouvelle émission.
+
+> **Résultat attendu** — Référence RCP/année permanente et données de retour figées en PDF protégé.
+
+<details><summary>Référence du code</summary>
+
+requests_app/material_outcomes.py:issue_receipt; requests_app/material_outcome_views.py:receipt_pdf; requests_app/return_receipt_documents.py
+
+</details>
+
+<a id="19-return-note"></a>
+
+## 19. Émettre un bon valorisé lié à la facture
+
+**Avant de commencer** — Exige interface activée, facture interne finalisée, retours complets admissibles, série/année RETURN_NOTE vérifiée, périmètre et droits dédiés.
+
+### Procédure
+
+1. Depuis la facture finalisée : Issue material return note ou Material return note history.
+
+2. Sélectionnez mouvements complets, Operation reason et Return note series ; Preview material return note.
+
+3. Vérifiez facture, prix figés, quantités, valeur retournée, cumul et valeur nette ajustée. Change selection si besoin ; aperçu sans numéro.
+
+4. Cochez la confirmation permanente puis Issue material return note ; vérifiez numéro/historique puis Print selon droits.
+
+> **Contrôle important** — Paramètres actuels activés, repli/anciennes notes désactivés : vérifiez le déploiement sans changer les drapeaux. Retours exclus avant facture, doublons, preuve ambiguë ou avoirs affectés actifs peuvent bloquer. Confirmation max deux heures, session parfois plus courte. Réponse perdue : historique d’abord.
+
+> **Résultat attendu** — Valorisation permanente aux prix d’origine sans stock, avoir/ajustement paiement ni réécriture de facture. Distincte du RCP.
+
+<details><summary>Référence du code</summary>
+
+invoicing/return_note_access.py; invoicing/return_note_views.py; invoicing/return_note_services.py; invoicing/return_note_forms.py; config/settings.py
+
+</details>
+
+<a id="20-audit"></a>
+
+## 20. Suivre approbations et audit
+
+**Avant de commencer** — Utilisez propriété/affectation ou droits rapport/facture ; accès rapport seul n’ouvre pas les détails ordinaires.
+
+### Procédure
+
+1. My Requests → détails : référence/statut, origine/responsable, pièces, Approval Timeline et Audit Log.
+
+2. Approval History affiche votre dernière action non en attente admissible par demande, pas toutes les affectations ; filtre responsable.
+
+3. Invoice history → Audit details explique les événements financiers. Material Management conserve révisions et historique RCP.
+
+4. Administration Report : type configuré approuvé, recherche, origine/responsable/demandeur et dates de soumission, puis View Document / Print (25/page).
+
+5. Pour une autorisation Administration approuvée, Voir le document / Imprimer ouvre le Bon d’accès dédié. Le droit au rapport ne donne pas de droit ordinaire de modification ou d’approbation.
+
+> **Contrôle important** — Les approbations antérieures sont archivées à la resoumission et consultables dans les tentatives précédentes. Les historiques manquants plus anciens ne sont pas reconstitués. L’audit ne fige pas tous les champs.
+
+> **Résultat attendu** — Le support relie référence/action/heure en distinguant décisions, stock et documents.
+
+<details><summary>Référence du code</summary>
+
+requests_app/views.py:request_detail,approval_history,administration_reports; invoicing/views.py:invoice_detail; templates/requests_app/request_detail.html
+
+</details>
+
+<a id="21-users"></a>
+
+## 21. Gérer comptes et permissions
+
+**Avant de commencer** — Accès staff/modèles et procédure de comptes approuvés requis. Aucun compte créé pendant cette préparation.
+
+### Procédure
+
+1. Accounts → Users : identité, courriel requis, département, rôle, Active ; Departments/Roles séparément.
+
+2. Accordez Can Manage Stock Reports / Can view administration reports selon besoin ; accès staff/modèles distinct.
+
+3. Factures : view_invoice et add/change/finalize nécessaires, avec périmètre d’affectation revue stock. Global : superutilisateur ou staff + manage_all_invoices.
+
+4. Bons valorisés : view_invoice + view_materialreturnnote ; aperçu aussi issue_materialreturnnote ; émission aussi add_materialreturnnote ; documents aussi view_materialreturnnote_document. Enregistrez puis faites vérifier.
+
+> **Contrôle important** — ModelAdmin personnalisé sans assistant standard : jamais de mot de passe en clair dans le champ brut ; procédure approuvée. Désactivez les départs, conservez les acteurs. Stock ou staff seul ne donne pas facturation/périmètre.
+
+> **Résultat attendu** — Les comptes existants ont les droits approuvés ; les étapes courantes affectées contrôlent l’approbation.
+
+<details><summary>Référence du code</summary>
+
+accounts/admin.py; accounts/models.py; invoicing/permissions.py; requests_app/material_outcomes.py:authorize
+
+</details>
+
+<a id="22-workflows"></a>
+
+## 22. Configurer les workflows
+
+**Avant de commencer** — Administrateur autorisé et politique approuvée. Routage par type/montant et département responsable, puis repli global sans département.
+
+### Procédure
+
+1. Gérez Request types et indicateurs Requires materials / Requires amount / Is permission request ; espace de référence affecté inchangé.
+
+2. Workflows → Approval workflows : type, responsable facultatif, bornes, Active.
+
+3. Ajoutez étapes ordonnées uniques : utilisateur ou rôle actif du département responsable, avec suppléant si besoin.
+
+4. Pour un circuit matériel, désignez au plus une revue du stock à toute position valide, avec titulaire nominatif actif et suppléant actif éventuel. Enregistrez sans réordonner les étapes existantes.
+
+> **Contrôle important** — La revue du stock ne devient accessible qu’après les approbations précédentes. Vérifiez le circuit avec des données de répétition autorisées.
+
+> **Résultat attendu** — Les futures soumissions suivent la configuration ; enregistrer ne prouve pas la réception à l’exécution.
+
+<details><summary>Référence du code</summary>
+
+workflows/models.py; workflows/admin.py; requests_app/services.py:get_applicable_workflow,create_approval_steps
+
+</details>
+
+<a id="23-company"></a>
+
+## 23. Configurer société et informations documentaires vérifiées
+
+**Avant de commencer** — Droits staff/modèles dont invoicing.add_companyverification pour société et invoicing.change_documentsequence pour séquence ; historique externe contrôlé.
+
+### Procédure
+
+1. Core → Company and document settings : nom, adresse vérifiée, contacts, logo statique existant, devise USD/CDF/EUR et Africa/Kinshasa ; Save.
+
+2. Dans la liste, sélectionnez et Attest current company information après contrôle ; réattestez les changements pertinents.
+
+3. Invoicing → Document sequences : INVOICE ou RETURN_NOTE, année/série/format/départ sûr et preuves externes. Save, sélectionnez puis Attest checked external numbering history.
+
+4. Inventory → Succursales : code/nom/actif/adresse ; nouvelles succursales et facturation exigent l’adresse.
+
+> **Contrôle important** — N’inventez pas de compteur, ne baissez pas les utilisés et ne réécrivez pas les références. Format seul sans attribution ; BC/BS et RCP ont des compteurs séparés. Aucune autorisation de commande annuelle ou changement de drapeau.
+
+> **Résultat attendu** — Société courante et numérotation annuelle attestées, émission possible si autres contrôles réussis ; documents figés inchangés.
+
+<details><summary>Référence du code</summary>
+
+core/models.py; core/admin.py; invoicing/admin.py; invoicing/models.py:CompanyVerification,DocumentSequence; inventory/admin.py
+
+</details>
+
+<a id="24-print"></a>
+
+## 24. Imprimer et télécharger les documents
+
+**Avant de commencer** — Accès documentaire autorisé, documents émis/finalisés et navigateur PDF. Vérifiez type, référence et langue.
+
+### Procédure
+
+1. Réglez la langue ; facture finalisée → Print Invoice. Le serveur prépare le PDF protégé ; utilisez le lecteur.
+
+2. Factures filtrées : deux dates d’émission dans Invoices, recherche/statut puis Print Invoices. Sélection serveur des finalisées sur toutes les pages ; maximum 20.
+
+3. BC/BS : Print / Save as PDF et exemplaires. RCP : View PDF / Print ; bon valorisé : Print.
+
+4. Autorisations approuvées : Permission Document → Print / Save PDF. Lecteurs Administration Report : View Document / Print.
+
+> **Contrôle important** — Factures via PDF protégé, pas impression du corps de page. Limites de 20, taille/pages. Échec PDF sans annuler émission : reprenez l’existant, pas une nouvelle facture/reçu. Impression groupée historique sans BC/BS officiel.
+
+> **Résultat attendu** — PDF/imprimé vérifié avec référence existante. Mise en page, imprimante et protection à vérifier en répétition.
+
+<details><summary>Référence du code</summary>
+
+invoicing/views.py:invoice_print,invoice_bulk_print; invoicing/printing.py; invoicing/print_delivery.py; requests_app/material_outcome_views.py; templates/invoicing/list.html
+
+</details>
+
+<a id="25-errors"></a>
+
+## 25. Dépanner sans doublons
+
+**Avant de commencer** — Lisez l’erreur exacte et conservez la référence. Configuration/preuves incohérentes relèvent de l’informatique.
+
+### Procédure
+
+1. Workflow/département/approbateur absent : signalez type, responsable et montant ; vérifiez My Requests avant recréation.
+
+2. Classification : Client sans succursale, Microcom avec active. Stock/retour excessif/révision périmée : actualisez/corrigez, jamais de statut/mouvement forcé.
+
+3. Facture sans prix/adresse/attestation/série : Finances/informatique. Échec PDF : reprise de l’existant.
+
+4. Confirmation expirée : rouvrez/refaites l’aperçu. Émission incertaine : historique d’abord. Forbidden : permission et périmètre.
+
+> **Contrôle important** — Jamais de nouvelle opération pour vérifier la première. Ni mots de passe ni pièces confidentielles au support. Écran d’avoir absent : limite produit.
+
+> **Résultat attendu** — Résolvez/transmettez référence, heure et message exact, sans doublons stock/document.
+
+<details><summary>Référence du code</summary>
+
+requests_app/approval_forms.py; requests_app/stock_services.py; invoicing/services.py; invoicing/return_note_services.py; PDF error templates
+
+</details>
+
+<a id="26-entry-new"></a>
+
+## 26. Créer un matériel et son stock initial
+
+**Avant de commencer** — Personnel actif du stock ou superutilisateur. Stock central unique, sans choix d’entrepôt.
+
+### Procédure
+
+1. Ouvrez Entrées de matériel puis Enregistrer un nouveau matériel.
+
+2. Saisissez nom, code unique, catégorie, unité, description, activation, seuil et prix facultatif. Ce formulaire propose USD initialement ; choisissez explicitement CDF ou EUR si nécessaire.
+
+3. Saisissez la quantité initiale (au moins 0,01), la date et, si disponibles, fournisseur, référence de livraison et notes.
+
+4. Choisissez Vérifier les détails. Rien n’est encore réceptionné. Contrôlez identité, unité, prix, quantité et livraison ; utilisez Modifier pour corriger.
+
+5. Choisissez Confirmer et enregistrer une fois. Lisez Réception terminée et conservez la référence IN. Ouvrez les détails ou l’historique des réceptions.
+
+> **Contrôle important** — Ce formulaire ne permet pas un stock initial nul ; la création du catalogue dans Admin est distincte. Brouillon et vérification ne créent aucun stock. Après perte de réponse, reprenez la même opération au lieu de créer une livraison en double.
+
+> **Résultat attendu** — La confirmation crée ensemble matériel, réception et mouvement IN. Le stock initial est enregistré une seule fois.
+
+<details><summary>Référence du code</summary>
+
+inventory/entry_forms.py; inventory/entry_services.py; inventory/entry_views.py; templates/inventory/entry_review.html
+
+</details>
+
+<a id="27-entry-existing"></a>
+
+## 27. Réceptionner un matériel existant
+
+**Avant de commencer** — Personnel actif du stock ou superutilisateur. Le droit de modifier les prix seul ne permet ni réception ni historique des réceptions.
+
+### Procédure
+
+1. Ouvrez Entrées de matériel → Réceptionner du stock et recherchez le matériel existant.
+
+2. Vérifiez code, unité, stock courant et prix. Saisissez quantité reçue, date, fournisseur/référence et notes si disponibles.
+
+3. Le stock estimé après réception reste indicatif. Choisissez Vérifier les détails et contrôlez le récapitulatif.
+
+4. Choisissez Confirmer et enregistrer. Relevez référence IN, quantité reçue et stock après réception.
+
+5. Consultez les détails ou l’historique. Nouvelle entrée commence une livraison distincte.
+
+> **Contrôle important** — La confirmation présente les soldes historiques enregistrés, pas le stock actuel. Les anciens reçus sans instantané identitaire signalent les informations du catalogue courant. Une réception n’est liée ni à une demande technicien, ni à une facture ou un avoir.
+
+> **Résultat attendu** — La réception confirmée augmente une seule fois le stock central et crée un mouvement entrant.
+
+<details><summary>Référence du code</summary>
+
+inventory/entry_forms.py; inventory/entry_views.py; inventory/entry_services.py; templates/inventory/receipt_confirmation.html
+
+</details>
+
+<a id="28-entry-drafts"></a>
+
+## 28. Enregistrer, reprendre et annuler un brouillon d’entrée
+
+**Avant de commencer** — Accès au stock ; le brouillon appartient à son créateur et reste distinct d’un brouillon de demande.
+
+### Procédure
+
+1. Dans l’un des formulaires d’entrée, choisissez Enregistrer le brouillon pour conserver les informations sans réceptionner de stock.
+
+2. Après la confirmation d’enregistrement, choisissez Continuer la modification ou Nouvelle entrée. Les brouillons enregistrés vous proposent Reprendre et Annuler.
+
+3. Reprenez le brouillon, complétez-le, puis vérifiez les détails et confirmez l’enregistrement.
+
+4. Pour abandonner un brouillon ouvert, choisissez Annuler le brouillon, vérifiez puis confirmez.
+
+5. Si un autre onglet a modifié le brouillon, rechargez les informations courantes. Un brouillon terminé ne peut pas être annulé ; consultez sa réception.
+
+> **Contrôle important** — Le brouillon ne réserve, ne crée ni matériel ni mouvement IN. Son annulation ne contre-passe pas une réception terminée. N’utilisez pas un ancien onglet pour écraser des données récentes.
+
+> **Résultat attendu** — Seule la confirmation comptabilise la réception ; conserver ou annuler un travail inachevé ne change pas le stock.
+
+<details><summary>Référence du code</summary>
+
+inventory/entry_drafts.py; inventory/entry_views.py; templates/inventory/draft_saved_notice.html; templates/inventory/cancel_entry_draft.html
+
+</details>
+
+<a id="29-notifications"></a>
+
+## 29. Utiliser les notifications et préférences de courriel
+
+**Avant de commencer** — Compte individuel actif. Une notification ne remplace pas les droits d’approbation.
+
+### Procédure
+
+1. Ouvrez Notifications dans la navigation. Choisissez Toutes ou Non lues ; Afficher toutes les notifications ouvre l’historique paginé.
+
+2. Vérifiez référence et état courant. Voir la demande marque la notification comme lue et ouvre la demande uniquement si vos droits le permettent encore.
+
+3. Marquer comme lue accuse réception sans approuver, rejeter ni retourner la demande.
+
+4. Consultez Approbations en attente pour le travail réellement disponible. Une notification historique ne réactive pas une affectation terminée ou remplacée.
+
+5. Demandez à un administrateur habilité de régler Recevoir les notifications par courriel dans Comptes → Utilisateurs. Ce choix concerne les courriels facultatifs du circuit, pas les messages de sécurité ni les notifications internes.
+
+> **Contrôle important** — Le badge compte les notifications d’approbation actives non lues, pas tous les événements historiques. Les anciens événements ne sont pas reconstitués. Un échec de courriel n’annule pas la demande ; consultez les files de travail.
+
+> **Résultat attendu** — La lecture est personnelle. Marquer comme lue ne change ni décision ni stock.
+
+<details><summary>Référence du code</summary>
+
+requests_app/notifications.py; requests_app/notification_views.py; templates/includes/workflow_notifications.html; accounts/admin.py
+
+</details>
+
+<a id="glossary"></a>
+
+## A. Glossaire et références
+
+Nouvelles références : REQ-{espace}-{compteur}/{année}, ex. REQ-MAT-0001/2026 ou REQ-ADM-0001/2026 : formats illustratifs, pas des données réelles. Durables à la création, brouillons compris ; anciennes références inchangées. BC/BS/RCP attribuent séparément à l’émission dans l’année Africa/Kinshasa. Ne réutilisez/réécrivez jamais manuellement.
+
+| Term / Terme | Meaning / Sens |
+|---|---|
+| Draft / Returned / Rejected | Non soumis / à corriger / clos par rejet : états distincts. |
+| Pending / In Review / Approved / Cancelled | Approbation ouverte / en examen / réussite finale / arrêté avant fin. |
+| Origine / responsable | Département demandeur / Request For Department pour routage et principaux filtres. |
+| CLIENT / MICROCOM | Classification initiale confirmée par revue du stock désignée. |
+| BC / BS | Commande interne / sortie autorisée, chacun avec référence officielle. |
+| Facture | Pièce comptable figée d’une demande MICROCOM admissible ; pas une opération de paiement. |
+| Reçu RCP | Preuve non financière de retour physique, ni avoir/remboursement/ajustement facture. |
+| Bon valorisé | Valorisation liée à facture du matériel déjà retourné, pas restauration physique ou avoir. |
+| Régularisation | Résultats versionnés : installé CLIENT, utilisé MICROCOM, conservé, retourné. |
+| OUT / RETURN | Mouvement réel de déduction / restauration du stock. |
+| Material Issue Note | Remarques libres : le stock ouvre les détails approuvés, modifie puis Save Note. Visible dans documents/rapports ; pas de numéro distinct. Le texte antérieur complet n’est pas conservé par l’événement. |
+| Audit / données figées | Preuves d’actions / données documentaires conservées ; pas d’historique complet de tous les champs. |
+
+Édition textuelle finalisée. Suivez les procédures numérotées correspondant à vos droits. Les captures de l’application feront l’objet d’une amélioration distincte.
