@@ -1,0 +1,29 @@
+{% load i18n static %}
+<link rel="stylesheet" href="{% static 'requests_app/agent_picker.css' %}">
+<div class="agent-picker site-picker" data-site-picker data-url="{% url 'site_search' %}"
+ data-selected="{% trans 'sites selected' %}" data-remove="{% trans 'Remove site' %}" data-edit="{% trans 'Edit site' %}"
+ data-max="{% trans 'Select at most 5 sites.' %}" data-duplicate="{% trans 'This directory site is already selected.' %}"
+ data-same-name="{% trans 'A site with this name is already selected. Add a different site with the same name?' %}"
+ data-required="{% trans 'Enter a valid site name of at most 255 characters.' %}" data-invalid="{% trans 'Invalid site selection.' %}"
+ data-loading="{% trans 'Loading…' %}" data-empty="{% trans 'No matching sites.' %}" data-failed="{% trans 'Unable to load sites. Try again.' %}"
+ data-legacy="{{ form.site_legacy_text }}">
+ <div class="agent-field-heading">
+ <label for="site-search">{% trans 'Sites' %}</label>
+ <button type="button" class="agent-info-toggle" data-site-info-toggle aria-label="{% trans 'About site selection' %}" aria-controls="site-info-content" aria-expanded="false"><span aria-hidden="true">i</span></button>
+ <span class="agent-counter" data-site-counter aria-live="polite"></span>
+ <div id="site-info-content" class="agent-info-content" role="note" data-site-info-content hidden>{% trans "Search and select sites from the directory. Choose 'Other site' to enter an unlisted site manually. Maximum: 5 sites in total. All sites share the same validity dates." %}</div>
+ </div>
+ {{ form.site_selections }}{{ form.site_selections.errors }}
+ {% if form.site_legacy_text %}<div data-site-legacy><p>{% trans 'Previously recorded site' %}: {{ form.site_legacy_text }}</p><button type="button" data-site-replace>{% trans 'Replace with site selections' %}</button></div>{% endif %}
+ <div data-site-controls {% if form.site_legacy_text %}hidden{% endif %}>
+ <div class="agent-tags" data-site-tags></div>
+ <div class="agent-search-area">
+ <div class="agent-search-wrap"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg><input id="site-search" type="search" role="combobox" aria-autocomplete="list" aria-controls="site-results" aria-expanded="false" autocomplete="off" placeholder="{% trans 'Search sites by name...' %}"></div>
+ <div class="agent-dropdown" data-site-dropdown hidden><div id="site-results" role="listbox" aria-label="{% trans 'Site directory' %}"></div><button type="button" data-site-more hidden>{% trans 'More sites' %}</button></div>
+ <button type="button" class="agent-manual-action" data-site-manual>{% trans 'Other site — Add manually' %}</button>
+ </div>
+ <div class="agent-manual" data-site-manual-form hidden><label for="site-manual-name">{% trans 'Site name' %}</label><input id="site-manual-name" maxlength="255" autocomplete="off"><div><button type="button" data-site-add>{% trans 'Save site' %}</button> <button type="button" data-site-cancel>{% trans 'Cancel' %}</button></div></div>
+ </div>
+ <p data-status data-site-status role="status" aria-live="polite"></p>
+</div>
+<script src="{% static 'requests_app/site_picker.js' %}" defer></script>

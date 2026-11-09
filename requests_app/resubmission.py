@@ -54,6 +54,9 @@ def information(request):
     # its database-scale value so 12 and 12.00 represent the same approval scope.
     if request.amount is not None:
         values["amount"] = format(Decimal(str(request.amount)), ".2f")
+    # Attempt evidence is not editable approval information.
+    from .agents import INTERNAL_KEYS
+    values["metadata_json"] = {k: v for k, v in values["metadata_json"].items() if k not in INTERNAL_KEYS}
     values["type_flags"] = {"permission": request.request_type.is_permission_request,
                             "materials": request.request_type.requires_materials,
                             "amount": request.request_type.requires_amount, "code": request.request_type.code,

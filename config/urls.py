@@ -10,6 +10,8 @@ from requests_app import material_outcome_views
 
 from requests_app.views import (
     create_request,
+    agent_user_search,
+    site_search,
     my_requests,
     pending_approvals,
     approval_detail,
@@ -34,6 +36,7 @@ from inventory.price_views import material_price
 from inventory.receipt_history import receipt_history, receipt_detail
 
 urlpatterns = [
+    path("requests/site-directory/", site_search, name="site_search"),
     path("notifications/", notification_views.inbox, name="notification_inbox"),
     path("notifications/live/", notification_views.snapshot, name="notification_snapshot"),
     path("notifications/<int:notice_id>/read/", notification_views.read, name="notification_read"),
@@ -61,6 +64,7 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 
+    path("requests/agent-users/", agent_user_search, name="agent_user_search"),
     # REQUESTS
     path("requests/", my_requests, name="my_requests"),
     path("requests/create/", create_request, name="create_request"),

@@ -107,8 +107,8 @@
 
     <table class="info-table">
         <tr>
-            <th>{% trans "Site" %}</th>
-            <td colspan="3">{{ metadata.site }}</td>
+            <th>{% if request_obj.metadata_json.site_selections %}{% trans "Sites" %}{% else %}{% trans "Site" %}{% endif %}</th>
+            <td colspan="3">{% include 'requests_app/includes/site_names.html' with sites=request_obj.site_names %}</td>
         </tr>
         <tr>
             <th>{% trans "Valid From" %}</th>
@@ -167,6 +167,7 @@
         </tbody>
     </table>
 
-    <p class="approval-note">______________________________________________________</p>
+    <div class="signature-area"><p class="approval-note">______________________________________________________</p>
     <p class="approval-note">{% trans "Please print, sign and archive it for record keeping." %}</p>
+    </div>
 </div>

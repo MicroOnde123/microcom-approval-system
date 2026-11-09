@@ -1,0 +1,39 @@
+{% load i18n static %}
+<link rel="stylesheet" href="{% static 'requests_app/agent_picker.css' %}">
+<div class="agent-picker" data-agent-picker data-url="{% url 'agent_user_search' %}"
+ data-remove="{% trans 'Remove person' %}" data-edit="{% trans 'Edit person' %}"
+ data-selected="{% trans 'selected' %}" data-max="{% trans 'Select at most 10 people.' %}"
+ data-duplicate="{% trans 'This registered user is already selected.' %}"
+ data-same-name="{% trans 'A person with this name is already selected. Add another person with the same name?' %}"
+ data-required="{% trans 'First name and surname are required.' %}"
+ data-invalid="{% trans 'Invalid person selection.' %}"
+ data-loading="{% trans 'Loading…' %}" data-empty="{% trans 'No matching users.' %}"
+ data-failed="{% trans 'Unable to load users. Try again.' %}" data-legacy="{{ form.agent_legacy_text }}">
+ <div class="agent-field-heading">
+ <label for="agent-search">{% trans 'Microcom Agents' %}</label>
+ <button type="button" class="agent-info-toggle" data-agent-info-toggle aria-label="{% trans 'About Microcom agent selection' %}" aria-expanded="false" aria-controls="agent-info-content"><span aria-hidden="true">i</span></button>
+ <span class="agent-counter" data-counter aria-live="polite"></span>
+ <div id="agent-info-content" class="agent-info-content" data-agent-info-content role="note" hidden>{% trans "Search and select employees from the list. If someone is not listed, choose 'Other person' to enter their first name and surname. Maximum: 10 people in total." %}</div>
+ </div>
+ {{ form.agent_selections }}
+ {{ form.agent_selections.errors }}
+ {% if form.agent_legacy_text %}<div data-legacy-panel><p>{% trans 'Previously recorded names' %}: {{ form.agent_legacy_text }}</p><button type="button" data-replace>{% trans 'Replace with person selections' %}</button></div>{% endif %}
+ <div data-picker-controls {% if form.agent_legacy_text %}hidden{% endif %}>
+ <div class="agent-tags" data-tags></div>
+ <div class="agent-search-area">
+ <div class="agent-search-wrap"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg><input id="agent-search" type="search" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="agent-results" placeholder="{% trans 'Search employees by name...' %}"></div>
+ <div class="agent-dropdown" data-dropdown hidden>
+ <div id="agent-results" role="listbox" aria-label="{% trans 'Microcom users' %}"></div>
+ <button type="button" data-more hidden>{% trans 'More users' %}</button>
+ </div>
+ <button type="button" class="agent-manual-action" data-manual>{% trans 'Other person — Add manually' %}</button>
+ </div>
+ <div class="agent-manual" data-manual-form hidden>
+ <label for="agent-first">{% trans 'First name(s)' %}</label><input id="agent-first" maxlength="255" autocomplete="off">
+ <label for="agent-surname">{% trans 'Surname' %}</label><input id="agent-surname" maxlength="255" autocomplete="off">
+ <div><button type="button" data-add>{% trans 'Save person' %}</button> <button type="button" data-cancel>{% trans 'Cancel' %}</button></div>
+ </div>
+ </div>
+ <p data-status role="status" aria-live="polite"></p>
+</div>
+<script src="{% static 'requests_app/agent_picker.js' %}" defer></script>

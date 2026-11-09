@@ -3,6 +3,8 @@
 <h3 id="previous-attempts-title">{% trans "Previous approval attempts" %}</h3>
 {% for attempt in approval_attempts %}
 <details class="card" open><summary><strong>{{ attempt.log.request.request_number }}</strong> &middot; {% trans "Archived attempt" %} #{{ attempt.log.pk }} &middot; {{ attempt.log.created_at|date:"SHORT_DATETIME_FORMAT" }}</summary>
+{% if attempt.agent_names %}<p><strong>{% trans "Microcom Agents" %}:</strong> {{ attempt.agent_names }}</p>{% endif %}
+{% if attempt.site_names %}<div><strong>{% trans "Sites" %}:</strong> {% include 'requests_app/includes/site_names.html' with sites=attempt.site_names %}</div>{% endif %}
 {% if attempt.reason %}<p>{{ attempt.reason }}</p>{% endif %}
 {% if attempt.step %}<p>{% trans "Resumed approval step" %}: {{ attempt.step }}</p>{% endif %}
 <div class="table-wrap" tabindex="0"><table class="data-table"><thead><tr><th>{% trans "Step" %}</th><th>{% trans "Approver" %}</th><th>{% trans "Status" %}</th><th>{% trans "Comment" %}</th><th>{% trans "Acted At" %}</th></tr></thead>

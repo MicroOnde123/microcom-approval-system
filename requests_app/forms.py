@@ -59,6 +59,7 @@ class RequestForm(forms.ModelForm):
     driver_name = forms.CharField(required=False, label=_("Driver Name"))
 
     site = forms.CharField(required=False, label=_("Site"))
+    site_selections = forms.JSONField(required=False, widget=forms.HiddenInput)
     valid_from = forms.DateField(
         required=False,
         label=_("Valid From"),
@@ -70,6 +71,7 @@ class RequestForm(forms.ModelForm):
         widget=forms.DateInput(attrs={"type": "date"}),
     )
     microcom_agents = forms.CharField(required=False, label=_("Microcom Agents"))
+    agent_selections = forms.JSONField(required=False, widget=forms.HiddenInput)
     tt = forms.CharField(required=False, label=_("TT"))
     external_persons = forms.CharField(required=False, label=_("External Persons"))
 
@@ -118,6 +120,14 @@ class RequestForm(forms.ModelForm):
                 self.permission_description_type_id = self.instance.request_type_id
 
         metadata = getattr(self.instance, "metadata_json", None) or {}
+        self.fields["site_selections"].initial = metadata.get("site_selections", [])
+        self.site_legacy_text = metadata.get("site", "") if "site_selections" not in metadata else ""
+        if self.is_bound and self.data.get("site_selections"):
+            self.site_legacy_text = ""
+        self.fields["agent_selections"].initial = metadata.get("agent_selections", [])
+        self.agent_legacy_text = metadata.get("microcom_agents", "") if "agent_selections" not in metadata else ""
+        if self.is_bound and self.data.get("agent_selections"):
+            self.agent_legacy_text = ""
 
         for field_name in [
             "permission_group",
@@ -157,6 +167,42 @@ class RequestForm(forms.ModelForm):
                                    and not request_type.requires_materials)
         if independent_description and "description" not in self.data:
             cleaned_data["description"] = self.instance.description
+
+        if request_type.is_permission_request and cleaned_data.get("permission_group") == "SITE_AUTHORIZATION":
+            from .site_selection import validate_sites
+            supplied_sites = self.data.get("site_selections", "")
+            if supplied_sites and "site_selections" not in self.errors:
+                try:
+                    sites = validate_sites(cleaned_data.get("site_selections"))
+                    cleaned_data["site_selections"] = sites
+                    cleaned_data["site"] = "; ".join(row["name"] for row in sites)
+                    if not self.draft and not sites:
+                        self.add_error("site_selections", _("Select at least one site."))
+                except forms.ValidationError as exc:
+                    self.add_error("site_selections", exc)
+            elif not supplied_sites:
+                metadata = self.instance.metadata_json or {}
+                cleaned_data["site"] = metadata.get("site", "") if "site_selections" not in metadata else ""
+                if not self.draft and not cleaned_data["site"]:
+                    self.add_error("site_selections", _("Select at least one site."))
+            from .agents import validate_people
+            supplied = self.data.get("agent_selections", "")
+            if supplied and "agent_selections" not in self.errors:
+                try:
+                    people = validate_people(cleaned_data.get("agent_selections"))
+                    cleaned_data["agent_selections"] = people
+                    cleaned_data["microcom_agents"] = "; ".join(p["full_name"] for p in people)
+                    if not self.draft and not people:
+                        self.add_error("agent_selections", _("Select at least one person."))
+                except forms.ValidationError as exc:
+                    self.add_error("agent_selections", exc)
+            elif not supplied:
+                # Only existing, unchanged legacy text may bypass structured input.
+                metadata = self.instance.metadata_json or {}
+                legacy = metadata.get("microcom_agents", "") if "agent_selections" not in metadata else ""
+                cleaned_data["microcom_agents"] = legacy
+                if not self.draft and not legacy:
+                    self.add_error("agent_selections", _("Select at least one person."))
 
         if self.draft:
             return cleaned_data

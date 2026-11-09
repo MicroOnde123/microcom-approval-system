@@ -4,6 +4,29 @@ from .document_config import Currency, validate_logo_reference, validate_number_
 from invoicing.configuration import validate_business_timezone
 
 
+class Site(models.Model):
+    name = models.CharField(_("Site name"), max_length=255)
+    is_active = models.BooleanField(_("Active"), default=True)
+    created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated at"), auto_now=True)
+
+    class Meta:
+        ordering = ["name", "pk"]
+        verbose_name = _("Site")
+        verbose_name_plural = _("Sites")
+        default_permissions = ("add", "change", "view")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        import unicodedata
+        self.name = (self.name or "").strip()
+        if not self.name or any(unicodedata.category(c).startswith("C") for c in self.name):
+            raise ValidationError({"name": _("Enter a valid site name.")})
+
+    def __str__(self):
+        return self.name
+
+
 class CompanyDocumentSettings(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     company_name = models.CharField(_("Company name"), max_length=200, blank=True)
