@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from .reference_namespaces import validate_namespace_owner
 
 
@@ -469,3 +470,22 @@ class MaterialReconciliationLine(models.Model):
 class MaterialReconciliationReturnLink(models.Model):
     line = models.ForeignKey(MaterialReconciliationLine, on_delete=models.PROTECT, related_name="return_links")
     movement = models.OneToOneField(StockMovement, on_delete=models.PROTECT)
+
+
+class WorkflowNotification(models.Model):
+    """Per-recipient event evidence; read state never grants request access."""
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="workflow_notifications")
+    request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name="workflow_notifications")
+    approval = models.ForeignKey(RequestApproval, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="workflow_notifications")
+    event_type = models.CharField(max_length=50)
+    reference = models.CharField(max_length=150)
+    created_at = models.DateTimeField(default=timezone.now)
+    read_at = models.DateTimeField(null=True, blank=True)
+    actionable = models.BooleanField(default=False)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    event_key = models.CharField(max_length=150, unique=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        indexes = [models.Index(fields=["recipient", "read_at", "-id"], name="workflow_notice_unread_idx")]

@@ -1,5 +1,6 @@
 """Real committed synthetic invoices, private PDFs and PostgreSQL concurrency."""
 import base64
+from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import re
@@ -130,9 +131,10 @@ class InvoiceDocumentTests(LifecycleFixtures, TransactionTestCase):
         invoice = self.final_document()
         frozen = _snapshot(invoice)
         self.material.name = "MUTATED MATERIAL"
-        self.material.unit_price = 999
-        self.material.currency = "USD"
         self.material.save()
+        from inventory.pricing import update_price, price_state
+        self.material = update_price(self.material.pk, self.admin, price=Decimal("999"), currency="USD",
+            reason="Synthetic catalogue correction", expected_state=price_state(self.material))
         self.branch.name = "MUTATED BRANCH"
         self.branch.save()
         self.configuration.company_name = "MUTATED COMPANY"

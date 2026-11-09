@@ -1,0 +1,5 @@
+{% load i18n %}
+<details class="workflow-notification-menu" id="workflow-notification-menu"><summary aria-label="{% trans 'Notifications' %}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>{% trans "Notifications" %}</span><span class="nav-badge" id="notification-unread-count" aria-live="polite">{{ notification_unread_count|default:0 }}</span></summary>
+<div class="workflow-notification-dropdown"><label for="recent-notification-filter">{% trans "Show notifications" %}</label><select id="recent-notification-filter"><option value="all">{% trans "All" %}</option><option value="unread">{% trans "Unread" %}</option></select><div id="recent-notification-items"><p>{% trans "Open notification history to see all notifications." %}</p></div><a class="btn btn-secondary" href="{% url 'notification_inbox' %}">{% trans "View All Notifications" %}</a></div>
+</details>
+<p class="workflow-notification-live-status" id="notification-live-status" role="status" aria-live="polite"></p>

@@ -33,7 +33,7 @@ class InvoiceListOfflineTests(unittest.TestCase):
             return "/synthetic/"
         engine = Engine(loaders=[("django.template.loaders.locmem.Loader",
             {"base.html": "{% block content %}{% endblock %}"})],
-            libraries={"i18n": "django.templatetags.i18n"})
+            libraries={"i18n": "django.templatetags.i18n", "static": "django.templatetags.static"})
         engine.template_builtins.append(library)
         template = engine.from_string(Path("templates/invoicing/list.html").read_text(encoding="utf-8"))
         with override(language):
@@ -86,7 +86,7 @@ class InvoiceListOfflineTests(unittest.TestCase):
             views.invoice_list(request)
         permission.assert_called_once_with(request.user, "view_invoice")
         query.assert_called_once_with(request_id__in="authorized-ids")
-        queryset.select_related.assert_called_once_with("request")
+        queryset.select_related.assert_called_once_with("request", "succursale", "company_verification")
         annotations = queryset.select_related.return_value.annotate.call_args.kwargs
         self.assertEqual(annotations["list_provisional_total"].source_expressions[0].name, "lines__line_total")
         priced_filter = annotations["list_priced_line_count"].filter

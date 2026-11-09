@@ -62,9 +62,25 @@ test('stock previews use hundredths and clear invalid or absent quantities',()=>
     const quantity={value:'0.20',addEventListener(type,fn){this.input=fn;}};
     const current={},estimate={};
     const nodes={'material-stock-options':{textContent:JSON.stringify([{id:1,stock_quantity:'0.10',unit:'m'}])},id_material:select,id_quantity:quantity,'current-stock':current,'estimated-stock':estimate};
-    updateEntryStock({getElementById:id=>nodes[id]});
+    updateEntryStock({getElementById:id=>nodes[id], addEventListener(){}});
     assert.equal(current.textContent,'0.10 m');assert.equal(estimate.textContent,'0.30 m');
     quantity.value='-1';quantity.input();assert.equal(estimate.textContent,'\u2014');
     quantity.value='1.001';quantity.input();assert.equal(estimate.textContent,'\u2014');
     select.value='';select.change();assert.equal(current.textContent,'\u2014');
+});
+
+
+test('capped material and category results announce refinement in both languages',()=>{
+    for (const id of ['id_material','id_category']) {
+        for (const limited of ['Showing the first 30 matches. Refine your search to find more results.', 'Les 30 premiers resultats sont affiches. Affinez votre recherche.']) {
+            const p=setup(id); p.root.dataset.limited=limited;
+            for(let i=3;i<=33;i++) p.select.options.push({value:String(i),text:'Extra '+i});
+            p.input.listeners.focus();
+            assert.equal(p.list.children.length,30);
+            assert.equal(p.status.textContent,limited);
+            p.key('ArrowDown'); p.key('Enter'); assert.equal(p.select.value,'1');
+            p.search('Extra 33'); assert.equal(p.list.children.length,1);
+            assert.equal(p.status.textContent,'Matching results: 1');
+        }
+    }
 });

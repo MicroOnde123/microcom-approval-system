@@ -18,20 +18,14 @@ def pending_approval_count(request):
             "can_view_administration_reports": False,
         }
 
-    pending_count = RequestApproval.objects.filter(
-        models.Q(approver_user=request.user)
-        | models.Q(alternate_approver_user=request.user),
-        status="PENDING",
-        request__current_step_order=models.F("step_order"),
-    ).count()
-
-    returned_count = Request.objects.filter(
-        submitted_by=request.user,
-        status="RETURNED",
-    ).count()
+    from .notifications import counts
+    current = counts(request.user)
+    pending_count = current["pending"]
+    returned_count = current["returned"]
 
     return {
         "pending_approval_count": pending_count,
+        "notification_unread_count": current["unread"],
         "returned_requests_count": returned_count,
         "can_manage_stock": is_stock_manager(request.user),
         "can_view_administration_reports": request.user.is_superuser or request.user.can_view_administration_reports,

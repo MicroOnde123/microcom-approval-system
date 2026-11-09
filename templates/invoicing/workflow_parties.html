@@ -1,0 +1,4 @@
+{% load i18n %}
+<div class="document-parties"><div><h3>{% trans "Company" %}</h3>{% if company %}<strong>{{ company.company_name }}</strong><p>{{ company.company_address|linebreaksbr }}</p><p>{{ company.contact_details|linebreaksbr }}</p>{% else %}<p>{% trans "An administrator must configure and verify the company information first." %}</p>{% endif %}</div>
+<div><h3>{% trans "Succursale" %}</h3><strong>{{ branch.code }} &mdash; {{ branch.name }}</strong>{% if branch.physical_address %}<p>{{ branch.physical_address|linebreaksbr }}</p>{% endif %}</div></div>
+<p class="muted">{% trans "Current company and destination information is checked again at finalization." %}</p>

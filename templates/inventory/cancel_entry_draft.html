@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "Cancel Draft" %}{% endblock %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/material_entries.css' %}">
+<div class="page-header entry-page-header"><h1>{% trans "Cancel Draft" %}</h1></div>
+<section class="entry-section" aria-labelledby="cancel-draft-title">
+<h2 id="cancel-draft-title">{% trans "Confirm draft cancellation" %}</h2>
+{% if error %}<div class="message error" role="alert">{{ error }}</div>{% endif %}
+{% if draft.status == 'DRAFT' %}
+<p>{% trans "Cancel this unfinished entry? Its saved values will be retained, but it will no longer appear in Saved Drafts." %}</p>
+<p>{% trans "No materials, stock quantities, prices or receipts will be changed." %}</p>
+<form method="post">{% csrf_token %}<input type="hidden" name="version" value="{{ draft_version }}">
+<div class="entry-actions entry-actions--edit"><a class="btn btn-secondary" href="{% url 'material_entries' %}?mode={{ draft.mode }}&amp;draft={{ draft.pk }}">{% trans "Keep Editing" %}</a>
+<button class="btn entry-primary" type="submit" name="confirm_cancel" value="yes">{% trans "Confirm cancellation" %}</button></div></form>
+{% elif draft.status == 'COMPLETED' %}<p>{% trans "Completed drafts cannot be cancelled." %}</p>
+{% else %}<p>{% trans "This draft was already cancelled." %}</p>{% endif %}
+<p><a href="{% url 'material_entries' %}?mode={{ draft.mode }}">{% trans "Back to Material Entries" %}</a></p>
+</section>
+{% endblock %}

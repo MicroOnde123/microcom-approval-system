@@ -3,21 +3,49 @@
 {% block title %}{% trans "Material Entries" %}{% endblock %}
 {% block page_layout %}app-container--reading{% endblock %}
 {% block content %}
+{% get_current_language as entry_language %}
 <link rel="stylesheet" href="{% static 'css/entry_dates.css' %}">
 <script src="{% static 'js/entry_dates.js' %}" defer></script>
 <link rel="stylesheet" href="{% static 'css/material_entries.css' %}">
-<div class="page-header entry-page-header"><div><h1>{% trans "Material Entries" %}</h1><p class="muted">{% trans "Enter receipt details, verify, then confirm." %}</p></div></div>
+<div class="page-header entry-page-header"><div><h1>{% trans "Material Entries" %}</h1><p class="muted">{% trans "Enter receipt details, verify, then confirm." %}</p></div>
+<a class="btn btn-secondary" href="{% url 'material_entries' %}?mode={{ mode }}">{% trans "New Entry" %}</a></div>
 {% include "inventory/entry_tabs.html" %}
+{% if result %}{% include "inventory/receipt_confirmation.html" %}{% endif %}
+{% if saved_draft %}{% include "inventory/draft_saved_notice.html" %}{% endif %}
+<details class="entry-section entry-drafts-panel"{% if request.GET.draft_page %} open{% endif %}>
+    <summary id="saved-drafts-title">{% trans "Saved Drafts" %} <span class="entry-drafts-count">{{ saved_drafts.paginator.count }}</span></summary>
+    <p class="muted">
+        {% trans "Resume an unfinished material entry." %}
+    </p>
+
+    <ul class="entry-drafts-list">
+        {% for saved_draft in saved_drafts %}
+        <li>
+            <div class="entry-draft-identity"><strong>{{ saved_draft.entry_label }}</strong><span class="muted">{{ saved_draft.entry_mode_label }}</span></div>
+            <div class="entry-draft-date"><span class="muted">{% trans "Last modified" %}</span><time datetime="{{ saved_draft.updated_at|date:'c' }}">{% if entry_language == 'fr' %}{{ saved_draft.updated_at|date:'d/m/Y H:i' }}{% else %}{{ saved_draft.updated_at|date:'Y-m-d H:i' }}{% endif %}</time></div>
+            <span class="status-badge status-DRAFT">{{ saved_draft.get_status_display }}</span>
+
+            <div class="entry-draft-actions">
+            <a
+                class="btn btn-secondary"
+                href="{% url 'material_entries' %}?mode={{ saved_draft.mode }}&amp;draft={{ saved_draft.pk }}"
+            >
+                {% trans "Resume Draft" %}
+            </a>
+            <a class="entry-cancel-link" href="{% url 'cancel_material_entry_draft' saved_draft.pk %}">{% trans "Cancel Draft" %}</a>
+            </div>
+        </li>
+        {% empty %}
+        <li class="entry-drafts-empty">{% trans "No saved drafts. Start a new entry to save your work for later." %}</li>
+        {% endfor %}
+    </ul>
+    {% if saved_drafts.has_other_pages %}<nav class="entry-history-pagination" aria-label="{% trans 'Saved drafts pages' %}">
+    {% if saved_drafts.has_previous %}<a href="?mode={{ mode }}{% if draft %}&amp;draft={{ draft.pk }}{% endif %}&amp;draft_page={{ saved_drafts.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
+    <span>{% blocktrans with number=saved_drafts.number total=saved_drafts.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}</span>
+    {% if saved_drafts.has_next %}<a href="?mode={{ mode }}{% if draft %}&amp;draft={{ draft.pk }}{% endif %}&amp;draft_page={{ saved_drafts.next_page_number }}">{% trans "Next" %}</a>{% endif %}</nav>{% endif %}
+</details>
 {% include "inventory/entry_progress.html" %}
-{% if result %}
-<section role="status" class="entry-success"><h2>{% trans "Receipt completed" %}</h2><p class="entry-reference">{{ result.reference }}</p>
-{% for line in result.lines.all %}<p><strong>{{ line.material.name }} ({{ line.material.code }})</strong><br>
-{% trans "Quantity received" %}: {{ line.quantity }} {{ line.material.unit }}<br>
-{% trans "Stock after receipt" %}: {{ line.stock_after }} {{ line.material.unit }}<br>
-{% trans "Current stock" %}: {{ line.material.stock_quantity }} {{ line.material.unit }}</p>{% endfor %}
-<a class="btn btn-secondary" href="{% url 'material_receipt_detail' result.pk %}">{% trans "View receipt details" %}</a>
-</section>
-{% endif %}
+
 {% if receipt_form.errors or material_form.errors %}
 <div class="message error entry-errors" role="alert" tabindex="-1" autofocus>
 <h2>{% trans "Review the errors below." %}</h2>
@@ -31,7 +59,15 @@
 {% else %}
 <p class="entry-required-note">{% trans "Fields marked * are required." %}</p>
 <form method="post" novalidate id="material-entry-form">
-{% csrf_token %}<input type="hidden" name="mode" value="{{ mode }}">{{ receipt_form.token }}
+{% csrf_token %}
+<input type="hidden" name="mode" value="{{ mode }}">
+
+{% if draft %}
+<input type="hidden" name="draft_id" value="{{ draft.pk }}">
+<input type="hidden" name="version" value="{{ draft_version }}">
+{% endif %}
+
+{{ receipt_form.token }}
 {% if mode == 'new' %}
 <fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">01</span>{% trans "Material Information" %}</legend>
 <p class="entry-section-help">{% trans "Identify the material and choose its category and unit." %}</p>
@@ -42,11 +78,9 @@
 {% include "inventory/entry_field.html" with field=material_form.unit %}
 {% include "inventory/entry_field.html" with field=material_form.description %}
 </div>
-</fieldset>
-<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">02</span>{% trans "Stock settings" %}</legend>
-<p class="entry-section-help">{% trans "Set the opening quantity, stock threshold and optional purchase price." %}</p>
-<div class="form-grid">{% include "inventory/entry_field.html" with field=receipt_form.quantity %}
-{% for field in material_form %}{% if field.name == 'minimum_stock_level' or field.name == 'unit_price' or field.name == 'currency' or field.name == 'is_active' %}{% include "inventory/entry_field.html" %}{% endif %}{% endfor %}</div>
+<div class="entry-catalogue-settings"><h3>{% trans "Catalogue and stock settings" %}</h3>
+<p class="entry-section-help">{% trans "Set the stock threshold and optional catalogue price." %}</p>
+<div class="form-grid">{% for field in material_form %}{% if field.name == 'minimum_stock_level' or field.name == 'unit_price' or field.name == 'currency' or field.name == 'is_active' %}{% include "inventory/entry_field.html" %}{% endif %}{% endfor %}</div></div>
 </fieldset>
 {% else %}
 <fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">01</span>{% trans "Material and stock" %}</legend>
@@ -59,15 +93,44 @@
 <div class="entry-stock-cell entry-stock-cell--received">{% include "inventory/entry_field.html" with field=receipt_form.quantity %}</div>
 <div class="entry-stock-cell entry-stock-cell--estimated"><span class="entry-metric-label">{% trans "Estimated stock after receipt" %}</span><strong><output id="estimated-stock" aria-live="polite">{% if estimated_stock != None %}{{ estimated_stock }} {{ selected_material.unit }}{% else %}&mdash;{% endif %}</output></strong></div>
 </div><p class="entry-estimate-note">{% trans "Estimates may change. The final stock balance is calculated when you confirm." %}</p>
+<p class="entry-estimate-note">{% trans "Current catalogue price" %}: <output id="current-material-price" aria-live="polite" data-unknown="{% trans 'Unknown' %}">{% if selected_material %}{% if selected_material.unit_price != None %}{{ selected_material.unit_price }} {{ selected_material.currency }}{% else %}{% trans "Unknown" %}{% endif %}{% else %}&mdash;{% endif %}</output> {% if can_edit_price %}<button type="button" class="btn btn-secondary" id="modify-material-price" aria-haspopup="dialog" disabled>{% trans "Modify Price" %}</button>{% endif %}</p>
+<p id="price-saved" role="status" aria-live="polite"></p>
 </fieldset>
 {% endif %}
-<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">{% if mode == 'new' %}03{% else %}02{% endif %}</span>{% trans "Delivery information" %}</legend>
+{% if can_receive_stock %}
+<fieldset class="entry-section"><legend><span class="entry-section-number" aria-hidden="true">02</span>{% if mode == 'new' %}{% trans "Initial Stock Entry" %}{% else %}{% trans "Delivery information" %}{% endif %}</legend>
 <p class="entry-section-help">{% trans "Record the delivery date, supplier and supporting reference." %}</p>
-<div class="form-grid">{% for field in receipt_form.visible_fields %}{% if field.name != 'material' and field.name != 'quantity' %}{% include "inventory/entry_field.html" %}{% endif %}{% endfor %}</div>
+<div class="form-grid">{% if mode == 'new' %}{% include "inventory/entry_field.html" with field=receipt_form.quantity %}{% endif %}{% for field in receipt_form.visible_fields %}{% if field.name != 'material' and field.name != 'quantity' %}{% include "inventory/entry_field.html" %}{% endif %}{% endfor %}</div>
 </fieldset>
-<div class="entry-action-bar"><p>{% trans "You can review and modify the details before saving." %}</p><button class="btn entry-primary" type="submit" name="action" value="verify">{% trans "Verify details" %}<span aria-hidden="true"> &rarr;</span></button></div>
+<div class="entry-action-bar entry-action-bar--edit">
+    <p>{% trans "You can save an unfinished entry or verify the details before confirming." %}</p>
+    <div class="entry-actions entry-actions--edit">
+    {% if draft %}<a class="entry-cancel-link" href="{% url 'cancel_material_entry_draft' draft.pk %}">{% trans "Cancel Draft" %}</a>{% endif %}
+    <button
+        class="btn btn-secondary"
+        type="submit"
+        name="action"
+        value="save_draft"
+        formnovalidate
+    >
+        {% trans "Save Draft" %}
+    </button>
+
+    <button
+        class="btn entry-primary"
+        type="submit"
+        name="action"
+        value="verify"
+    >
+        {% trans "Verify details" %}
+        <span aria-hidden="true">&rarr;</span>
+    </button>
+    </div>
+</div>
+{% endif %}
 </form>
 {% if mode == 'new' %}{% include "inventory/category_dialog.html" %}{% endif %}
+{% if mode == 'existing' and can_edit_price %}{% include "inventory/price_dialog.html" %}{% endif %}
 {% if mode == 'existing' %}{{ stock_options|json_script:"material-stock-options" }}{% endif %}
 <script src="{% static 'js/entry_selectors.js' %}" defer></script>
 {% endif %}

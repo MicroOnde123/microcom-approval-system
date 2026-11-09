@@ -1,0 +1,12 @@
+{% load i18n static %}
+<section class="entry-success entry-saved-notice" role="status" aria-live="polite" aria-atomic="true" aria-labelledby="draft-saved-title" data-entry-notification>
+    <button type="button" class="entry-notice-dismiss" aria-label="{% trans 'Dismiss notification' %}" data-entry-dismiss hidden>&times;</button>
+    <h2 id="draft-saved-title">{% trans "Draft saved successfully" %}</h2>
+    {% if saved_draft_name %}<p class="entry-saved-name">{{ saved_draft_name|truncatechars:150 }}</p>{% endif %}
+    <p>{% trans "Your information has been saved. You can start a new entry or continue editing this draft." %}</p>
+    <div class="entry-actions entry-notice-actions">
+        <a class="btn entry-primary" href="{{ saved_draft_url }}">{% trans "Continue Editing" %}</a>
+        <a class="btn btn-secondary" href="{% url 'material_entries' %}?mode={{ mode }}">{% trans "New Entry" %}</a>
+    </div>
+</section>
+<script src="{% static 'js/entry_notifications.js' %}" defer></script>

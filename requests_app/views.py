@@ -23,6 +23,8 @@ from .stock_forms import ReturnToStockForm
 from .stock_services import RETURN_TOKEN_SALT, material_return_totals, return_material_stock
 from .models import Request, RequestApproval, RequestAttachment, RequestMaterialItem, StockMovement, RequestAuditLog
 from .services import submit_request, approve_step, reject_step, return_step, resubmit_request
+from .resubmission import REASONS, is_general_permission, record_description_change
+from .approval_attempts import historical_participant, readable_attempts, readable_audit_logs, archived_attempt_page
 from .references import committed_creation, creation_digest, create_request_once
 from .material_documents import issue_document, validate_access as validate_material_document_access
 from django.utils.translation import get_language, gettext as _
@@ -403,8 +405,9 @@ def pending_approvals(request):
     ).select_related(
         "request",
         "request__request_type",
+        "request__submitted_by",
         "request__request_for_department",
-    ).order_by("-request__submitted_at", "-created_at")
+    ).order_by("-request__submitted_at", "-created_at", "-pk")
 
     date_from = request.GET.get("date_from", "").strip()
     date_to = request.GET.get("date_to", "").strip()
@@ -438,13 +441,17 @@ def pending_approvals(request):
         "request_type__id",
         "request_type__name",
     ).distinct()
+    from django.core.paginator import Paginator
+    page = Paginator(approvals,25).get_page(request.GET.get("page"))
+    params = request.GET.copy(); params.pop("page",None)
     today = timezone.now().date()
     
     return render(
         request,
         "requests_app/pending_approvals.html",
         {
-            "approvals": approvals,
+            "approvals": page.object_list,
+            "pending_page": page, "pending_query":params.urlencode(),
             "filter_validation_errors": validation_messages(filter_form),
             "request_types": request_types,
             "date_from": date_from,
@@ -544,7 +551,10 @@ def request_detail(request, request_id):
     ).exists()
     is_stock_user = is_stock_manager(request.user) and request_obj.material_items.exists()
     
-    if not is_submitter and not is_approver and not request.user.is_superuser and not is_stock_user:
+    is_historical_approver = False
+    if not (is_submitter or is_approver or request.user.is_superuser or is_stock_user):
+        is_historical_approver = historical_participant(request_obj, request.user)
+    if not is_submitter and not is_approver and not request.user.is_superuser and not is_stock_user and not is_historical_approver:
         return HttpResponseForbidden("You are not allowed to view this request.")
 
     if is_submitter:
@@ -578,6 +588,8 @@ def request_detail(request, request_id):
         "requests_app/request_detail.html",
         {
             "request_obj": request_obj,
+            "approval_attempts": readable_attempts(request_obj.audit_logs.filter(action="APPROVAL_HISTORY_ARCHIVED").order_by("created_at", "pk")),
+            "audit_logs": readable_audit_logs(request_obj),
             "back_url": back_url,
             "active_approval_for_user": active_approval_for_user,
             "can_cancel_request": can_cancel_request,
@@ -642,13 +654,18 @@ def update_material_issue_note(request, request_id):
 
 
 @login_required
+@transaction.atomic
 def edit_request(request, request_id):
-    request_obj = get_object_or_404(Request, id=request_id, submitted_by=request.user)
+    request_obj = get_object_or_404(Request.objects.select_for_update(), id=request_id, submitted_by=request.user)
+    if not request.user.is_active:
+        return HttpResponseForbidden(_("An active authenticated user is required."))
 
     if request_obj.status not in ["DRAFT", "RETURNED"]:
         messages.error(request, _("Only draft or returned requests can be edited."))
         return redirect("request_detail", request_id=request_obj.id)
 
+    previous_description = request_obj.description
+    independent_description = request_obj.status == "RETURNED" and is_general_permission(request_obj)
     submission_action = f"edit:{request_obj.id}"
     if request.method == "POST":
         action = request.POST.get("action", "resubmit")
@@ -665,6 +682,8 @@ def edit_request(request, request_id):
         if token_status != "pending":
             messages.error(request, _("This form has expired. Please submit it again."))
             return redirect("edit_request", request_id=request_obj.id)
+        if request_obj.audit_logs.filter(action="PERMISSION_EDIT_SAVED", comment=submission_token).exists():
+            return redirect("request_detail", request_id=request_obj.id)
 
         form = RequestForm(
             request.POST,
@@ -672,6 +691,7 @@ def edit_request(request, request_id):
             instance=request_obj,
             user=request.user,
             draft=is_draft_save,
+            independent_permission_description=independent_description,
         )
 
         if form.is_valid():
@@ -702,6 +722,10 @@ def edit_request(request, request_id):
                         else:
                             req.material_items.all().delete()
                         save_attachments(request, req)
+                        record_description_change(req, request.user, previous_description)
+                        if is_general_permission(req):
+                            RequestAuditLog.objects.create(request=req, action="PERMISSION_EDIT_SAVED",
+                                performed_by=request.user, comment=submission_token)
                 except ValidationError as exc:
                     form.add_error(None, exc)
                     return render(request, "requests_app/edit_request.html",
@@ -774,6 +798,7 @@ def edit_request(request, request_id):
             save_attachments(request, req)
 
             try:
+                record_description_change(req, request.user, previous_description)
                 if request_obj.status == "DRAFT":
                     req.status = "PENDING"
                     req.current_step_order = None
@@ -782,11 +807,13 @@ def edit_request(request, request_id):
                     submit_request(req)
                     success_message = _("Request submitted successfully.")
                 else:
-                    resubmit_request(req, request.user)
+                    routing = resubmit_request(req, request.user)
                     success_message = _("Request updated and resubmitted successfully.")
+                    if routing["reason"]:
+                        success_message = REASONS[routing["reason"]]
             except ValidationError as exc:
                 messages.error(request, exc.messages[0] if hasattr(exc, "messages") else str(exc))
-                return render(
+                response = render(
                     request,
                     "requests_app/edit_request.html",
                     request_form_context(
@@ -797,6 +824,8 @@ def edit_request(request, request_id):
                         back_url=reverse("request_detail", args=[request_obj.id]),
                     ),
                 )
+                transaction.set_rollback(True)
+                return response
 
             mark_submission_token_used(request, submission_token, req.id)
             messages.success(request, success_message)
@@ -809,7 +838,8 @@ def edit_request(request, request_id):
         )
 
     else:
-        form = RequestForm(instance=request_obj, user=request.user)
+        form = RequestForm(instance=request_obj, user=request.user,
+                           independent_permission_description=independent_description)
         formset = RequestMaterialItemFormSet(
             instance=request_obj,
             prefix=MATERIAL_FORMSET_PREFIX,
@@ -1060,12 +1090,29 @@ def approval_history(request):
     form = ApprovalHistoryFilterForm(request.GET)
     approvals = apply_filters(approvals, form, prefix="request__", date_field="acted_at")
     page = Paginator(approvals, 25).get_page(request.GET.get("page"))
+    archives = RequestAuditLog.objects.filter(action="APPROVAL_HISTORY_ARCHIVED").exclude(
+        request__status__in=["DRAFT", "CANCELLED"]).select_related("request").order_by("-created_at", "-pk")
+    if form.is_valid():
+        values = form.cleaned_data
+        if values["q"]:
+            archives = archives.filter(models.Q(request__request_number__icontains=values["q"])
+                                       | models.Q(request__description__icontains=values["q"]))
+        for field, lookup in (("department", "request_for_department"), ("request_type", "request_type"), ("status", "status")):
+            if values[field]:
+                archives = archives.filter(**{"request__" + lookup: values[field]})
+        attempt_page = archived_attempt_page(archives.iterator(chunk_size=50), request.user, values,
+                                             request.GET.get("attempt_page"))
+    else:
+        attempt_page = Paginator([], 25).get_page(request.GET.get("attempt_page"))
     query = request.GET.copy(); query.pop("page", None)
+    attempt_query = request.GET.copy(); attempt_query.pop("attempt_page", None)
     return render(
         request,
         "requests_app/approval_history.html",
         {
             "approvals": page, "page_obj": page, "filter_form": form,
+            "approval_attempts": attempt_page, "attempt_page": attempt_page,
+            "attempt_query": attempt_query.urlencode(),
             "active_querystring": query.urlencode(), "filter_reset_url": reverse("approval_history"),
             "current_list_url": current_path_with_query(request),
         },
@@ -1129,8 +1176,6 @@ def material_reports(request):
        
     ).distinct().prefetch_related(
         "material_items__material__category",
-        "approvals__approver_user",
-        "approvals__acted_by",
     ).select_related(
         "submitted_by",
         "department",
@@ -1166,16 +1211,28 @@ def material_reports(request):
 
     departments = Department.objects.order_by("name").values_list("id", "name")
 
-    requests = requests.order_by("-finalized_at", "-submitted_at")
+    requests = requests.order_by("-finalized_at", "-submitted_at", "-pk")
 
     from .stock_integrity import annotate_return_ledgers, movement_prefetch
-    requests = annotate_return_ledgers(list(requests.prefetch_related(movement_prefetch())))
+    from django.core.paginator import Paginator
+    from invoicing.return_note_access import navigation_for_requests
+    from .report_selection import report_selection
+    page = Paginator(requests, 25).get_page(request.GET.get("page"))
+    page.object_list = annotate_return_ledgers(list(page.object_list.prefetch_related(movement_prefetch())))
+    navigation = navigation_for_requests(request.user, [row.pk for row in page.object_list])
+    for row in page.object_list:
+        row.report_return_note_nav = navigation.get(row.pk, {})
+    query = request.GET.copy()
+    query.pop("page", None)
 
     return render(
         request,
         "requests_app/material_reports.html",
         {
-            "requests": requests,
+            "requests": page,
+            "page_obj": page,
+            "report_page_range": page.paginator.get_elided_page_range(page.number, on_each_side=2, on_ends=1),
+            **report_selection(request),
             "filter_validation_errors": validation_messages(filter_form),
             "departments": departments,
             "q": q,
@@ -1183,7 +1240,7 @@ def material_reports(request):
             "date_to": date_to,
             "selected_department": department,
             "current_list_url": current_path_with_query(request),
-            "active_querystring": request.GET.urlencode(),
+            "active_querystring": query.urlencode(),
         },
     )
 
@@ -1294,10 +1351,15 @@ def bulk_print_material_documents(request):
 
     back_url = safe_next_url(request.POST.get("next"), reverse("material_reports"))
 
-    selected_ids = request.POST.getlist("selected_requests")
+    from .report_selection import selected_ids as parse_selected_ids, selection_filters
+    try:
+        selected_ids = parse_selected_ids(request.POST)
+        filters = selection_filters(request)
+    except ValidationError as error:
+        return HttpResponse(format_html('<p>{}</p><a href="{}">{}</a>', error.messages[0], back_url, _("Back to Material Reports")), status=400)
 
     if not selected_ids:
-        messages.error(request, "Select at least one material request to print.")
+        messages.error(request, _("Select at least one material request to print."))
         return redirect(back_url)
 
     requests = Request.objects.filter(
@@ -1316,6 +1378,20 @@ def bulk_print_material_documents(request):
         "department",
         "request_for_department",
     ).order_by("-finalized_at", "-submitted_at")
+
+    if filters is not None:
+        from types import SimpleNamespace
+        from .stock_report_export import ExportFilterForm
+        if not ExportFilterForm(filters).is_valid():
+            return HttpResponse(_("The selection is invalid or has changed. Reload the report and select the requests again."), status=400)
+        scope = get_filtered_material_report_requests(SimpleNamespace(GET=filters))
+        requests = requests.filter(pk__in=scope.values("pk"))
+    # Reject stale/ineligible IDs as a whole, rather than silently printing a subset.
+    requests = list(requests)
+    if len(requests) != len(selected_ids):
+        return HttpResponse(format_html('<p>{}</p><a href="{}">{}</a>',
+            _("The selection is invalid or has changed. Reload the report and select the requests again."),
+            back_url, _("Back to Material Reports")), status=400)
 
     two_copy_warning = ""
     if copies == "2":
@@ -1403,23 +1479,13 @@ def return_material_to_stock(request, item_id):
 
 @login_required
 def notification_count(request):
-    pending_count = RequestApproval.objects.filter(
-        models.Q(approver_user=request.user)
-        | models.Q(alternate_approver_user=request.user),
-        status="PENDING",
-        request__current_step_order=models.F("step_order"),
-        request__status__in=["PENDING", "IN_REVIEW"],
-    ).count()
-
-    returned_count = Request.objects.filter(
-        submitted_by=request.user,
-        status="RETURNED",
-    ).count()
-
-    return JsonResponse({
-        "pending": pending_count,
-        "returned": returned_count,
-    })
+    from .notifications import counts
+    from django.utils.cache import add_never_cache_headers
+    if not request.user.is_active:
+        return HttpResponseForbidden()
+    response = JsonResponse(counts(request.user))
+    add_never_cache_headers(response)
+    return response
 
 
 @login_required
@@ -1432,9 +1498,17 @@ def export_material_report_excel(request):
     from .stock_report_export import (ExportFilterForm, movement_scope, enforce_size,
         reporting_time, request_extras, add_movements, protect_text_cells, enforce_loaded_size)
     from .stock_report_bookkeeping import load_bookkeeping, add_statistics
+    from .stock_report_foundations import WarehouseActivityFilterForm
+    from .stock_report_inventory import load_current_inventory, add_current_inventory
+    from .stock_report_entries import load_material_entries, add_material_entries
+    from .stock_report_reconciliation import load_issuance_returns, add_issuance_returns
+    from .stock_report_operational import load_warehouse_movements, add_operational_reporting
     filters = ExportFilterForm(request.GET)
     if not filters.is_valid():
         return HttpResponse(_("Invalid report filters. Use valid dates and a valid department; the start date must not exceed the end date."), status=400)
+    warehouse_filters = WarehouseActivityFilterForm(request.GET)
+    if not warehouse_filters.is_valid():
+        return HttpResponse(_("Invalid warehouse activity dates. Use valid receipt and movement dates; start dates must not exceed end dates."), status=400)
     rows = get_filtered_material_report_requests(request)
     movements = movement_scope(rows, filters.cleaned_data)
     try:
@@ -1443,6 +1517,15 @@ def export_material_report_excel(request):
         movements = list(movements[:limit + 1])
         enforce_loaded_size(requests, movements, limit)
         used_rows = sum(len(row.material_items.all()) for row in requests) + len(movements)
+        inventory = load_current_inventory(request.user, rows, warehouse_filters.cleaned_data, limit, used_rows)
+        used_rows += len(inventory)
+        entries = load_material_entries(request.user, rows, warehouse_filters.cleaned_data, limit, used_rows)
+        used_rows += len(entries)
+        reconciliation = load_issuance_returns(request.user, requests, movements, limit, used_rows)
+        used_rows += len(reconciliation)
+        warehouse_movements, additional_movements = load_warehouse_movements(
+            request.user, rows, warehouse_filters.cleaned_data, movements, limit, used_rows)
+        used_rows += additional_movements
         financial = load_bookkeeping(request.user, requests, limit - used_rows)
     except ValidationError as error:
         return HttpResponse(format_html("<p>{}</p><a href=\"{}\">{}</a>",
@@ -1575,9 +1658,18 @@ def export_material_report_excel(request):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     from .stock_report_analytics import add_stock_report_analytics
-    add_stock_report_analytics(workbook, requests, request.GET)
-    add_movements(workbook, movements, requests)
-    add_statistics(workbook, requests, movements, financial)
+    try:
+        add_stock_report_analytics(workbook, requests, request.GET)
+        add_movements(workbook, movements, requests)
+        add_statistics(workbook, requests, movements, financial)
+        add_current_inventory(workbook, request.user, inventory)
+        add_material_entries(workbook, request.user, entries, warehouse_filters.cleaned_data)
+        add_issuance_returns(workbook, request.user, reconciliation)
+        add_operational_reporting(workbook, requests, inventory, entries, reconciliation,
+                                  warehouse_movements, warehouse_filters.cleaned_data)
+    except ValidationError as error:
+        return HttpResponse(format_html("<p>{}</p><a href=\"{}\">{}</a>",
+            error.messages[0], reverse("material_reports"), _("Back to Material Reports")), status=413)
     protect_text_cells(workbook)
     workbook.save(response)
     return response
@@ -1642,11 +1734,45 @@ def administration_reports(request):
 @login_required
 def administration_report_document(request, request_id):
     if not can_view_administration_reports(request.user):
-        return HttpResponseForbidden(_("You are not allowed to access administration reports."))
-    request_obj = get_object_or_404(administration_report_scope().prefetch_related(
-        "material_items__material", "approvals__approver_user", "approvals__acted_by"), pk=request_id)
+        return HttpResponseForbidden(
+            _("You are not allowed to access administration reports.")
+        )
+
+    request_obj = get_object_or_404(
+        administration_report_scope().prefetch_related(
+            "material_items__material",
+            "approvals__approver_user",
+            "approvals__acted_by",
+        ),
+        pk=request_id,
+    )
+
+    # Permission requests must use their dedicated document.
+    metadata = request_obj.metadata_json or {}
+
+    if metadata.get("permission_group"):
+        approvals = request_obj.approvals.filter(
+            status="APPROVED"
+        ).order_by("step_order")
+
+        return render(
+            request,
+            "requests_app/permission_document.html",
+            {
+                "request_obj": request_obj,
+                "metadata": metadata,
+                "approvals": approvals,
+                "back_url": reverse("administration_reports"),
+            },
+        )
+
+    # Preserve existing behavior for other administrative requests.
     return render_approved_document(
-        request, request_obj,
-        document_url=reverse("administration_report_document", args=[request_obj.pk]),
+        request,
+        request_obj,
+        document_url=reverse(
+            "administration_report_document",
+            args=[request_obj.pk],
+        ),
         default_back_url=reverse("administration_reports"),
     )

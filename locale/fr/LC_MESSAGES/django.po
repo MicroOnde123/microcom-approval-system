@@ -257,6 +257,7 @@ msgstr "Date d’approbation"
 #: .\templates\requests_app\create_request.html:189
 #: .\templates\requests_app\edit_request.html:252
 #: .\templates\requests_app\request_detail.html:204
+#: inventory/models.py inventory/admin.py
 msgid "Material"
 msgstr "Matériel"
 
@@ -2683,6 +2684,7 @@ msgstr "Unité indisponible"
 msgid "Date unavailable"
 msgstr "Date indisponible"
 
+#: inventory/admin.py
 msgid "Unknown"
 msgstr "Inconnu"
 
@@ -3730,3 +3732,1173 @@ msgstr "Fermer le calendrier"
 #: inventory/templates/inventory/widgets/entry_date.html
 msgid "Use arrow keys to move between days, Page Up or Page Down to change month, and Enter to select. Escape closes the calendar."
 msgstr "Utilisez les flèches pour changer de jour, Page précédente ou Page suivante pour changer de mois, et Entrée pour sélectionner. Échap ferme le calendrier."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Earlier approvals remain valid. Resumed at the step that returned the request."
+msgstr "Les approbations précédentes restent valides. La demande reprend à l’étape qui l’a retournée."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Approval-relevant information changed. Approval restarted from the first step."
+msgstr "Les informations pertinentes pour l’approbation ont changé. Le circuit reprend à la première étape."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "The approval workflow or assignments changed. Approval restarted from the first step."
+msgstr "Le circuit d’approbation ou les affectations ont changé. Le circuit reprend à la première étape."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Previous approval evidence is missing or unreliable. Approval restarted from the first step."
+msgstr "Les preuves des approbations précédentes sont absentes ou non fiables. Le circuit reprend à la première étape."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Returned"
+msgstr "Retournée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Rejected"
+msgstr "Rejetée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Skipped"
+msgstr "Ignorée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "This request is no longer available for submission."
+msgstr "Cette demande ne peut plus être soumise."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "An active authenticated user is required."
+msgstr "Un utilisateur authentifié et actif est requis."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Only the active request owner can resubmit this request."
+msgstr "Seul l’auteur actif de la demande peut la soumettre à nouveau."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Only returned requests can be resubmitted."
+msgstr "Seules les demandes retournées peuvent être soumises à nouveau."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "This approval is no longer active. Reload the request."
+msgstr "Cette approbation n’est plus active. Rechargez la demande."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Previous approval attempts"
+msgstr "Tentatives d’approbation précédentes"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Archived attempt"
+msgstr "Tentative archivée"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Resumed approval step"
+msgstr "Étape de reprise de l’approbation"
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "See previous approval attempts."
+msgstr "Consultez les tentatives d’approbation précédentes."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Approval comparison baseline recorded."
+msgstr "Référence de comparaison des approbations enregistrée."
+
+#: requests_app/resubmission.py requests_app/approval_attempts.py templates/requests_app/partials/approval_attempts.html
+msgid "Previous approval attempt pages"
+msgstr "Pages des tentatives d’approbation précédentes"
+
+#: requests_app/services.py
+msgid "Approval assignments must use active users."
+msgstr "Les approbateurs affectés doivent être des utilisateurs actifs."
+
+#: requests_app/services.py
+msgid "No applicable workflow found for this request."
+msgstr "Aucun circuit d’approbation applicable n’a été trouvé pour cette demande."
+
+#: requests_app/services.py
+msgid "Approval steps already exist for this request."
+msgstr "Des étapes d’approbation existent déjà pour cette demande."
+
+#: requests_app/services.py
+msgid "Request has no owning department assigned."
+msgstr "Aucun département responsable n’est affecté à cette demande."
+
+#: requests_app/services.py
+#, python-format
+msgid "No approver found for step %(step)s."
+msgstr "Aucun approbateur trouvé pour l’étape %(step)s."
+
+#: requests_app/services.py
+msgid "This request has already been submitted into a workflow."
+msgstr "Cette demande a déjà été soumise à un circuit d’approbation."
+
+#: requests_app/services.py
+msgid "This step has already been acted upon."
+msgstr "Une décision a déjà été prise pour cette étape."
+
+#: requests_app/services.py
+msgid "This request is no longer open for approval."
+msgstr "Cette demande n’est plus ouverte à l’approbation."
+
+#: requests_app/services.py
+msgid "You are not allowed to reject this step."
+msgstr "Vous n’êtes pas autorisé à rejeter cette étape."
+
+#: requests_app/services.py
+msgid "This request is no longer open for rejection."
+msgstr "Cette demande ne peut plus être rejetée."
+
+#: requests_app/services.py
+msgid "You are not allowed to return this step."
+msgstr "Vous n’êtes pas autorisé à retourner cette étape."
+
+#: requests_app/services.py
+msgid "This request is no longer open for return."
+msgstr "Cette demande ne peut plus être retournée."
+
+#: requests_app/services.py
+msgid "No approval steps are configured. Ask an administrator to configure the approval workflow."
+msgstr "Aucune étape d’approbation n’est configurée. Demandez à un administrateur de configurer le circuit d’approbation."
+
+#: requests_app/approval_attempts.py
+#, python-format
+msgid "Description changed from %(previous)s to %(updated)s."
+msgstr "Description modifiée de %(previous)s en %(updated)s."
+
+#: requests_app/forms.py
+msgid "Reason / Motif"
+msgstr "Motif"
+
+#: requests_app/forms.py
+msgid "The original authorization justification cannot be changed after submission."
+msgstr "Le motif initial de l’autorisation ne peut plus être modifié après soumission."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Previous price"
+msgstr "Prix précédent"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "New price"
+msgstr "Nouveau prix"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Previous currency"
+msgstr "Devise précédente"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "New currency"
+msgstr "Nouvelle devise"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Changed by"
+msgstr "Modifié par"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Changed at"
+msgstr "Date de modification"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Django Admin"
+msgstr "Administration Django"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Catalogue service"
+msgstr "Service du catalogue"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Material price change"
+msgstr "Modification du prix du matériel"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Material price history"
+msgstr "Historique des prix du matériel"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Price history is append-only and is recorded automatically."
+msgstr "L’historique des prix est enregistré automatiquement et ne peut pas être modifié."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "The material price has changed. Reload the page and review the current price before saving."
+msgstr "Le prix du matériel a changé. Rechargez la page et vérifiez le prix actuel avant d’enregistrer."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "You do not have permission to change material prices."
+msgstr "Vous n’avez pas l’autorisation de modifier les prix du matériel."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Enter a reason for the price or currency change."
+msgstr "Indiquez le motif du changement de prix ou de devise."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Invalid price change source."
+msgstr "La source du changement de prix est invalide."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Price change reason"
+msgstr "Motif du changement de prix"
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "Required when changing an existing material's price or currency."
+msgstr "Obligatoire lors de la modification du prix ou de la devise d’un matériel existant."
+
+#: inventory/models.py inventory/pricing.py inventory/admin.py
+msgid "View price history"
+msgstr "Consulter l’historique des prix"
+
+#: inventory/models.py
+msgid "Reason"
+msgstr "Motif"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Saved Drafts"
+msgstr "Brouillons enregistrés"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Resume an unfinished material entry."
+msgstr "Reprenez une entrée de stock inachevée."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Resume Draft"
+msgstr "Reprendre le brouillon"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "New Entry"
+msgstr "Nouvelle entrée"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Cancel Draft"
+msgstr "Annuler le brouillon"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Last modified"
+msgstr "Dernière modification"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Unnamed material"
+msgstr "Matériel sans nom"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "No saved drafts. Start a new entry to save your work for later."
+msgstr "Aucun brouillon enregistré. Commencez une nouvelle entrée pour la poursuivre plus tard."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Saved drafts pages"
+msgstr "Pages des brouillons enregistrés"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "You can save an unfinished entry or verify the details before confirming."
+msgstr "Enregistrez un brouillon ou vérifiez les informations avant de confirmer."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Material entry draft"
+msgstr "Brouillon d’entrée de stock"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Material entry drafts"
+msgstr "Brouillons d’entrées de stock"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Signed receipt token"
+msgstr "Jeton signé de réception"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Invalid material entry type."
+msgstr "Le type d’entrée de stock est invalide."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Invalid draft data."
+msgstr "Les données du brouillon sont invalides."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Draft not found."
+msgstr "Brouillon introuvable."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Invalid draft receipt token."
+msgstr "Le jeton de réception du brouillon est invalide."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Draft not found or no longer editable."
+msgstr "Ce brouillon est introuvable ou ne peut plus être modifié."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This entry has already been finalized."
+msgstr "Cette entrée a déjà été finalisée."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "A draft already exists for this entry. Resume it before saving changes."
+msgstr "Un brouillon existe déjà pour cette entrée. Reprenez-le avant d’enregistrer des modifications."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This draft has changed. Reload it before saving again."
+msgstr "Ce brouillon a changé. Rechargez-le avant de l’enregistrer à nouveau."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Completed drafts cannot be cancelled."
+msgstr "Les brouillons finalisés ne peuvent pas être annulés."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This draft has changed. Reload it before cancelling."
+msgstr "Ce brouillon a changé. Rechargez-le avant de l’annuler."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This draft was cancelled."
+msgstr "Ce brouillon a été annulé."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This draft has changed. Verify the details again."
+msgstr "Ce brouillon a changé. Vérifiez à nouveau les informations."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Invalid receipt owner."
+msgstr "Le propriétaire de la réception est invalide."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Invalid draft version."
+msgstr "La version du brouillon est invalide."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "The draft could not be saved. Reload the page and retry."
+msgstr "Le brouillon n’a pas pu être enregistré. Rechargez la page et réessayez."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This draft has changed. Reload it before continuing."
+msgstr "Ce brouillon a changé. Rechargez-le avant de continuer."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Resume the saved draft before confirming this receipt."
+msgstr "Reprenez le brouillon enregistré avant de confirmer cette réception."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Confirm cancellation before continuing."
+msgstr "Confirmez l’annulation avant de continuer."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Draft cancelled successfully."
+msgstr "Le brouillon a été annulé."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "This draft was already cancelled."
+msgstr "Ce brouillon a déjà été annulé."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Confirm draft cancellation"
+msgstr "Confirmer l’annulation du brouillon"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Cancel this unfinished entry? Its saved values will be retained, but it will no longer appear in Saved Drafts."
+msgstr "Annuler cette entrée inachevée ? Ses valeurs seront conservées, mais elle n’apparaîtra plus dans les brouillons enregistrés."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "No materials, stock quantities, prices or receipts will be changed."
+msgstr "Aucun matériel, quantité en stock, prix ou réception ne sera modifié."
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Keep Editing"
+msgstr "Continuer la modification"
+
+#: inventory/entry_drafts.py inventory/entry_views.py templates/inventory
+msgid "Confirm cancellation"
+msgstr "Confirmer l’annulation"
+
+#: templates/inventory/material_entries.html
+#, python-format
+msgid "Page %(number)s of %(total)s"
+msgstr "Page %(number)s sur %(total)s"
+
+#: templates/inventory/cancel_entry_draft.html
+msgid "Back to Material Entries"
+msgstr "Retour aux entrées de stock"
+
+#: inventory/entry_views.py
+msgid "Existing Material Receipt"
+msgstr "Réception de matériel existant"
+
+#: inventory/entry_views.py
+#, python-format
+msgid "%(material)s — quantity not entered"
+msgstr "%(material)s — quantité non renseignée"
+
+#: templates/inventory/material_entries.html
+msgid "Current catalogue price"
+msgstr "Prix actuel du catalogue"
+
+#: templates/inventory/draft_saved_notice.html
+msgid "Draft saved successfully"
+msgstr "Brouillon enregistré avec succès"
+
+#: templates/inventory/draft_saved_notice.html
+msgid "Your information has been saved. You can start a new entry or continue editing this draft."
+msgstr "Les informations ont été sauvegardées. Vous pouvez commencer une nouvelle entrée ou reprendre ce brouillon."
+
+#: templates/inventory/draft_saved_notice.html
+msgid "Continue Editing"
+msgstr "Continuer la modification"
+
+#: templates/inventory/draft_saved_notice.html
+msgid "Dismiss notification"
+msgstr "Fermer la notification"
+
+#: inventory/admin.py
+msgid "Catalogue information has changed since this form was opened. Reload the page and review the current values before saving."
+msgstr "Les informations du catalogue ont changé depuis l’ouverture de ce formulaire. Rechargez la page et vérifiez les valeurs actuelles avant d’enregistrer."
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "Modify Price"
+msgstr "Modifier le prix"
+
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "Current Price"
+msgstr "Prix actuel"
+
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "New Price"
+msgstr "Nouveau prix"
+
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "Save Price"
+msgstr "Enregistrer le prix"
+
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "Catalogue price saved successfully."
+msgstr "Le prix du catalogue a été enregistré."
+
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "Unable to save the price. Reload and retry."
+msgstr "Impossible d’enregistrer le prix. Rechargez la page et réessayez."
+
+
+#: inventory/price_views.py templates/inventory/price_dialog.html
+msgid "Loading current price..."
+msgstr "Chargement du prix actuel..."
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+#, python-format
+msgid "%(count)s request selected"
+msgid_plural "%(count)s requests selected"
+msgstr[0] "%(count)s demande sélectionnée"
+msgstr[1] "%(count)s demandes sélectionnées"
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "requests selected"
+msgstr "demandes sélectionnées"
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "Clear Selection"
+msgstr "Effacer la sélection"
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "Select all on this page"
+msgstr "Tout sélectionner sur cette page"
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "Selection cleared because the report filters changed."
+msgstr "La sélection a été effacée car les filtres du rapport ont changé."
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "JavaScript is required to keep selections across pages. Without it, print selections from the current page only."
+msgstr "JavaScript est nécessaire pour conserver la sélection entre les pages. Sans JavaScript, imprimez uniquement la sélection de la page actuelle."
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "The selection is invalid or has changed. Reload the report and select the requests again."
+msgstr "La sélection est invalide ou a changé. Rechargez le rapport et sélectionnez de nouveau les demandes."
+
+
+#: requests_app/report_selection.py templates/requests_app/material_reports.html
+msgid "Select at least one material request to print."
+msgstr "Sélectionnez au moins une demande de matériel à imprimer."
+
+
+#: templates/requests_app/material_reports.html
+msgid "%(total)s matching request"
+msgid_plural "%(total)s matching requests"
+msgstr[0] "%(total)s demande correspondante"
+msgstr[1] "%(total)s demandes correspondantes"
+
+
+#: requests_app/views.py
+msgid "Invalid warehouse activity dates. Use valid receipt and movement dates; start dates must not exceed end dates."
+msgstr "Dates d’activité de l’entrepôt invalides. Utilisez des dates de réception et de mouvement valides ; les dates de début ne doivent pas dépasser les dates de fin."
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Current Stock Inventory"
+msgstr "Stock actuel"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Current central warehouse snapshot. Includes inactive materials. Request and activity filters do not apply. No historical balances or valuation."
+msgstr "Stock actuel de l’entrepôt central, matériels inactifs inclus. Les filtres de demandes et d’activité ne s’appliquent pas. Aucun solde historique ni valorisation."
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Stock status: negative below zero; out of stock at zero; low stock above zero and at or below minimum; in stock above minimum."
+msgstr "État du stock : négatif sous zéro ; rupture à zéro ; faible au-dessus de zéro et au plus au seuil minimum ; disponible au-dessus du minimum."
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Negative stock"
+msgstr "Stock négatif"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Out of stock"
+msgstr "Rupture de stock"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Low stock"
+msgstr "Stock faible"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "In stock"
+msgstr "En stock"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Current Quantity"
+msgstr "Quantité actuelle"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Stock Status"
+msgstr "État du stock"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "No materials in the current inventory."
+msgstr "Aucun matériel dans le stock actuel."
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Minimum Stock Level"
+msgstr "Niveau de stock minimum"
+
+
+#: requests_app/stock_report_inventory.py
+msgid "Inactive"
+msgstr "Inactif"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Central warehouse receipts, filtered by business receipt date only. Request search, department, Date Needed and movement dates do not apply. Recorded timestamps: Africa/Kinshasa. No valuation."
+msgstr "Réceptions de l’entrepôt central filtrées uniquement par date de réception. Recherche de demandes, département, date requise et dates de mouvement sans effet. Horodatages : Africa/Kinshasa. Sans valorisation."
+
+
+#: requests_app/stock_report_entries.py
+msgid "Material evidence identifies recorded snapshots or current catalogue fallback. Stock after receipt is recorded historical evidence, never current stock. Movement references are database IDs."
+msgstr "Les données matériel proviennent d’instantanés enregistrés ou du catalogue actuel explicitement signalé. Le stock après réception est historique. Les références de mouvement sont des identifiants de base de données."
+
+
+#: requests_app/stock_report_entries.py
+msgid "Receipt Date From"
+msgstr "Date de réception du"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Receipt Date To"
+msgstr "Date de réception au"
+
+
+#: requests_app/stock_report_entries.py
+msgid "No lower bound"
+msgstr "Sans borne inférieure"
+
+
+#: requests_app/stock_report_entries.py
+msgid "No upper bound"
+msgstr "Sans borne supérieure"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Receipt Reference"
+msgstr "Référence de réception"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Receipt Date"
+msgstr "Date de réception"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Date Recorded"
+msgstr "Date d’enregistrement"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Quantity Received"
+msgstr "Quantité reçue"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Stock After Receipt"
+msgstr "Stock après réception"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Transaction Type"
+msgstr "Type de transaction"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Stock Movement ID"
+msgstr "Identifiant du mouvement de stock"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Movement Quantity"
+msgstr "Quantité du mouvement"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Recorded By"
+msgstr "Enregistré par"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Material Evidence"
+msgstr "Source des données matériel"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Movement Evidence"
+msgstr "Preuve du mouvement"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Recorded material snapshot"
+msgstr "Instantané du matériel enregistré"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Current catalogue fallback; historical material details not recorded"
+msgstr "Catalogue actuel utilisé ; détails historiques du matériel non enregistrés"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Linked IN movement"
+msgstr "Mouvement IN lié"
+
+
+#: requests_app/stock_report_entries.py
+msgid "Inconsistent linked movement evidence"
+msgstr "Données du mouvement lié incohérentes"
+
+
+#: requests_app/stock_report_entries.py
+msgid "No material receipts for the selected receipt dates."
+msgstr "Aucune réception de matériel pour les dates sélectionnées."
+
+
+#: requests_app/stock_report_entries.py
+msgid "Delivery Reference"
+msgstr "Référence de livraison"
+
+
+#: requests_app/stock_report_entries.py
+msgctxt "Excel worksheet"
+msgid "Material Entries"
+msgstr "Entrées de matériel"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Issuance and Returns"
+msgstr "Sorties et retours"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "The reconciliation evidence exceeds Excel's cell limit. Narrow the filters and try again."
+msgstr "Les preuves de rapprochement dépassent la limite de cellule Excel. Réduisez les filtres et réessayez."
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Selected approved requests, filtered by Date Needed, search and department. All linked OUT and RETURN dates are included; warehouse activity dates do not apply. No unlinked movements or valuation."
+msgstr "Demandes approuvées sélectionnées par date requise, recherche et département. Tous les mouvements OUT et RETURN liés sont inclus, sans filtre de date d’activité. Sans mouvements non liés ni valorisation."
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Approved quantities authorize stock; they do not prove issuance. Net issued = recorded OUT minus RETURN. Materials and units are current catalogue data. Movement references are database IDs; return references require verified receipt links."
+msgstr "Les quantités approuvées autorisent la sortie sans en prouver la réalisation. Sortie nette = OUT enregistrés moins RETURN. Matériels et unités du catalogue actuel. Références de mouvement : identifiants de base de données ; retours : liens de reçus vérifiés."
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Approved Quantity"
+msgstr "Quantité approuvée"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Quantity Returned"
+msgstr "Quantité retournée"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Net Issued Quantity"
+msgstr "Quantité nette sortie"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Issuance Evidence"
+msgstr "Preuve de sortie"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "OUT Movement IDs"
+msgstr "Identifiants des mouvements OUT"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "RETURN Movement IDs"
+msgstr "Identifiants des mouvements RETURN"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Linked Return References"
+msgstr "Références des retours liés"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Reconciliation Status"
+msgstr "État du rapprochement"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Material ID"
+msgstr "Identifiant du matériel"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Missing OUT evidence"
+msgstr "Preuve OUT manquante"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "No approved material line"
+msgstr "Aucune ligne de matériel approuvée"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Repeated material lines; movement allocation unavailable"
+msgstr "Lignes de matériel répétées ; affectation des mouvements indisponible"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Non-positive movement quantity; review history"
+msgstr "Quantité de mouvement nulle ou négative ; historique à vérifier"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Returns exceed recorded issuance"
+msgstr "Retours supérieurs aux sorties enregistrées"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Unverified return document link"
+msgstr "Lien du document de retour non vérifié"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Issued quantity exceeds approved quantity"
+msgstr "Quantité sortie supérieure à la quantité approuvée"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Recorded zero OUT total"
+msgstr "Total OUT nul enregistré"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Recorded OUT movements"
+msgstr "Mouvements OUT enregistrés"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "No request/material reconciliation evidence for the selected requests."
+msgstr "Aucune donnée de rapprochement pour les demandes sélectionnées."
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Partial issuance"
+msgstr "Sortie partielle"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Partially returned"
+msgstr "Partiellement retourné"
+
+
+#: requests_app/stock_report_reconciliation.py
+msgid "Issued; no returns recorded"
+msgstr "Sortie enregistrée ; aucun retour enregistré"
+
+msgid "Graphs"
+msgstr "Graphiques"
+
+msgid "Approved Material Lines"
+msgstr "Lignes d'articles approuvées"
+
+msgid "Active materials"
+msgstr "Matériels actifs"
+
+msgid "Inactive materials"
+msgstr "Matériels inactifs"
+
+msgid "Total catalogue materials"
+msgstr "Total des matériels du catalogue"
+
+msgid "Materials strictly below minimum stock"
+msgstr "Matériels strictement sous le stock minimum"
+
+msgid "Materials with zero stock"
+msgstr "Matériels avec un stock nul"
+
+msgid "Count"
+msgstr "Nombre"
+
+msgid "Month"
+msgstr "Mois"
+
+msgid "Unbounded"
+msgstr "Sans limite de date"
+
+msgid "Financial Summary Scope"
+msgstr "Périmètre de la synthèse financière"
+
+msgid "Request cohort — selected approved requests"
+msgstr "Demandes approuvées sélectionnées"
+
+msgid "Current inventory — all central warehouse materials"
+msgstr "Stock actuel — tous les matériels de l’entrepôt central"
+
+msgid "Receipt activity — business receipt dates"
+msgstr "Réceptions — dates effectives de réception"
+
+msgid "Physical movement activity — movement dates in Africa/Kinshasa"
+msgstr "Mouvements physiques — dates des mouvements en Africa/Kinshasa"
+
+msgid "Requests with recorded issuance"
+msgstr "Demandes avec sorties enregistrées"
+
+msgid "Requests missing OUT evidence on at least one approved material"
+msgstr "Demandes sans preuve OUT pour au moins un matériel approuvé"
+
+msgid "Requests with recorded returns"
+msgstr "Demandes avec retours enregistrés"
+
+msgid "Reconciliation exception rows"
+msgstr "Lignes présentant une anomalie de rapprochement"
+
+msgid "Receipt transactions"
+msgstr "Transactions de réception"
+
+msgid "Received material lines"
+msgstr "Lignes de matériel reçu"
+
+msgid "Physical OUT movement count"
+msgstr "Nombre de mouvements physiques OUT"
+
+msgid "Physical RETURN movement count"
+msgstr "Nombre de mouvements physiques RETURN"
+
+msgid "Movement Date From"
+msgstr "Date de mouvement du"
+
+msgid "Movement Date To"
+msgstr "Date de mouvement au"
+
+msgid "Approved demand — request cohort"
+msgstr "Demande approuvée — demandes sélectionnées"
+
+msgid "Returned quantity — request cohort"
+msgstr "Quantité retournée — demandes sélectionnées"
+
+msgid "Net issued — request cohort"
+msgstr "Sortie nette — demandes sélectionnées"
+
+msgid "Current central stock — entire catalogue"
+msgstr "Stock central actuel — catalogue complet"
+
+msgid "Received quantity — receipt dates"
+msgstr "Quantité reçue — dates de réception"
+
+msgid "Issued quantity — warehouse movement dates"
+msgstr "Quantité sortie — dates des mouvements de l’entrepôt"
+
+msgid "Returned quantity — warehouse movement dates"
+msgstr "Quantité retournée — dates des mouvements de l’entrepôt"
+
+msgid "Net issued — warehouse movement dates"
+msgstr "Sortie nette — dates des mouvements de l’entrepôt"
+
+msgid "Receipt transactions — receipt dates"
+msgstr "Transactions de réception — dates de réception"
+
+msgid "Received lines — receipt dates"
+msgstr "Lignes reçues — dates de réception"
+
+msgid "OUT count — warehouse movement dates"
+msgstr "Nombre OUT — dates des mouvements de l’entrepôt"
+
+msgid "RETURN count — warehouse movement dates"
+msgstr "Nombre RETURN — dates des mouvements de l’entrepôt"
+
+msgid "Current inventory stock-status counts"
+msgstr "Nombre de matériels par état du stock actuel"
+
+msgid "Monthly receipt transactions and lines"
+msgstr "Transactions et lignes reçues par mois"
+
+msgid "Monthly physical OUT and RETURN counts"
+msgstr "Nombre de mouvements physiques OUT et RETURN par mois"
+
+msgid "Reconciliation exceptions by category (overlapping)"
+msgstr "Anomalies de rapprochement par catégorie (chevauchements possibles)"
+
+msgid "Exception rows"
+msgstr "Lignes en anomalie"
+
+msgid "Repeated material lines"
+msgstr "Lignes de matériel répétées"
+
+msgid "Non-positive movement quantity"
+msgstr "Quantité de mouvement nulle ou négative"
+
+msgid "Scopes are independent: request Date Needed; current inventory including inactive materials; business receipt dates; physical movement dates in Africa/Kinshasa. Reconciliation uses all selected-request movement dates. Missing issuance means an approved material lacks OUT evidence. Exception categories may overlap."
+msgstr "Périmètres indépendants : date requise des demandes ; stock actuel incluant les matériels inactifs ; dates effectives de réception ; dates des mouvements physiques en Africa/Kinshasa. Le rapprochement inclut toutes les dates des mouvements des demandes sélectionnées. Une sortie manquante signifie qu’un matériel approuvé n’a pas de preuve OUT. Les catégories d’anomalies peuvent se chevaucher."
+
+msgid "Legacy issued and available-stock summary rows retain their original request/movement scope; entire-catalogue and warehouse-period measures have separate labels. Financial summaries appear only in authorized Bookkeeping."
+msgstr "Les lignes de synthèse existantes des sorties et du stock disponible conservent leur périmètre initial de demandes et mouvements ; les mesures du catalogue complet et de la période d’entrepôt portent des libellés distincts. Les synthèses financières figurent uniquement dans la Comptabilité interne autorisée."
+
+#: templates/inventory/material_entries.html templates/inventory/search_select.html
+msgid "Catalogue and stock settings"
+msgstr "Paramètres du catalogue et du stock"
+
+#: templates/inventory/material_entries.html templates/inventory/search_select.html
+msgid "Set the stock threshold and optional catalogue price."
+msgstr "Définissez le seuil de stock et le prix catalogue facultatif."
+
+#: templates/inventory/material_entries.html templates/inventory/search_select.html
+msgid "Showing the first 30 matches. Refine your search to find more results."
+msgstr "Les 30 premiers résultats sont affichés. Affinez votre recherche pour trouver davantage de résultats."
+
+#: inventory/admin.py
+msgid "Stock status"
+msgstr "État du stock"
+
+#: inventory/admin.py
+msgid "Search by material name, code or description."
+msgstr "Recherchez par nom, code ou description du matériel."
+
+#: inventory/admin.py
+msgid "Stock quantity"
+msgstr "Quantité en stock"
+
+#: inventory/admin.py
+msgid "Catalogue price"
+msgstr "Prix catalogue"
+
+#: inventory/admin.py
+msgid "Above minimum"
+msgstr "Au-dessus du seuil minimum"
+
+#: inventory/admin.py
+msgid "Stock status compares the current quantity with the minimum stock level."
+msgstr "L’état du stock compare la quantité actuelle au seuil minimum."
+
+#: templates/invoicing/detail.html
+msgid "Company and destination"
+msgstr "Société et destination"
+
+#: templates/invoicing/detail.html
+msgid "Company details are recorded at finalization."
+msgstr "Les coordonnées de la société sont enregistrées lors de la finalisation."
+
+#: templates/invoicing/detail.html
+msgid "Financial summary"
+msgstr "Récapitulatif financier"
+
+#: templates/invoicing/detail.html
+msgid "Invoice identity"
+msgstr "Identité de la facture"
+
+#: templates/invoicing/detail.html
+msgid "Invoice materials"
+msgstr "Matériels facturés"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Current company and destination information is checked again at finalization."
+msgstr "Les informations actuelles de la société et de la destination sont vérifiées à nouveau lors de la finalisation."
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Requested materials"
+msgstr "Matériels demandés"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Approved quantity"
+msgstr "Quantité approuvée"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Requested quantities are shown for context. Draft quantities are validated against recorded issuance and returns."
+msgstr "Les quantités demandées sont affichées à titre indicatif. Les quantités du brouillon sont validées selon les sorties et retours enregistrés."
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Create a draft first. A permanent document number is allocated only at finalization."
+msgstr "Créez d’abord un brouillon. Un numéro de document définitif est attribué uniquement lors de la finalisation."
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Invoice information"
+msgstr "Informations de la facture"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Material lines and unit prices"
+msgstr "Lignes de matériel et prix unitaires"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Save and review"
+msgstr "Enregistrer et vérifier"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Save your changes before opening the finalization review. Saving prices does not refresh quantities."
+msgstr "Enregistrez vos modifications avant de vérifier la finalisation. L’enregistrement des prix n’actualise pas les quantités."
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Quantity refresh"
+msgstr "Actualisation des quantités"
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "This separate action does not save unsaved price or note changes. Save those changes first."
+msgstr "Cette action distincte n’enregistre pas les modifications de prix ou de note non sauvegardées. Enregistrez-les d’abord."
+
+#: templates/invoicing/ invoicing/forms.py
+msgid "Confirm finalization"
+msgstr "Confirmer la finalisation"
+
+#: templates/invoicing/ invoicing/forms.py
+#, python-format
+msgid "Unit price for %(material)s"
+msgstr "Prix unitaire pour %(material)s"
+
+#: templates/invoicing/list.html invoicing/filters.py
+msgid "Enter a valid issue date."
+msgstr "Saisissez une date d’émission valide."
+
+#: templates/invoicing/list.html invoicing/filters.py
+msgid "Find a request for invoice creation"
+msgstr "Rechercher une demande pour créer une facture"
+
+#: templates/invoicing/list.html invoicing/filters.py
+msgid "Invoice pages"
+msgstr "Pages des factures"
+
+#: templates/invoicing/list.html invoicing/filters.py
+msgid "Only the 50 most recent matching requests are shown. More requests are available; refine the request reference search above."
+msgstr "Seules les 50 demandes correspondantes les plus récentes sont affichées. D’autres demandes sont disponibles ; affinez la recherche par référence ci-dessus."
+
+#: templates/invoicing/list.html invoicing/filters.py
+msgid "This search applies only to requests available for draft creation, not to the invoice list or printing."
+msgstr "Cette recherche concerne uniquement les demandes disponibles pour créer un brouillon, sans modifier la liste des factures ni l’impression."
+
+#: templates/invoicing/list.html invoicing/filters.py
+msgid "No requests match this selection."
+msgstr "Aucune demande ne correspond à cette sélection."
+
+#: templates/invoicing/list.html
+#, python-format
+msgid "%(total)s matching invoice"
+msgid_plural "%(total)s matching invoices"
+msgstr[0] "%(total)s facture correspondante"
+msgstr[1] "%(total)s factures correspondantes"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Receive email notifications"
+msgstr "Recevoir les notifications par e-mail"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Receive optional workflow emails. Security and account emails are unaffected."
+msgstr "Recevoir les e-mails facultatifs du circuit d’approbation. Les e-mails de sécurité et de compte restent inchangés."
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Request awaiting your approval"
+msgstr "Demande en attente de votre approbation"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Request approved"
+msgstr "Demande approuvée"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Request rejected"
+msgstr "Demande rejetée"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Request returned for correction"
+msgstr "Demande retournée pour correction"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Request update"
+msgstr "Mise à jour de la demande"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Awaiting your decision"
+msgstr "En attente de votre décision"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Already handled"
+msgstr "Déjà traitée"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Unread"
+msgstr "Non lues"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "View Request"
+msgstr "Voir la demande"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Mark as Read"
+msgstr "Marquer comme lue"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "No notifications to show."
+msgstr "Aucune notification à afficher."
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Notifications"
+msgstr "Notifications"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Unread notifications and pending approvals are separate. Reading a notification does not complete an approval."
+msgstr "Les notifications non lues et les approbations en attente sont distinctes. Lire une notification ne valide pas une approbation."
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Notifications could not be refreshed. Please retry."
+msgstr "Impossible d’actualiser les notifications. Veuillez réessayer."
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Show notifications"
+msgstr "Afficher les notifications"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Notification pages"
+msgstr "Pages des notifications"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Open notification history to see all notifications."
+msgstr "Ouvrez l’historique pour consulter toutes les notifications."
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "View All Notifications"
+msgstr "Voir toutes les notifications"
+
+#: accounts/models.py requests_app/notifications.py templates/requests_app/notifications.html
+msgid "Pending approval pages"
+msgstr "Pages des approbations en attente"

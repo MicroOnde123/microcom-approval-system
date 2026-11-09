@@ -45,7 +45,8 @@ function enhanceEntrySelect(root, document) {
     }
     function render(all = false) {
         const query = all ? '' : input.value.trim().toLocaleLowerCase();
-        matches = Array.from(select.options).filter(option => option.value && !option.disabled && option.text.toLocaleLowerCase().includes(query)).slice(0, 30);
+        const allMatches = Array.from(select.options).filter(option => option.value && !option.disabled && option.text.toLocaleLowerCase().includes(query));
+        matches = allMatches.slice(0, 30);
         list.replaceChildren(); active = -1;
         matches.forEach((option, index) => {
             const item = document.createElement('li');
@@ -58,7 +59,7 @@ function enhanceEntrySelect(root, document) {
             const item = document.createElement('li'); item.textContent = root.dataset.empty;
             item.setAttribute('aria-disabled', 'true'); list.append(item);
         }
-        status.textContent = matches.length ? root.dataset.count + ': ' + matches.length : root.dataset.empty;
+        status.textContent = allMatches.length > 30 ? root.dataset.limited : matches.length ? root.dataset.count + ': ' + matches.length : root.dataset.empty;
         list.hidden = false; input.setAttribute('aria-expanded', 'true');
         input.removeAttribute('aria-activedescendant');
     }
@@ -94,14 +95,20 @@ function enhanceEntrySelect(root, document) {
 function updateEntryStock(document) {
     const data = document.getElementById('material-stock-options');
     if (!data) return;
-    const stocks = JSON.parse(data.textContent);
+    let stocks = JSON.parse(data.textContent);
+    document.addEventListener("entry-price-updated", () => { stocks = JSON.parse(data.textContent); update(); });
     const select = document.getElementById('id_material');
     const quantity = document.getElementById('id_quantity');
     const current = document.getElementById('current-stock');
     const estimate = document.getElementById('estimated-stock');
+    const price = document.getElementById('current-material-price');
     function update() {
         const stock = stocks.find(item => String(item.id) === select.value);
         current.textContent = stock ? stock.stock_quantity + ' ' + stock.unit : '\u2014';
+        if (price) {
+            price.textContent = !stock ? '\u2014' : stock.unit_price == null
+                ? price.dataset.unknown : stock.unit_price + ' ' + (stock.currency || '');
+        }
         const raw = quantity.value.trim().replace(',', '.');
         const valid = /^(?:[0-9]+)(?:\.[0-9]{1,2})?$/.test(raw);
         const received = valid ? Math.round(Number(raw) * 100) : 0;

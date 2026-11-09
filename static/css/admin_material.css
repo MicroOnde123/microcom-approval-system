@@ -1,0 +1,30 @@
+/* Scoped to the existing Material Admin; respect the site's Admin theme. */
+body.app-inventory.model-material { --primary:#123d6b; --secondary:#123d6b; --link-fg:#123d6b; }
+body.app-inventory.model-material #result_list td,
+body.app-inventory.model-material #result_list th { padding:12px 10px; vertical-align:middle; line-height:1.5; }
+body.app-inventory.model-material .field-material_name { min-width:12rem; font-weight:600; }
+body.app-inventory.model-material .field-material_code { font-family:monospace; overflow-wrap:anywhere; }
+body.app-inventory.model-material .field-material_category { min-width:8rem; }
+body.app-inventory.model-material .material-quantity { font-weight:600; font-variant-numeric:tabular-nums; }
+body.app-inventory.model-material .material-unit { font-size:12px; color:var(--body-quiet-color); }
+body.app-inventory.model-material .material-stock-status { display:inline-block; padding:4px 8px; border-radius:5px; font-size:12px; white-space:nowrap; font-weight:600; }
+body.app-inventory.model-material .material-stock-status--out { background:#fee2e2; color:#991b1b; }
+body.app-inventory.model-material .material-stock-status--low { background:#fef3c7; color:#92400e; }
+body.app-inventory.model-material .material-stock-status--available { background:#dcfce7; color:#166534; }
+body.app-inventory.model-material .module { border-radius:6px; }
+body.app-inventory.model-material .material-revisions { display:none; }
+body.app-inventory.model-material .form-row { padding:14px 12px; }
+body.app-inventory.model-material .errorlist { line-height:1.6; }
+body.app-inventory.model-material a:focus-visible,
+body.app-inventory.model-material input:focus-visible,
+body.app-inventory.model-material select:focus-visible,
+body.app-inventory.model-material textarea:focus-visible { outline:3px solid #436e9a; outline-offset:3px; }
+@media(max-width:1024px) {
+ body.app-inventory.model-material #changelist .results { overflow-x:auto; }
+ body.app-inventory.model-material #result_list .field-material_name { position:sticky; left:0; background:var(--body-bg); z-index:1; min-width:9rem; }
+ body.app-inventory.model-material #result_list td, body.app-inventory.model-material #result_list th { padding:10px 8px; }
+}
+@media(max-width:767px) {
+ body.app-inventory.model-material .form-row input:not([type=checkbox]):not([type=hidden]),
+ body.app-inventory.model-material .form-row textarea { max-width:100%; box-sizing:border-box; }
+}

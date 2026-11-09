@@ -11,13 +11,15 @@ class Element {
     dispatchEvent(event) { for (const fn of this.listeners[event.type] || []) fn(event); }
     setAttribute(name, value) { this.attrs[name] = value; }
     removeAttribute(name) { delete this.attrs[name]; }
+    getAttribute(name) { return this.attrs[name] || null; }
     appendChild(node) { this.children.push(node); }
     querySelector() { return null; }
     querySelectorAll() { return []; }
     contains() { return false; }
 }
-function fixture() {
+function fixture(live = false) {
     const form = new Element(), results = new Element(), input = new Element(), select = new Element();
+    if (live) form.dataset.workflowLive = '';
     form.method = 'get'; form.action = '/list/'; form.dataset.searchingLabel = 'Recherche';
     form.dataset.updatedLabel = 'Actualisé'; form.dataset.errorLabel = 'Réessayer';
     Object.assign(input, {name:'q', type:'search', tagName:'INPUT', value:''});
@@ -86,6 +88,23 @@ test('pagination keeps filters and respects modified clicks', async () => {
     assert.equal(f.emit(f.results,'click',{ctrlKey:true,target:{closest:()=>link}}).prevented,undefined);
     f.emit(f.results,'click',{target:{closest:()=>link}});await f.respond(0);
     assert.match(f.requests[0].url,/q=kept&page=2/);assert.equal(f.history[0].method,'pushState');
+});
+
+test('shared history region refreshes archived attempts and preserves archived-page filters', async () => {
+    const f=fixture();
+    f.results.innerHTML='<table>current</table><section>old archived decisions</section>';
+    f.input.value='no-match';f.emit(f.input,'input');f.flush();
+    await f.respond(0,'<table>No approval history</table>');
+    assert.doesNotMatch(f.results.innerHTML,/old archived decisions/);
+    const link={href:'https://example.invalid/list/?q=kept&action=RETURNED&page=2&attempt_page=3'};
+    f.emit(f.results,'click',{target:{closest:selector=>selector==='.request-list-pagination a'?link:null}});
+    await f.respond(1,'<table>current</table><section>filtered archived page 3</section>');
+    assert.match(f.results.innerHTML,/filtered archived page 3/);
+    const url=new URL(f.requests[1].url);
+    assert.equal(url.searchParams.get('q'),'kept');
+    assert.equal(url.searchParams.get('action'),'RETURNED');
+    assert.equal(url.searchParams.get('page'),'2');
+    assert.equal(url.searchParams.get('attempt_page'),'3');
 });
 test('clear resets controls and uses unfiltered URL', async () => {
     const f=fixture();f.input.value='old';f.emit(f.form,'click',{target:{closest:selector=>selector==='[data-filter-reset]'?{href:'https://example.invalid/list/'}:null}});
@@ -169,4 +188,15 @@ test('material exports and bulk return URL use visible filters after updates', (
     values[0]=['q','new'];form.dispatchEvent({type:'auto-filters:updated'});
     assert.match(csv.href,/q=new/);assert.match(excel.href,/date_from=2026-10-01/);
     assert.equal(next.value,'/materials/?q=new&date_from=2026-10-01');
+});
+
+
+test('workflow refresh replaces bounded queue results without changing filters or browser history',async()=>{
+ const f=fixture(true);
+ f.window.location=new URL('https://example.invalid/list/?q=kept&page=2');
+ f.emit(f.form,'workflow:refresh');
+ assert.equal(f.requests.length,1);assert.match(f.requests[0].url,/q=kept&page=2/);
+ f.emit(f.form,'workflow:refresh');assert.equal(f.requests.length,1); // do not abort a pending response
+ await f.respond(0,'resolved row removed');
+ assert.equal(f.results.innerHTML,'resolved row removed');assert.equal(f.history.length,0);
 });

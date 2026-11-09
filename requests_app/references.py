@@ -133,14 +133,14 @@ def create_request_once(instance, actor, *, token, digest, save_related, submit,
     instance.reference_counter, instance.reference_allocated_at = counter, moment
     instance.save()
     save_related(instance)
+    if save_files:
+        save_files(instance)
     if submit:
         from .services import submit_request
         try:
             submit_request(instance, notifications_on_commit=True)
         except ValidationError as error:
             raise ValidationError(_("No approval workflow is configured for this request type.")) from error
-    if save_files:
-        save_files(instance)
     receipt.request = instance
     receipt.save(update_fields=["request"])
     return instance, False

@@ -1,0 +1,21 @@
+{% load i18n %}
+<section class="entry-success entry-confirmation" aria-labelledby="receipt-completed-title">
+<h2 id="receipt-completed-title" tabindex="-1" autofocus><span aria-hidden="true">&#10003; </span>{% trans "Receipt completed" %}</h2>
+<p class="entry-estimate-note">{% trans "Historical balances from this receipt; current stock is not used." %}</p>
+<dl class="entry-summary">
+<div class="entry-summary--wide"><dt>{% trans "Receipt reference" %}</dt><dd class="entry-reference entry-confirmation-reference">{{ result.reference }}</dd></div>
+<div><dt>{% trans "Receipt date" %}</dt><dd>{% include "inventory/receipt_date.html" with value=result.received_on %}</dd></div>
+<div><dt>{% trans "Received by" %}</dt><dd>{{ result.created_by.full_name|default:result.created_by.username }}</dd></div>
+{% if result.supplier %}<div><dt>{% trans "Supplier" %}</dt><dd>{{ result.supplier }}</dd></div>{% endif %}
+{% if result.delivery_reference %}<div><dt>{% trans "Delivery/reference number" %}</dt><dd>{{ result.delivery_reference }}</dd></div>{% endif %}
+</dl>
+{% for item in confirmation.line_rows %}
+<div class="entry-confirmation-material">
+<div class="entry-material-identity"><strong>{{ item.material.name }}</strong><span>{{ item.material.code }}</span><span class="{% if item.snapshot_recorded %}entry-type-badge{% else %}entry-legacy-badge{% endif %}">{% if item.snapshot_recorded %}{% trans "Recorded at receipt" %}{% else %}{% trans "Current catalogue" %}{% endif %}</span></div>
+{% if not item.snapshot_recorded %}<p class="entry-legacy-note">{% trans "No original material snapshot was recorded. The name, code, category, description and unit below are current catalogue information. Stock quantities are from the recorded receipt." %}</p>{% endif %}
+<dl class="entry-summary"><div><dt>{% trans "Quantity received" %}</dt><dd>{{ item.line.quantity }} {{ item.material.unit }}</dd></div><div><dt>{% trans "Stock after receipt" %}</dt><dd>{{ item.line.stock_after }} {{ item.material.unit }}</dd></div></dl>
+</div>
+{% empty %}<p class="message error">{% trans "No receipt lines are available. Ask a stock administrator to review this record." %}</p>{% endfor %}
+<nav class="entry-confirmation-actions" aria-label="{% trans 'Receipt details' %}"><a class="btn" href="{% url 'material_receipt_detail' result.pk %}">{% trans "View receipt details" %}</a><a class="btn btn-secondary" href="{% url 'material_receipt_history' %}">{% trans "Receipt History" %}</a></nav>
+</section>
+<div class="entry-confirmation-next"><h2>{% trans "New Entry" %}</h2><a class="btn btn-secondary" href="{% url 'material_entries' %}?mode={{ mode }}">{% trans "New Entry" %}</a></div>

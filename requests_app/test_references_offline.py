@@ -120,7 +120,7 @@ class ReferenceOfflineTests(unittest.TestCase):
             saved, replay = refs.create_request_once.__wrapped__(request, actor, token=uuid4(), digest="a" * 64,
                 save_related=lambda req: order.append("lines"), submit=True, save_files=lambda req: order.append("files"))
         self.assertFalse(replay); self.assertIs(saved, request)
-        self.assertEqual(order, ["request", "lines", "workflow", "files"])
+        self.assertEqual(order, ["request", "lines", "files", "workflow"])
         self.assertEqual(request.request_number, "REQ-MAT-0001/2027")
         self.assertEqual(request.reference_allocated_at, moment)
         self.assertEqual(request.reference_year, 2027)

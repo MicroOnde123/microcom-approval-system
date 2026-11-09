@@ -12,9 +12,10 @@
 
     <div class="actions-inline">
         {% if active_approval_for_user %}
-            <a href="{% url 'approval_detail' active_approval_for_user.id %}?next={{ request.get_full_path|urlencode }}" class="btn">
+            <span data-live-approval-id="{{ active_approval_for_user.pk }}">
+            <a data-approval-controls href="{% url 'approval_detail' active_approval_for_user.id %}?next={{ request.get_full_path|urlencode }}" class="btn">
                 {% trans "Review / Approve Request" %}
-            </a>
+            </a><span data-approval-handled role="status" hidden></span></span>
         {% endif %}
 
         <a href="{{ back_url }}" class="btn btn-tertiary">
@@ -517,7 +518,7 @@
 
         <tbody>
 
-            {% for log in request_obj.audit_logs.all %}
+            {% for log in audit_logs %}
 
             <tr>
 
@@ -530,7 +531,10 @@
                 </td>
 
                 <td class="table-description">
-                    {{ log.comment|default:"-" }}
+                    {% if log.action == 'APPROVAL_HISTORY_ARCHIVED' %}{% trans "See previous approval attempts." %}
+                    {% elif log.action == 'PERMISSION_BASELINE' %}{% trans "Approval comparison baseline recorded." %}
+                    {% elif log.action == 'PERMISSION_EDIT_SAVED' %}{% trans "Changes saved successfully." %}
+                    {% else %}{{ log.display_comment|default:"-" }}{% endif %}
                 </td>
 
                 <td class="table-date">
@@ -555,4 +559,5 @@
 
 </div>
 
+{% include "requests_app/partials/approval_attempts.html" %}
 {% endblock %}

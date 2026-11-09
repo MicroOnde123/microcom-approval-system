@@ -242,7 +242,7 @@ class ReturnNoteRecoveryTests(unittest.TestCase):
     def test_material_report_contains_gated_optional_links_without_stock_post_changes(self):
         report = Path(__file__).resolve().parents[1] / "templates/requests_app/material_reports.html"
         source = report.read_text(encoding="utf-8")
-        self.assertIn("return_note_links request.user req.id", source)
+        self.assertIn("return_note_nav=req.report_return_note_nav", source)
         self.assertIn("{% url 'return_material_to_stock' item.id %}", source)
         # No nested issuance POST inside the existing bulk-print form.
         links = Path(__file__).resolve().parents[1] / "templates/invoicing/return_notes/links.html"

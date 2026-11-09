@@ -1,0 +1,7 @@
+#entry-price-dialog { box-sizing: border-box; width: min(540px, calc(100% - 24px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; }
+#entry-price-dialog::backdrop { background: rgb(15 23 42 / 55%); }
+#entry-price-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+#entry-price-dialog input, #entry-price-dialog select, #entry-price-dialog textarea { box-sizing: border-box; width: 100%; }
+#entry-price-errors, #entry-price-dialog .errorlist { color: #b91c1c; }
+#entry-price-dialog [aria-invalid="true"] { border-color: #b91c1c; }
+#entry-price-dialog button:focus-visible, #modify-material-price:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }

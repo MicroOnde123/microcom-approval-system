@@ -145,6 +145,12 @@
                 control.addEventListener("change", function () { loadResults(buildURL(null), "push"); });
             }
         });
+        if (form.dataset.workflowLive !== undefined) {
+            form.addEventListener("workflow:refresh", function () {
+                if (document.hidden || timer || results.getAttribute("aria-busy") === "true") return;
+                loadResults(new URL(window.location.href), null);
+            });
+        }
         form.addEventListener("submit", function (event) {
             if (fallback) return; // Explicit Filter action falls back to normal GET.
             event.preventDefault(); loadResults(buildURL(null), "push");

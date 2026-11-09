@@ -152,5 +152,10 @@
 
     </div>
     {% include "requests_app/partials/list_pagination.html" %}
+{% include "requests_app/partials/approval_attempts.html" %}
+{% if attempt_page.has_other_pages %}<nav class="actions-inline request-list-pagination" aria-label="{% trans 'Previous approval attempt pages' %}">
+{% if attempt_page.has_previous %}<a class="btn btn-secondary" href="?{{ attempt_query }}&amp;attempt_page={{ attempt_page.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}
+<span>{{ attempt_page.number }} / {{ attempt_page.paginator.num_pages }}</span>
+{% if attempt_page.has_next %}<a class="btn btn-secondary" href="?{{ attempt_query }}&amp;attempt_page={{ attempt_page.next_page_number }}">{% trans "Next" %}</a>{% endif %}</nav>{% endif %}
 </div>
 {% endblock %}

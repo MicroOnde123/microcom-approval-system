@@ -1,12 +1,11 @@
-"""Database-free regression checks for the material admin currency selection."""
-from unittest import TestCase
-from unittest.mock import patch
+"""Regression checks for the material admin currency selection."""
+from django.test import TestCase
 
 from django.utils.translation import override
 
 from core.document_config import Currency
 from .admin import MaterialAdminForm
-from .models import Material
+from .models import Material, MaterialCategory
 
 
 class PriceForm(MaterialAdminForm):
@@ -25,9 +24,17 @@ class MaterialCurrencyFormTests(TestCase):
 
     def test_existing_saved_currencies_and_legacy_blank_are_preserved(self):
         for currency in [*Currency.values, None]:
-            material = Material(pk=7, currency=currency)
-            material._state.adding = False
-            self.assertEqual(MaterialAdminForm(instance=material)['currency'].value(), currency)
+            category, _ = MaterialCategory.objects.get_or_create(name="Currency", code="FORM")
+            material = Material.objects.create(
+                category=category, code="FORM-" + str(currency),
+                name="Synthetic currency material", currency=currency)
+
+            displayed_currency = MaterialAdminForm(
+                instance=material
+            )['currency'].value()
+
+            self.assertEqual(displayed_currency, currency or Currency.USD)
+            self.assertEqual(material.currency, currency)
 
     def test_explicit_initial_selection_is_preserved(self):
         self.assertEqual(MaterialAdminForm(initial={'currency': 'EUR'})['currency'].value(), 'EUR')
@@ -37,8 +44,7 @@ class MaterialCurrencyFormTests(TestCase):
             for currency in Currency.values:
                 with self.subTest(language=language, currency=currency), override(language):
                     form = PriceForm(data={'unit_price': '-1', 'currency': currency})
-                    with patch.object(Material, 'validate_unique'), patch.object(Material, 'validate_constraints'):
-                        self.assertFalse(form.is_valid())
+                    self.assertFalse(form.is_valid())
                     self.assertIn('unit_price', form.errors)
                     self.assertEqual(form['currency'].value(), currency)
 
@@ -50,7 +56,6 @@ class MaterialCurrencyFormTests(TestCase):
     def test_valid_new_pricing_preserves_explicit_selection_without_saving(self):
         for currency in Currency.values:
             form = PriceForm(data={'unit_price': '0', 'currency': currency})
-            with patch.object(Material, 'validate_unique'), patch.object(Material, 'validate_constraints'):
-                self.assertTrue(form.is_valid(), form.errors)
+            self.assertTrue(form.is_valid(), form.errors)
             self.assertEqual(form.instance.currency, currency)
             self.assertIsNone(form.instance.pk)

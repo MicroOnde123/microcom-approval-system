@@ -69,7 +69,11 @@ class AddressOfflineTests(unittest.TestCase):
 
     def test_detail_template_compiles(self):
         from pathlib import Path
-        Engine(libraries={"i18n": "django.templatetags.i18n"}).from_string(
+        Engine(libraries={
+            "i18n": "django.templatetags.i18n",
+            "static": "django.templatetags.static",
+            "tz": "django.templatetags.tz",
+        }).from_string(
             Path("templates/invoicing/detail.html").read_text(encoding="utf-8"))
 
     def test_detail_address_uses_escaped_snapshot_only(self):

@@ -25,6 +25,11 @@ class PriceFormSet(BaseFormSet):
         kwargs.setdefault("initial",[{"line_id":line.pk,"unit_price":line.unit_price} for line in self.lines])
         super().__init__(*args,**kwargs)
         for form,line in zip(self.forms,self.lines):
+            form.material_code = line.material_code_snapshot
+            form.material_unit = line.unit_snapshot
+            form.fields["unit_price"].label = _("Unit price for %(material)s") % {
+                "material": f"{line.material_code_snapshot} - {line.description_snapshot}"}
+            form.fields["unit_price"].help_text = _("Leave unknown prices blank. Zero is an explicit authorized price.")
             form.material_description = line.description_snapshot
             form.net_quantity = line.quantity
             form.currency = line.currency

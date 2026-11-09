@@ -52,3 +52,31 @@ def navigation(user, *, invoice=None, request_id=None):
     else:
         result["can_issue"] = True
     return result
+
+
+def navigation_for_requests(user, request_ids):
+    """One fresh permission snapshot and bounded page-level object queries.
+
+    Navigation is advisory; endpoints still use authorize_return_note freshly.
+    """
+    if not ui_enabled() or not getattr(user, "is_authenticated", False):
+        return {}
+    ids = set(request_ids)
+    if not ids:
+        return {}
+    from django.contrib.auth import get_user_model
+    from .permissions import require_permission, request_scope
+    actor = get_user_model().objects.filter(pk=user.pk).first()
+    if not actor or not actor.is_active:
+        return {}
+    try:
+        require_permission(actor, "view_materialreturnnote")
+    except PermissionDenied:
+        return {}
+    allowed = set(request_scope(actor).filter(pk__in=ids).values_list("pk", flat=True))
+    if not allowed:
+        return {}
+    invoices = dict(Invoice.objects.filter(request_id__in=allowed, status="FINALIZED").values_list("request_id", "pk"))
+    can_issue = actor.has_perm("invoicing.issue_materialreturnnote") and actor.has_perm("invoicing.add_materialreturnnote")
+    return {pk: {"invoice_id": invoices[pk], "can_read": True, "can_issue": can_issue}
+            if pk in invoices else {"unavailable": True} for pk in allowed}

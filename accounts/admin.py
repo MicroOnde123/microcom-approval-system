@@ -19,10 +19,30 @@ class UserAdminForm(forms.ModelForm):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     form = UserAdminForm
-    list_display = ("username", "full_name", "email", "employee_id", "department", "role", "can_manage_stock", "can_view_administration_reports", "is_active")
-    search_fields = ("username", "full_name", "email")
-    list_filter = ("department", "role", "can_manage_stock", "can_view_administration_reports", "is_active")
 
+    list_display = (
+        "username",
+        "full_name",
+        "email",
+        "employee_id",
+        "department",
+        "role",
+        "can_manage_stock",
+        "can_view_administration_reports",
+        "receive_email_notifications",
+        "is_active",
+    )
+
+    search_fields = ("username", "full_name", "email")
+
+    list_filter = (
+        "department",
+        "role",
+        "can_manage_stock",
+        "can_view_administration_reports",
+        "receive_email_notifications",
+        "is_active",
+    )
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):

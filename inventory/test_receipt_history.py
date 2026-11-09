@@ -199,3 +199,64 @@ class ReceiptHistoryTests(Fixtures, TestCase):
         self.assertFalse(any(q["sql"].lstrip().upper().startswith(("INSERT", "UPDATE", "DELETE")) for q in queries))
         new_receipt, _ = self.receive(mode="new")
         self.assertEqual(new_receipt.transaction_type, "new")
+
+
+class ReceiptHistoryPresentationTests(Fixtures, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.user)
+        self.url = reverse("material_receipt_history")
+
+    def test_responsive_rows_keep_all_columns_and_accessible_reference_links(self):
+        receipt, _ = self.receive()
+        response = self.client.get(self.url, {"q": "Supplier"})
+        self.assertContains(response, 'role="table"')
+        self.assertContains(response, 'role="columnheader"', count=10)
+        self.assertContains(response, 'role="cell"', count=10)
+        self.assertContains(response, 'data-label=', count=10)
+        self.assertContains(response, 'class="entry-history-identity"')
+        self.assertContains(response, 'aria-label="View details ' + receipt.reference + '"', count=2)
+        self.assertContains(response, 'title="' + receipt.reference + '"')
+        self.assertContains(response, reverse("material_receipt_detail", args=[receipt.pk]) + '?q=Supplier&amp;page=1')
+        self.assertEqual(len(response.context["receipt_rows"]), 1)
+
+    def test_invalid_filter_errors_are_next_to_fields_and_values_survive(self):
+        from html.parser import HTMLParser
+        class FilterFields(HTMLParser):
+            def __init__(self):
+                super().__init__(); self.depth = 0; self.blocks = []; self.block = []
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == "div" and "entry-history-filter-field" in attrs.get("class", ""):
+                    self.depth = 1; self.block = []
+                elif self.depth and tag == "div": self.depth += 1
+                if self.depth: self.block.append((tag, attrs))
+            def handle_endtag(self, tag):
+                if self.depth and tag == "div":
+                    self.depth -= 1
+                    if not self.depth: self.blocks.append(self.block)
+        for language in ("en", "fr"):
+            self.client.cookies["django_language"] = language
+            response = self.client.get(self.url, {"q": "Preserved search", "date_from": "31/02/2026", "date_to": "2026-11-03", "transaction_type": "invalid"})
+            self.assertContains(response, 'value="Preserved search"')
+            self.assertContains(response, 'value="31/02/2026"')
+            self.assertContains(response, 'value="03/11/2026"' if language == "fr" else 'value="2026-11-03"')
+            self.assertContains(response, "Saisissez une date valide." if language == "fr" else "Enter a valid date.")
+            fields = FilterFields(); fields.feed(response.content.decode())
+            self.assertEqual(len(fields.blocks), 4)
+            for index in (1, 3):
+                self.assertTrue(any(tag == "ul" and "errorlist" in attrs.get("class", "") for tag, attrs in fields.blocks[index]))
+            self.assertContains(response, 'aria-invalid="true"')
+            self.assertEqual(response.context["page_obj"].paginator.count, 0)
+
+    def test_empty_results_and_safe_invalid_page_in_both_languages(self):
+        self.receive()
+        for language in ("en", "fr"):
+            self.client.cookies["django_language"] = language
+            empty = self.client.get(self.url, {"q": "no match", "page": "invalid"})
+            self.assertEqual(empty.status_code, 200)
+            self.assertContains(empty, 'class="entry-history-empty-cell"')
+            self.assertEqual(empty.context["page_obj"].number, 1)
+            self.assertContains(empty, "Aucune" if language == "fr" else "No receipts found")
+            page = self.client.get(self.url, {"page": "99999"})
+            self.assertEqual(page.context["page_obj"].number, 1)

@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.utils.translation import override, activate, deactivate
 
 from inventory.models import Material, Succursale
+from inventory.pricing import update_price, price_state
 from requests_app.models import Request, RequestApproval, RequestMaterialItem, StockMovement
 from requests_app.services import approve_step
 from .admin import InvoiceAdmin
@@ -74,16 +75,14 @@ class InvoiceLifecycleTests(LifecycleFixtures,TestCase):
         self.assertFalse(DocumentSequence.objects.exists())
 
     def test_same_currency_catalogue_prices_only_and_no_conversion(self):
-        self.material.unit_price = Decimal("3.25")
-        self.material.currency = "EUR"
-        self.material.save()
+        self.material = update_price(self.material.pk, self.admin, price=Decimal("3.25"), currency="EUR",
+            reason="Synthetic catalogue setup", expected_state=price_state(self.material))
         invoice = self.create(currency="USD")
         self.assertIsNone(invoice.lines.get().unit_price)
 
     def test_catalogue_zero_and_manual_zero_are_valid(self):
-        self.material.unit_price = 0
-        self.material.currency = "USD"
-        self.material.save()
+        self.material = update_price(self.material.pk, self.admin, price=Decimal("0"), currency="USD",
+            reason="Synthetic catalogue setup", expected_state=price_state(self.material))
         invoice = self.create()
         self.assertEqual(invoice.lines.get().unit_price,0)
         self.price(invoice,"0")
@@ -300,9 +299,9 @@ class InvoiceLifecycleTests(LifecycleFixtures,TestCase):
         snapshot = (invoice.company_snapshot,invoice.succursale_snapshot,invoice.amount_words_fr,invoice.branding_snapshot)
         self.assertEqual(invoice.branding_snapshot["strategy"],"embedded-content")
         self.material.name = "Changed catalogue name"
-        self.material.unit_price = 99
-        self.material.currency = "EUR"
         self.material.save()
+        self.material = update_price(self.material.pk, self.admin, price=Decimal("99"), currency="EUR",
+            reason="Synthetic catalogue correction", expected_state=price_state(self.material))
         self.branch.name = "Changed branch name"
         self.branch.save()
         self.configuration.company_name = "Changed company"

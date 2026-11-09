@@ -1,0 +1,8 @@
+{% load i18n tz %}
+<ul class="workflow-notification-items">{% for row in notification_rows %}<li class="workflow-notification-item{% if not row.notice.read_at %} is-unread{% endif %}" data-notice-id="{{ row.notice.pk }}">
+<div><strong>{{ row.title }}</strong>{% if not row.notice.read_at %}<span class="workflow-notification-unread">{% trans "Unread" %}</span>{% endif %}</div>
+<p class="workflow-notification-reference">{{ row.notice.reference }}</p>
+<p class="muted workflow-notification-state">{{ row.state }}</p><time datetime="{{ row.notice.created_at|date:'c' }}">{% get_current_language as notice_language %}{% if notice_language == 'fr' %}{{ row.notice.created_at|timezone:'Africa/Kinshasa'|date:'d/m/Y H:i' }}{% else %}{{ row.notice.created_at|timezone:'Africa/Kinshasa'|date:'Y-m-d H:i' }}{% endif %} (Africa/Kinshasa)</time>
+<div class="workflow-notification-actions"><form method="post" action="{% url 'notification_read' row.notice.pk %}" data-notice-view>{% csrf_token %}<button class="btn btn-secondary" type="submit" name="action" value="view">{% trans "View Request" %}</button></form>
+{% if not row.notice.read_at %}<form method="post" action="{% url 'notification_read' row.notice.pk %}" data-notice-read>{% csrf_token %}<button class="btn btn-tertiary" type="submit">{% trans "Mark as Read" %}</button></form>{% endif %}</div>
+</li>{% empty %}<li class="workflow-notification-empty">{% trans "No notifications to show." %}</li>{% endfor %}</ul>

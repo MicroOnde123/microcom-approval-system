@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% trans "Notifications" %}{% endblock %}
+{% block page_layout %}app-container--reading{% endblock %}
+{% block content %}<div class="page-header"><h1>{% trans "Notifications" %}</h1></div>
+<p class="muted">{% trans "Unread notifications and pending approvals are separate. Reading a notification does not complete an approval." %}</p>
+<form method="get" data-auto-filters="true" data-workflow-live data-searching-label="{% trans 'Searching...' %}" data-updated-label="{% trans 'Results updated.' %}" data-validation-label="{% trans 'Review the errors below.' %}" data-error-label="{% trans 'Notifications could not be refreshed. Please retry.' %}">
+<label for="notification-filter">{% trans "Show notifications" %}</label><select name="filter" id="notification-filter"><option value="all">{% trans "All" %}</option><option value="unread" {% if unread_only %}selected{% endif %}>{% trans "Unread" %}</option></select><div class="actions-inline"><button class="btn btn-secondary" type="submit">{% trans "Filter" %}</button></div></form>
+<div id="live-filter-results" aria-live="off"><div tabindex="0" role="region" aria-label="{% trans 'Notifications' %}">{% include "requests_app/partials/notification_items.html" %}
+<nav class="request-list-pagination" aria-label="{% trans 'Notification pages' %}">{% if notification_page.has_previous %}<a class="btn btn-secondary" href="?filter={% if unread_only %}unread{% else %}all{% endif %}&amp;page={{ notification_page.previous_page_number }}">{% trans "Previous" %}</a>{% endif %}<span>{% blocktrans with page=notification_page.number pages=notification_page.paginator.num_pages %}Page {{ page }} of {{ pages }}{% endblocktrans %}</span>{% if notification_page.has_next %}<a class="btn btn-secondary" href="?filter={% if unread_only %}unread{% else %}all{% endif %}&amp;page={{ notification_page.next_page_number }}">{% trans "Next" %}</a>{% endif %}</nav></div></div>
+{% endblock %}

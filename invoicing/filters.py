@@ -1,5 +1,6 @@
 """Validated filters shared by invoice listing and server-selected printing."""
 from django import forms
+from inventory.entry_dates import EntryDateField
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -7,13 +8,11 @@ from django.utils.translation import gettext_lazy as _
 class InvoiceFilterForm(forms.Form):
     q = forms.CharField(label=_("Search"), required=False, max_length=200,
         widget=forms.TextInput(attrs={"placeholder": _("Invoice number, request reference, succursale...")}))
-    date_from = forms.DateField(label=_("Date From"), required=False, input_formats=["%Y-%m-%d"],
-        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
-        error_messages={"invalid": _("Enter a valid issue date in YYYY-MM-DD format."),
+    date_from = EntryDateField(label=_("Date From"), required=False,
+        error_messages={"invalid": _("Enter a valid issue date."),
                         "required": _("Enter both issue dates before printing filtered invoices.")})
-    date_to = forms.DateField(label=_("Date To"), required=False, input_formats=["%Y-%m-%d"],
-        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
-        error_messages={"invalid": _("Enter a valid issue date in YYYY-MM-DD format."),
+    date_to = EntryDateField(label=_("Date To"), required=False,
+        error_messages={"invalid": _("Enter a valid issue date."),
                         "required": _("Enter both issue dates before printing filtered invoices.")})
     status = forms.ChoiceField(label=_("Status"), required=False,
         choices=[("", _("All")), ("DRAFT", _("Draft")), ("FINALIZED", _("Finalized"))],
@@ -28,7 +27,7 @@ class InvoiceFilterForm(forms.Form):
         values = super().clean()
         start, end = values.get("date_from"), values.get("date_to")
         if start and end and start > end:
-            raise forms.ValidationError(_("The From date must not be after the To date."))
+            self.add_error("date_to", _("The From date must not be after the To date."))
         return values
 
 
@@ -51,3 +50,8 @@ def apply_invoice_filters(queryset, filters):
     if filters.get("status"):
         queryset = queryset.filter(status=filters["status"])
     return queryset
+
+
+class InvoiceCandidateFilterForm(forms.Form):
+    candidate_q = forms.CharField(label=_("Find a request for invoice creation"), required=False,
+        max_length=200, widget=forms.TextInput(attrs={"type": "search"}))

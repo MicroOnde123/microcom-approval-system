@@ -1,3 +1,4 @@
+from requests_app import notification_views
 from django.contrib import admin
 from django.urls import path, include
 from core.views import dashboard
@@ -28,14 +29,20 @@ from requests_app.views import (
     notification_count, return_material_to_stock, export_material_report_excel,
 )
 
-from inventory.entry_views import material_entries, create_material_category
+from inventory.entry_views import material_entries, create_material_category, cancel_material_entry_draft
+from inventory.price_views import material_price
 from inventory.receipt_history import receipt_history, receipt_detail
 
 urlpatterns = [
+    path("notifications/", notification_views.inbox, name="notification_inbox"),
+    path("notifications/live/", notification_views.snapshot, name="notification_snapshot"),
+    path("notifications/<int:notice_id>/read/", notification_views.read, name="notification_read"),
+    path("materials/entries/prices/<int:material_id>/", material_price, name="material_entry_price"),
     path("materials/entries/history/", receipt_history, name="material_receipt_history"),
     path("materials/entries/receipts/<int:receipt_id>/", receipt_detail, name="material_receipt_detail"),
     path("materials/categories/create/", create_material_category, name="create_material_category"),
     path("materials/entries/", material_entries, name="material_entries"),
+    path("materials/entries/drafts/<int:draft_id>/cancel/", cancel_material_entry_draft, name="cancel_material_entry_draft"),
     path("requests/<int:request_id>/material-outcomes/", material_outcome_views.workspace, name="material_outcomes"),
     path("return-receipts/<int:receipt_id>/pdf/", material_outcome_views.receipt_pdf, name="return_receipt_pdf"),
     path("return-receipt-artifacts/<int:artifact_id>/", material_outcome_views.receipt_artifact, name="return_receipt_artifact"),
