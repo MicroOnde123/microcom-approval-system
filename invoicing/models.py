@@ -130,6 +130,7 @@ class DocumentSequence(FinancialRecord):
         INVOICE = "INVOICE", _("Invoice")
         CREDIT = "CREDIT", _("Credit note")
         RETURN_NOTE = "RETURN_NOTE", _("Material return note")
+        ADJUSTED = "ADJUSTED", _("Adjusted invoice statement")
 
     document_type = models.CharField(_("Document type"), max_length=11, choices=Kind.choices)
     year = models.PositiveIntegerField(_("Business year"))
@@ -478,3 +479,5 @@ class MaterialReturnNoteArtifact(FinancialRecord):
         verbose_name = _("Material return note artifact")
         verbose_name_plural = _("Material return note artifacts")
         constraints = [models.CheckConstraint(condition=Q(language__in=["en","fr"],rendering_status__in=["PENDING","READY","FAILED"]), name="return_note_artifact_state")]
+
+from .adjusted_models import AdjustedInvoiceStatement  # noqa: E402

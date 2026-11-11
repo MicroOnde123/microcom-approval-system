@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% load i18n %}{% block content %}<h1>{% trans "Adjusted Invoice Statements" %}</h1>{% for error in errors %}<p class="message error">{{ error }}</p>{% endfor %}<a href="{% url 'invoicing:adjusted_overview' invoice.pk %}">{% trans "Review adjusted statement" %}</a>{% endblock %}

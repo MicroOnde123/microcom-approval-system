@@ -2,8 +2,15 @@ from django.urls import path
 from . import views
 from . import return_note_views as return_notes
 
+from . import adjusted_views as adjusted
+
 app_name = "invoicing"
 urlpatterns = [
+    path('<int:invoice_id>/adjusted-statements/',adjusted.overview,name='adjusted_overview'),
+    path('<int:invoice_id>/adjusted-statements/issue/',adjusted.issue,name='adjusted_issue'),
+    path('adjusted-statements/<int:statement_id>/',adjusted.detail,name='adjusted_detail'),
+    path('adjusted-statements/<int:statement_id>/print/',adjusted.document,name='adjusted_print'),
+    path('adjusted-statements/<int:statement_id>/download/',adjusted.document,{'attachment':True},name='adjusted_download'),
     path("<int:invoice_id>/return-notes/", return_notes.history, name="return_note_history"),
     path("<int:invoice_id>/return-notes/new/", return_notes.select, name="return_note_select"),
     path("<int:invoice_id>/return-notes/preview/", return_notes.preview, name="return_note_preview"),

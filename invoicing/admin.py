@@ -1,3 +1,4 @@
+from .adjusted_access import enabled as adjusted_statements_enabled
 """Financial records are viewed here; all lifecycle mutations use authorized services."""
 from django import forms
 from django.contrib import admin, messages
@@ -52,7 +53,7 @@ class DocumentSequenceAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self,request,obj=None):
         result = list(self.readonly_fields)
-        if obj and (obj.invoice_documents.filter(status="FINALIZED").exists() or obj.creditnote_documents.filter(status="FINALIZED").exists() or obj.materialreturnnote_documents.filter(status="FINALIZED").exists()):
+        if obj and (obj.invoice_documents.filter(status="FINALIZED").exists() or obj.creditnote_documents.filter(status="FINALIZED").exists() or obj.materialreturnnote_documents.filter(status="FINALIZED").exists() or (adjusted_statements_enabled() and obj.adjusted_statements.exists())):
             result += ["document_type","year","series","number_format","starting_value","verification_evidence"]
         return result
 

@@ -5106,3 +5106,171 @@ msgstr "Autre site — Ajouter manuellement"
 #: core/models.py requests_app/site_selection.py templates/requests_app/includes/site_picker.html
 msgid "Save site"
 msgstr "Enregistrer le site"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Adjusted Invoice Statements"
+msgstr "États récapitulatifs après retours"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Adjusted Invoice Statement"
+msgstr "État récapitulatif après retours"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Adjusted invoice statement"
+msgstr "État récapitulatif après retours"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "View Adjusted Statements"
+msgstr "Voir les états ajustés"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Generate Adjusted Statement"
+msgstr "Générer un état ajusté"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Print Statement"
+msgstr "Imprimer l’état"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Review adjusted statement"
+msgstr "Vérifier l’état récapitulatif"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Issue adjusted statement"
+msgstr "Émettre l’état récapitulatif"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Previously issued statements"
+msgstr "États précédemment émis"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "No adjusted statements have been issued."
+msgstr "Aucun état récapitulatif n’a été émis."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Original invoiced quantity"
+msgstr "Quantité initialement facturée"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Cumulative returned quantity"
+msgstr "Quantité retournée cumulée"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Net remaining quantity"
+msgstr "Quantité nette restante"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Original line value"
+msgstr "Valeur initiale de la ligne"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Returned line value"
+msgstr "Valeur retournée de la ligne"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Adjusted line value"
+msgstr "Valeur ajustée de la ligne"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Original invoice total"
+msgstr "Total de la facture initiale"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Cumulative documented returns"
+msgstr "Valeur cumulée des retours documentés"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Included return notes"
+msgstr "Bons de retour inclus"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Issued return notes"
+msgstr "Bons de retour émis"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Issued by"
+msgstr "Émis par"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "No issued return adjustment is available."
+msgstr "Aucun ajustement lié à un bon de retour émis n’est disponible."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Preview only. No permanent reference has been allocated."
+msgstr "Aperçu uniquement. Aucune référence définitive n’a été attribuée."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "I have reviewed the included returns and adjusted values."
+msgstr "J’ai vérifié les retours inclus et les valeurs ajustées."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "This document reconciles material values after recorded returns. It does not replace or modify the original finalized invoice and does not constitute a payment adjustment or credit note."
+msgstr "Ce document présente le rapprochement des valeurs du matériel après les retours enregistrés. Il ne remplace ni ne modifie la facture finalisée d'origine et ne constitue ni un ajustement de paiement ni une note de crédit."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Issued adjusted statements are immutable."
+msgstr "Les états récapitulatifs émis sont immuables."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Adjusted statement services require their own outermost transaction."
+msgstr "Les services d’état récapitulatif exigent leur propre transaction externe."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "A finalized invoice is required."
+msgstr "Une facture finalisée est obligatoire."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Invalid statement series."
+msgstr "Série d’état récapitulatif invalide."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Invalid or expired statement confirmation."
+msgstr "La confirmation de l’état est invalide ou a expiré."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Invalid statement confirmation."
+msgstr "La confirmation de l’état est invalide."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Returns changed. Review a new statement preview."
+msgstr "Les retours ont changé. Vérifiez un nouvel aperçu de l’état."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "The business date changed. Review a new statement preview."
+msgstr "La date de gestion a changé. Vérifiez un nouvel aperçu de l’état."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Configure and verify the adjusted statement sequence first."
+msgstr "Configurez et vérifiez d’abord la séquence des états récapitulatifs."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Verify the adjusted statement numbering history first."
+msgstr "Vérifiez d’abord l’historique de numérotation des états récapitulatifs."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Statement numbering limit reached."
+msgstr "La limite de numérotation des états est atteinte."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Invalid frozen company logo."
+msgstr "Le logo figé de la société est invalide."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "The statement could not be verified. Review a fresh preview or contact an administrator."
+msgstr "L’état n’a pas pu être vérifié. Consultez un nouvel aperçu ou contactez un administrateur."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Confirm a valid statement preview."
+msgstr "Confirmez un aperçu valide de l’état."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "The frozen statement PDF could not be rendered."
+msgstr "Le PDF de l’état figé n’a pas pu être généré."
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Can issue adjusted invoice statements"
+msgstr "Peut émettre des états récapitulatifs après retours"
+
+#: invoicing/adjusted_services.py invoicing/adjusted_views.py invoicing/adjusted_pdf.py
+msgid "Can print and download adjusted invoice statements"
+msgstr "Peut imprimer et télécharger les états récapitulatifs après retours"

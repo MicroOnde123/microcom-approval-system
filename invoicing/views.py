@@ -1,3 +1,4 @@
+from .adjusted_access import navigation as adjusted_navigation
 from .document_presentation import amount_words
 from .print_delivery import active_language
 from django.contrib import messages
@@ -115,6 +116,7 @@ def invoice_detail(request,pk):
         "audit_history":history,
         "display_amount_words": amount_words(invoice.total, invoice.currency, active_language(), invoice.amount_words_fr) if invoice.status == "FINALIZED" else "",
         "return_note_nav":return_note_navigation(request.user, invoice=invoice),
+        "adjusted_nav":adjusted_navigation(request.user,invoice),
         "can_edit":invoice.status=="DRAFT" and request.user.has_perm("invoicing.change_invoice"),
         "can_finalize":invoice.status=="DRAFT" and request.user.has_perm("invoicing.finalize_invoice")})
 

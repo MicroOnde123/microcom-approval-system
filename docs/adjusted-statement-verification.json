@@ -1,0 +1,365 @@
+{
+  "base_commit": "42ceeff2c9d8b6c43047cfd8f7e3a70c441fa7e1",
+  "branch": "feature/adjusted-invoice-statements",
+  "default_enabled": false,
+  "production_migrations_applied": false,
+  "combined_tests": {
+    "run": 96,
+    "failures": 0,
+    "errors": 0,
+    "feature_service_ui": 41,
+    "new_pdf": 4,
+    "existing_regressions": 51,
+    "database": "test_microcom_adjusted",
+    "port": 55461,
+    "runner": "django.test.runner.DiscoverRunner"
+  },
+  "browser": [
+    {
+      "language": "en",
+      "actual_browser": "Microsoft Edge",
+      "overview_preview_issue_download": true,
+      "duplicate_preview_reuses_existing_reference": true,
+      "historic_value_preserved": true,
+      "pdf_pages": 1,
+      "a4_landscape": true,
+      "text_bounds": "passed",
+      "javascript_errors": []
+    },
+    {
+      "language": "fr",
+      "actual_browser": "Microsoft Edge",
+      "overview_preview_issue_download": true,
+      "duplicate_preview_reuses_existing_reference": true,
+      "historic_value_preserved": true,
+      "pdf_pages": 1,
+      "a4_landscape": true,
+      "text_bounds": "passed",
+      "javascript_errors": []
+    }
+  ],
+  "database_guards": {
+    "truncate_blocked": true,
+    "unsafe_reverse_blocked": true,
+    "source_counts_preserved": true,
+    "audit_guards_enabled": true,
+    "session_replication_role": "origin"
+  },
+  "financial_example": {
+    "original": "1000.00 USD",
+    "returned": "300.00 USD",
+    "adjusted": "700.00 USD",
+    "original_quantity": "10",
+    "returned_quantity": "3",
+    "net_quantity": "7",
+    "historical_adjusted": "800.00 USD"
+  },
+  "earlier_initial_checks": {
+    "final_layout_ui_tests": {
+      "run": 6,
+      "failures": 0,
+      "errors": 0
+    },
+    "stock_recheck": {
+      "run": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    "existing_br_methods": [
+      {
+        "test": "invoicing.test_return_note_services.test_complete_return_preserves_original_facture_and_stock",
+        "passed": true
+      },
+      {
+        "test": "invoicing.test_return_note_services.test_multiple_whole_movements_round_cumulatively_and_cap",
+        "passed": true
+      },
+      {
+        "test": "invoicing.test_return_note_services.test_precutoff_equal_future_excluded_and_wrong_type_rejected",
+        "passed": true
+      },
+      {
+        "test": "invoicing.test_return_note_services.test_exact_replay_after_expiry_no_duplicate_audit_counter_or_number",
+        "passed": true
+      },
+      {
+        "test": "invoicing.test_return_note_services.test_catalogue_and_company_changes_do_not_reprice_or_change_snapshots",
+        "passed": true
+      },
+      {
+        "test": "invoicing.test_return_note_concurrency.test_same_token_concurrent_exact_replay_commits_once",
+        "passed": true
+      },
+      {
+        "test": "invoicing.test_return_note_concurrency.test_concurrent_stock_return_stales_preview_without_second_inventory_adjustment",
+        "passed": true
+      }
+    ],
+    "note": "Initial implementation evidence; relevant layout/stock methods rerun in latest combined suite. Seven historical BR method-body checks were not rerun for this follow-up."
+  },
+  "duplicate_state_uniqueness": {
+    "unique_index_valid": true,
+    "state_function_immutable": true,
+    "browser_invoice_statements_before_and_after": 2,
+    "duplicate_browser_submissions_consumed_numbers": 0,
+    "uniqueness_reverse_blocked_with_history": true,
+    "audit_guards_enabled": true,
+    "session_replication_role": "origin"
+  },
+  "legacy_duplicate_migration_preflight": {
+    "duplicate_history_preflight": "blocked atomically",
+    "existing_statements_unchanged": true,
+    "sequence_counters_unchanged": true,
+    "migration_not_recorded": true,
+    "function_creation_rolled_back": true
+  },
+  "migrated_test_database_plan": "No planned migration operations",
+  "proposed_migrations": [
+    "0008_adjusted_invoice_statements",
+    "0009_adjusted_statement_guards",
+    "0010_adjusted_statement_state_uniqueness"
+  ],
+  "duplicate_state_followup_files": [
+    "invoicing/adjusted_models.py",
+    "invoicing/adjusted_services.py",
+    "invoicing/migrations/0010_adjusted_statement_state_uniqueness.py",
+    "invoicing/test_adjusted_statements.py",
+    "docs/ADJUSTED_INVOICE_STATEMENTS.md",
+    "docs/adjusted-statement-verification.json"
+  ],
+  "gettext_regression_verification": {
+    "compiler": {
+      "version": "msgfmt.exe (GNU gettext-tools) 1.0",
+      "source": "https://github.com/mlocati/gettext-iconv-windows/releases/tag/v1.0-v1.19",
+      "archive_sha256": "c2f195fc4ed3df4070fb08ff88c2f724afd1eed4e28f859efae1000bb7ba1152",
+      "native_archive_members_verified": [
+        "bin/envsubst.exe",
+        "bin/gettext.exe",
+        "bin/iconv.exe",
+        "bin/libcurl-4.dll",
+        "bin/libgettextlib-1-0.dll",
+        "bin/libgettextsrc-1-0.dll",
+        "bin/libiconv-2.dll",
+        "bin/libintl-8.dll",
+        "bin/libjson-c.dll",
+        "bin/libtextstyle-0.dll",
+        "bin/msgattrib.exe",
+        "bin/msgcat.exe",
+        "bin/msgcmp.exe",
+        "bin/msgcomm.exe",
+        "bin/msgconv.exe",
+        "bin/msgen.exe",
+        "bin/msgexec.exe",
+        "bin/msgfilter.exe",
+        "bin/msgfmt.exe",
+        "bin/msggrep.exe",
+        "bin/msginit.exe",
+        "bin/msgmerge.exe",
+        "bin/msgpre.exe",
+        "bin/msgunfmt.exe",
+        "bin/msguniq.exe",
+        "bin/ngettext.exe",
+        "bin/printf_gettext.exe",
+        "bin/printf_ngettext.exe",
+        "bin/recode-sr-latin.exe",
+        "bin/spit.exe",
+        "bin/xgettext.exe"
+      ],
+      "native_authenticode": "all Valid; SignPath Foundation",
+      "unused_unsigned_dotnet_helpers": "not executed or placed on PATH",
+      "command": [
+        "C:\\MicrocomIsolated\\adjusted-20261111\\venv\\Scripts\\python.exe",
+        "-B",
+        "-m",
+        "django",
+        "compilemessages",
+        "--locale",
+        "fr",
+        "--verbosity",
+        "2"
+      ],
+      "po_sha256_unchanged": "80a408f478c8c7c028668f42caf55f4dd146b78905b92bc84fd7196bc0d26eb4",
+      "mo_sha256": "e6033aadcd2880ec59bc98c16ae8b26c2eea3033c7690633e63030886c635ca5",
+      "process_local_path_only": true
+    },
+    "catalogue": {
+      "baseline_translation_keys": 1409,
+      "compiled_translation_keys": 1451,
+      "removed_keys": [],
+      "changed_translation_values": [],
+      "new_entries": 42,
+      "metadata_difference": "GNU msgfmt omits POT-Creation-Date from compiled header; source PO unchanged",
+      "restored": {
+        "Leopard mascot supporting DR Congo": "Mascotte léopard soutenant la RDC",
+        "This form has expired. Please submit it again.": "Ce formulaire a expiré. Veuillez le soumettre à nouveau."
+      },
+      "test_failures": 0,
+      "localization_verification": {
+        "existing_tests": 15,
+        "catalogue_tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "database_connections": "forbidden; no database setup",
+        "note": "15 existing tests via Django DiscoverRunner; 3 catalogue tests via unittest with Django SimpleTestCase"
+      }
+    },
+    "production_access": false,
+    "global_installation_or_path_change": false
+  },
+  "acceptance_presentation_correction": {
+    "canonical_reference": "invoicing/pdf.py",
+    "original_invoice_renderer_unchanged": true,
+    "portrait_A4": true,
+    "focused_tests": {
+      "presentation_pdf_localization": 17,
+      "financial_history_duplicate_and_bilingual": 5,
+      "failures": 0
+    },
+    "edge": [
+      {
+        "language": "en",
+        "viewport": 1440,
+        "screenshots": [
+          "overview",
+          "preview",
+          "detail"
+        ],
+        "actions_aligned": true,
+        "no_page_overflow": true,
+        "download_pdf": true,
+        "print_post_and_popup": true,
+        "javascript_errors": []
+      },
+      {
+        "language": "en",
+        "viewport": 390,
+        "screenshots": [
+          "overview",
+          "preview",
+          "detail"
+        ],
+        "actions_aligned": true,
+        "no_page_overflow": true,
+        "download_pdf": true,
+        "print_post_and_popup": true,
+        "javascript_errors": []
+      },
+      {
+        "language": "fr",
+        "viewport": 1440,
+        "screenshots": [
+          "overview",
+          "preview",
+          "detail"
+        ],
+        "actions_aligned": true,
+        "no_page_overflow": true,
+        "download_pdf": true,
+        "print_post_and_popup": true,
+        "javascript_errors": []
+      },
+      {
+        "language": "fr",
+        "viewport": 390,
+        "screenshots": [
+          "overview",
+          "preview",
+          "detail"
+        ],
+        "actions_aligned": true,
+        "no_page_overflow": true,
+        "download_pdf": true,
+        "print_post_and_popup": true,
+        "javascript_errors": []
+      }
+    ],
+    "pdf_layout": [
+      {
+        "file": "after-en-long.pdf",
+        "pages": 6,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-en-many-returns.pdf",
+        "pages": 5,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-en-multiple.pdf",
+        "pages": 4,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-en-single.pdf",
+        "pages": 1,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-fr-long.pdf",
+        "pages": 6,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-fr-many-returns.pdf",
+        "pages": 5,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-fr-multiple.pdf",
+        "pages": 4,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "after-fr-single.pdf",
+        "pages": 1,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "before-en.pdf",
+        "pages": 1,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "before-fr.pdf",
+        "pages": 1,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "canonical-invoice-en.pdf",
+        "pages": 1,
+        "out_of_page_bounds": []
+      },
+      {
+        "file": "canonical-invoice-fr.pdf",
+        "pages": 1,
+        "out_of_page_bounds": []
+      }
+    ],
+    "web_screenshot_count": 12,
+    "physical_printer_tested": false,
+    "existing_test_limitation": "Original invoice toolbar offline Engine omits tz; unrelated baseline harness issue, unchanged",
+    "production_changes": false,
+    "feature_manifest_files": 27,
+    "staging_changes": false
+  },
+  "final_precommit_verification": {
+    "pure_pdf_ui_localization_delivery_tests": 25,
+    "feature_service_and_ui_tests": 41,
+    "failures": 0,
+    "errors": 0,
+    "baseline_tz_proof": {
+      "baseline": "Template: detail.html, 'tz' is not a registered tag library. Must be one of:\ni18n\nstatic",
+      "feature": "Template: detail.html, 'tz' is not a registered tag library. Must be one of:\ni18n\nstatic"
+    },
+    "baseline_test_source_unchanged": true,
+    "database": "test_microcom_adjusted",
+    "port": 55461,
+    "system_check": "passed",
+    "migration_consistency": "makemigrations invoicing --check --dry-run: no changes",
+    "manifest_files": 27,
+    "feature_disabled_by_default": true,
+    "baseline_translation_keys_preserved": 1409,
+    "new_translations": 42,
+    "production_access": false
+  }
+}
