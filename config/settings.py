@@ -237,3 +237,8 @@ MATERIAL_RETURN_NOTE_UI_ENABLED = True
 
 # Material Entries uses localized CSRF errors; other modules retain Django defaults.
 CSRF_FAILURE_VIEW = "inventory.entry_i18n.csrf_failure"
+
+# Explicitly activated only after deployment validation.
+ADJUSTED_INVOICE_STATEMENTS_ENABLED = config(
+    "ADJUSTED_INVOICE_STATEMENTS_ENABLED", default=False, cast=bool,
+)
