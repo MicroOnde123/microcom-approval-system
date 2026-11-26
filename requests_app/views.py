@@ -1730,10 +1730,12 @@ def export_material_report_excel(request):
         add_issuance_returns(workbook, request.user, reconciliation)
         add_operational_reporting(workbook, requests, inventory, entries, reconciliation,
                                   warehouse_movements, warehouse_filters.cleaned_data)
+        protect_text_cells(workbook)
+        from .stock_report_interactive import enhance
+        enhance(workbook)
     except ValidationError as error:
         return HttpResponse(format_html("<p>{}</p><a href=\"{}\">{}</a>",
             error.messages[0], reverse("material_reports"), _("Back to Material Reports")), status=413)
-    protect_text_cells(workbook)
     workbook.save(response)
     return response
 

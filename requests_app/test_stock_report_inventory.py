@@ -128,4 +128,6 @@ class InventoryExportTests(TestCase):
         for tab in workbook:
             for row in tab:
                 for cell in row:
-                    self.assertNotEqual(cell.data_type, 'f')
+                    if cell.data_type == 'f':
+                        self.assertEqual(tab.title, 'Totaux visibles')
+                        self.assertEqual(cell.column, 5)

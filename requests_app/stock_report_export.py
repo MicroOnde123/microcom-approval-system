@@ -121,7 +121,8 @@ def add_movements(workbook, movements, requests):
 def protect_text_cells(workbook):
     """All text is literal, including strings openpyxl initially typed as formulas.
 
-    No reporting sheet uses calculated cell formulas; charts refer to data ranges.
+    Run before stock_report_interactive.enhance, the only trusted formula writer.
+    User-provided formula-like text remains literal.
     Prefixes are preserved, not stripped or prepended with visible apostrophes.
     """
     for sheet in workbook:

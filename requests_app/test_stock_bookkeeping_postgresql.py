@@ -42,7 +42,7 @@ class BookkeepingExportTests(LifecycleFixtures, TestCase):
         self.assertEqual(sheet['E3'].value,line.description_snapshot)
         self.assertEqual(sheet['I3'].value,2);self.assertEqual(sheet['J3'].value,'USD');self.assertEqual(sheet['K3'].value,20)
         self.assertEqual(wb.sheetnames[:4],['Material Report','Dashboard','Graphs','Stock Movements'])
-        self.assertEqual(len(wb['Graphs']._charts[:4]),4);self.assertEqual(len(wb.sheetnames),11)
+        self.assertEqual(len(wb['Graphs']._charts[:4]),4);self.assertEqual(len(wb.sheetnames),12)
 
     def test_stock_access_without_invoice_permission_has_no_financial_content(self):
         invoice=self.finalized()

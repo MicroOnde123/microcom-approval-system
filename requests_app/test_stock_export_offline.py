@@ -63,7 +63,7 @@ class StockExportOfflineTests(TestCase):
     def test_original_sheets_and_four_charts_retained(self):
         wb=self.render_export()
         self.assertEqual(wb.sheetnames[:4],['Material Report','Dashboard','Graphs','Stock Movements'])
-        self.assertEqual(wb.sheetnames[4:],['Succursale Summary','Material Group Summary','Monthly Statistics','Current Stock Inventory','Material Entries','Issuance and Returns'])
+        self.assertEqual(wb.sheetnames[4:],['Succursale Summary','Material Group Summary','Monthly Statistics','Current Stock Inventory','Material Entries','Issuance and Returns','Visible Totals'])
         self.assertEqual(len(wb['Graphs']._charts),4)
         self.assertEqual(wb.active.max_column,20)
         self.assertEqual(wb.active.freeze_panes,'A5')
@@ -77,7 +77,11 @@ class StockExportOfflineTests(TestCase):
         self.assertEqual(wb.active['G5'].data_type,'s')
         for sheet in wb:
             for row in sheet:
-                for cell in row:self.assertNotEqual(cell.data_type,'f')
+                for cell in row:
+                    if cell.data_type == 'f':
+                        self.assertEqual(sheet.title, 'Visible Totals')
+                        self.assertEqual(cell.column, 5)
+                        self.assertTrue(cell.value.startswith('=IFERROR(SUMPRODUCT(SUBTOTAL(109,OFFSET(MicrocomDetail'))
 
     def test_formula_prefixes_and_numeric_values_preserved(self):
         wb=Workbook();values=['=1+1','+SUM(A1)','-1','@name','\t=1+1',Decimal('2.5'),0]

@@ -176,7 +176,9 @@ class OperationalExportTests(TestCase):
                 for cell in row:
                     self.assertNotEqual(cell.value, 765432.1)
                     self.assertNotEqual(cell.value, 'EUR')
-                    self.assertNotEqual(cell.data_type, 'f')
+                    if cell.data_type == 'f':
+                        self.assertEqual(sheet.title, 'Totaux visibles')
+                        self.assertEqual(cell.column, 5)
         from .views import export_material_report_excel
         request = RequestFactory().get('/', params); request.user = self.user
         before = list(Material.objects.order_by('pk').values())
