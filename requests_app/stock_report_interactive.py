@@ -3,7 +3,7 @@ from collections import defaultdict
 from decimal import Decimal
 from openpyxl.styles import Font
 from openpyxl.utils.cell import range_boundaries, get_column_letter
-from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.worksheet.table import Table, TableStyleInfo, TableFormula
 from openpyxl.workbook.properties import CalcProperties
 from django.utils.translation import gettext as _, get_language
 
@@ -56,10 +56,27 @@ def enhance(workbook):
                 sheet.print_area = f'A1:{get_column_letter(right)}{sheet.max_row}'
             bottom = top + 1
         table_name = f'MicrocomDetail{index}'
-        table = Table(displayName=table_name, ref=f'A{top}:{get_column_letter(right)}{bottom}')
+        # One hidden calculated column, adjacent to the original detail columns.
+        # Bookkeeping's existing N:R summary panel remains outside the A:M table.
+        helper = right + 1
+        helper_letter = get_column_letter(helper)
+        sheet.cell(top, helper, 'VisibleRow')
+        sheet.column_dimensions[helper_letter].hidden = True
+        marker = right if title == 'Bookkeeping' else left
+        marker_letter = get_column_letter(marker)
+        for data_row in range(top + 1, bottom + 1):
+            sheet.cell(data_row, helper, f'=SUBTOTAL(103,{marker_letter}{data_row})')
+        table = Table(displayName=table_name, ref=f'A{top}:{helper_letter}{bottom}')
+        table._initialise_columns()
+        for column, header in zip(table.tableColumns, headers + ['VisibleRow']):
+            column.name = header
+        table.tableColumns[-1].calculatedColumnFormula = TableFormula(
+            attr_text=f'SUBTOTAL(103,{marker_letter}{top + 1})')
         table.tableStyleInfo = TableStyleInfo(name='TableStyleMedium2', showRowStripes=False,
                                              showColumnStripes=False)
         sheet.add_table(table)
+        # A Table owns its filter. Do not also serialize a worksheet autoFilter.
+        sheet.auto_filter.ref = None
         for measure, group in [(m, unit) for m in measures] + ([('Stored Line Total', 'Currency')] if title == 'Bookkeeping' else []):
             measure, group = _(measure), _(group)
             col, group_col = headers.index(measure) + left, headers.index(group) + left
@@ -70,16 +87,15 @@ def enhance(workbook):
                     totals[str(key or '')] += Decimal(str(value))
             if not totals:
                 totals[''] = Decimal(0)
-            # SUBTOTAL over one-cell OFFSET references retains Excel row visibility;
-            # structured references follow deletions/insertions of actual table rows.
-            column = f'{table_name}[{measure}]'
-            anchor = f'{table_name}[[#Headers],[{measure}]]'
-            visible = f'SUBTOTAL(109,OFFSET({anchor},ROW({column})-ROW({anchor}),0,1))'
+            # Plain SUMIFS over table columns; no array OFFSET/ROW expressions.
+            def reference(header):
+                escaped = ''.join("'" + char if char in "'[]#@" else char for char in header)
+                return f'{table_name}[[{escaped}]]'
             reserve_generated(workbook, summary_rows=len(totals))
             for key, total in sorted(totals.items()):
                 row = summary.max_row + 1
                 summary.append([name, measure, key, total])
-                formula = f'=IFERROR(SUMPRODUCT({visible},--({table_name}[{group}]=C{row})),0)'
+                formula = f'=SUMIFS({reference(measure)},{reference(group)},C{row},{reference("VisibleRow")},1)'
                 summary.cell(row, 5, formula)
                 summary.cell(row, 4).number_format = summary.cell(row, 5).number_format = '#,##0.00'
     for row in summary.iter_rows(min_row=1, max_row=4):

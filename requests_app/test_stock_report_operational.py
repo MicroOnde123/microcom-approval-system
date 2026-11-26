@@ -177,8 +177,11 @@ class OperationalExportTests(TestCase):
                     self.assertNotEqual(cell.value, 765432.1)
                     self.assertNotEqual(cell.value, 'EUR')
                     if cell.data_type == 'f':
-                        self.assertEqual(sheet.title, 'Totaux visibles')
-                        self.assertEqual(cell.column, 5)
+                        if sheet.title == 'Totaux visibles':
+                            self.assertEqual(cell.column, 5)
+                        else:
+                            self.assertTrue(sheet.column_dimensions[cell.column_letter].hidden)
+                            self.assertTrue(cell.value.startswith('=SUBTOTAL(103,'))
         from .views import export_material_report_excel
         request = RequestFactory().get('/', params); request.user = self.user
         before = list(Material.objects.order_by('pk').values())

@@ -135,7 +135,7 @@ class StockReportAnalyticsTests(TestCase):
                                          ("fr", ["Rapport de matériel", "Tableau de bord", "Graphiques"], "Aucune demande approuvée")):
             _, wb = self.export({"q": "no-match"}, language)
             self.assertEqual(wb.sheetnames, names + (["Mouvements de stock", "Synthèse par succursale", "Synthèse par groupe matériel", "Statistiques mensuelles", "Stock actuel", "Entrées de matériel", "Sorties et retours", "Totaux visibles"] if language == "fr" else ["Stock Movements", "Succursale Summary", "Material Group Summary", "Monthly Statistics", "Current Stock Inventory", "Material Entries", "Issuance and Returns", "Visible Totals"]))
-            self.assertEqual(wb.active.max_row, 4)  # Blank table body need not create cells.
+            self.assertEqual(wb.active.max_row, 5)  # Empty table has a visibility formula.
             self.assertEqual(wb.worksheets[1]["D10"].value, 0)
             for sheet in wb.worksheets[1:3]:
                 self.assertIn(message, sheet["A15"].value)

@@ -158,7 +158,7 @@ class ReconciliationExportTests(TestCase):
         self.assertEqual(sheet['A5'].data_type, 's')
         self.assertEqual(sheet['P5'].value, 'Preuve OUT manquante')
         self.assertEqual(sheet['C5'].number_format, 'dd/mm/yyyy')
-        self.assertEqual(sheet.max_column, 21)
+        self.assertEqual(sheet.max_column, 22)
         self.assertNotIn('Comptabilité interne', workbook.sheetnames)
         from .views import export_material_report_excel
         request = RequestFactory().get('/')

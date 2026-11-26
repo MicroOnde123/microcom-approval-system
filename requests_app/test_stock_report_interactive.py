@@ -43,8 +43,8 @@ class InteractiveWorkbookTests(TestCase):
                 self.assertEqual(wb[_('Bookkeeping')]['I3'].value,10)
                 self.assertEqual(wb[_('Bookkeeping')]['K3'].value,20)
                 for row in rows:
-                    self.assertIn('SUBTOTAL(109,OFFSET(',row[4]);self.assertIn('[Stored Line Total]',row[4]) if lang=='en' else self.assertIn(_('Stored Line Total'),row[4])
-                    self.assertIn('SUMPRODUCT',row[4])
+                    self.assertTrue(row[4].startswith('=SUMIFS('));self.assertIn('[Stored Line Total]',row[4]) if lang=='en' else self.assertIn(_('Stored Line Total'),row[4])
+                    self.assertNotIn('OFFSET',row[4])
                 self.assertEqual(wb.calculation.calcMode,'auto')
                 self.assertTrue(wb.calculation.fullCalcOnLoad)
 
@@ -64,7 +64,7 @@ class InteractiveWorkbookTests(TestCase):
         sheet.append(['Title']);sheet.append(['Metadata']);sheet.append(['Note'])
         sheet.append(['Unit','Quantity Received']);sheet.append(['No receipts'])
         sheet.auto_filter.ref='A4:B4';enhance(wb)
-        self.assertEqual(sheet.tables['MicrocomDetail4'].ref,'A4:B5')
+        self.assertEqual(sheet.tables['MicrocomDetail4'].ref,'A4:C5')
         self.assertIsNone(sheet['A5'].value)
         self.assertEqual(sheet['A6'].value,'No receipts')
         self.assertEqual(wb['Visible Totals']['D5'].value,0)
@@ -76,7 +76,11 @@ class InteractiveWorkbookTests(TestCase):
             for row in sheet:
                 for cell in row:
                     if cell.data_type=='f':
-                        self.assertEqual(sheet.title,'Visible Totals');self.assertEqual(cell.column,5)
+                        if sheet.title=='Visible Totals':
+                            self.assertEqual(cell.column,5);self.assertTrue(cell.value.startswith('=SUMIFS('))
+                        else:
+                            self.assertTrue(sheet.column_dimensions[cell.column_letter].hidden)
+                            self.assertTrue(cell.value.startswith('=SUBTOTAL(103,'))
 
     def test_no_financial_sheet_or_currency_leak_without_permission(self):
         wb=offline.StockExportOfflineTests().render_export()
@@ -102,3 +106,42 @@ class InteractiveWorkbookTests(TestCase):
         from django.core.exceptions import ValidationError
         with override_settings(STOCK_REPORT_EXPORT_MAX_SUMMARY_ROWS=1):
             with self.assertRaises(ValidationError):enhance(Workbook())
+    def test_raw_ooxml_table_contracts_in_both_languages(self):
+        import zipfile
+        import xml.etree.ElementTree as ET
+        from openpyxl.utils.cell import range_boundaries, get_column_letter
+        ns={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+        for language in ('en','fr'):
+            with self.subTest(language=language):
+                wb=sample(language);raw=BytesIO();wb.save(raw);raw.seek(0)
+                with zipfile.ZipFile(raw) as archive:
+                    tables=[ET.fromstring(archive.read(name)) for name in archive.namelist() if name.startswith('xl/tables/')]
+                    self.assertEqual(len({t.get('id') for t in tables}),6)
+                    self.assertEqual(len({t.get('displayName').casefold() for t in tables}),6)
+                    for table in tables:
+                        left,top,right,bottom=range_boundaries(table.get('ref'))
+                        self.assertGreater(bottom,top)
+                        columns=table.find('s:tableColumns',ns)
+                        self.assertEqual(int(columns.get('count')),right-left+1)
+                        self.assertEqual(len(columns),right-left+1)
+                        self.assertEqual(len({c.get('id') for c in columns}),len(columns))
+                        self.assertEqual(len({c.get('name').casefold() for c in columns}),len(columns))
+                        self.assertEqual(table.find('s:autoFilter',ns).get('ref'),table.get('ref'))
+                        self.assertEqual(columns[-1].get('name'),'VisibleRow')
+                        self.assertTrue(columns[-1].find('s:calculatedColumnFormula',ns).text.startswith('SUBTOTAL(103,'))
+                    for index,sheet in enumerate(wb.worksheets,1):
+                        xml=ET.fromstring(archive.read(f'xl/worksheets/sheet{index}.xml'))
+                        if sheet.tables:
+                            self.assertIsNone(xml.find('s:autoFilter',ns),'Table must own the filter; no overlapping worksheet filter')
+                            table=next(iter(sheet.tables.values()))
+                            left,top,right,bottom=range_boundaries(table.ref)
+                            self.assertTrue(sheet.column_dimensions[get_column_letter(right)].hidden)
+                            self.assertEqual([sheet.cell(top,c).value for c in range(left,right+1)], [c.name for c in table.tableColumns])
+                            for row in range(top+1,bottom+1):
+                                self.assertTrue(sheet.cell(row,right).value.startswith('=SUBTOTAL(103,'))
+                        for formula in xml.findall('.//s:f',ns):
+                            self.assertFalse(formula.text.startswith('='))
+                            self.assertNotIn('OFFSET(',formula.text)
+                            self.assertNotIn('SUMPRODUCT(',formula.text)
+                            self.assertNotIn('#Headers',formula.text)
+                            self.assertTrue(formula.text.startswith(('SUMIFS(', 'SUBTOTAL(103,')))

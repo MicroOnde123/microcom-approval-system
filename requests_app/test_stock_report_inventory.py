@@ -58,14 +58,15 @@ class InventoryExportTests(TestCase):
         sheet = workbook['Current Stock Inventory']
         rows = {row[0]: row for row in list(sheet.values)[4:]}
         self.assertEqual(len(rows), 5)
-        self.assertEqual(rows[self.cable.code][5:], (100, 100, 'Low stock'))
-        self.assertEqual(rows[self.bolt.code][5:], (0, 0, 'Out of stock'))
-        self.assertEqual(rows[inactive.code][4:], ('Inactive', 1.25, 2, 'Low stock'))
+        self.assertEqual(rows[self.cable.code][5:8], (100, 100, 'Low stock'))
+        self.assertEqual(rows[self.bolt.code][5:8], (0, 0, 'Out of stock'))
+        self.assertEqual(rows[inactive.code][4:8], ('Inactive', 1.25, 2, 'Low stock'))
         self.assertEqual(rows['INV-NEGATIVE'][7], 'Negative stock')
         self.assertEqual(rows['INV-OK'][7], 'In stock')
         self.assertEqual(sheet['C5'].value, self.cable.category.name)
         self.assertEqual(sheet.freeze_panes, 'A5')
-        self.assertEqual(sheet.auto_filter.ref, 'A4:H9')
+        self.assertIsNone(sheet.auto_filter.ref)
+        self.assertEqual(sheet.tables['MicrocomDetail3'].autoFilter.ref, 'A4:I9')
         self.assertEqual(sheet['F5'].number_format, '#,##0.00')
 
     def test_prices_are_neither_selected_by_inventory_nor_exported(self):
@@ -74,7 +75,7 @@ class InventoryExportTests(TestCase):
         with CaptureQueriesContext(connection) as queries:
             _, workbook = self.export()
         sheet = workbook['Current Stock Inventory']
-        self.assertEqual(sheet.max_column, 8)
+        self.assertEqual(sheet.max_column, 9)
         for row in sheet:
             for cell in row:
                 self.assertNotEqual(cell.value, 98765.43)
@@ -129,5 +130,8 @@ class InventoryExportTests(TestCase):
             for row in tab:
                 for cell in row:
                     if cell.data_type == 'f':
-                        self.assertEqual(tab.title, 'Totaux visibles')
-                        self.assertEqual(cell.column, 5)
+                        if tab.title == 'Totaux visibles':
+                            self.assertEqual(cell.column, 5)
+                        else:
+                            self.assertTrue(tab.column_dimensions[cell.column_letter].hidden)
+                            self.assertTrue(cell.value.startswith('=SUBTOTAL(103,'))

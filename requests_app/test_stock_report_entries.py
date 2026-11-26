@@ -62,9 +62,10 @@ class EntriesExportTests(TestCase):
         self.assertEqual(rows[0][10], first.lines.get().movement_id)
         self.assertEqual(rows[0][12], 1.25)
         self.assertEqual(rows[0][13], self.user.username)
-        self.assertEqual(rows[0][17:], ('Recorded material snapshot', 'Linked IN movement'))
+        self.assertEqual(rows[0][17:19], ('Recorded material snapshot', 'Linked IN movement'))
         self.assertEqual(sheet.freeze_panes, 'A5')
-        self.assertEqual(sheet.auto_filter.ref, 'A4:S6')
+        self.assertIsNone(sheet.auto_filter.ref)
+        self.assertEqual(sheet.tables['MicrocomDetail4'].autoFilter.ref, 'A4:T6')
         from .stock_report_export import reporting_time
         self.assertEqual(rows[0][2], reporting_time(first.created_at))
 
@@ -137,7 +138,7 @@ class EntriesExportTests(TestCase):
         self.assertTrue(all(query['sql'].lstrip().upper().startswith('SELECT') for query in queries))
         self.assertEqual(stock, list(Material.objects.order_by('pk').values()))
         self.assertEqual(receipts, list(MaterialReceipt.objects.values()))
-        self.assertEqual(workbook['Material Entries'].max_column, 19)
+        self.assertEqual(workbook['Material Entries'].max_column, 20)
         self.assertNotIn('Bookkeeping', workbook.sheetnames)
 
     def test_french_formula_protection_and_missing_metadata(self):
